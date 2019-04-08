@@ -15,7 +15,9 @@ sb.set_style("whitegrid")
 pdf = lhapdf.getPDFSet("NNPDF31_nnlo_as_0118")
 print(pdf.description)
 # Take only the central value
-pdf_central = pdf.mkPDF(0)
+pdf_init = pdf.mkPDFs()
+pdf_central = sample(pdf_init,25)
+size_member = len(pdf_central)
 
 # Define the scale 
 Q_pdf = 10
@@ -35,12 +37,15 @@ def sample_pdf(n=1000):
     for i in np.random.uniform(0.1,1,n-m): x_pdf.append(i)
     # Construct the sampling
     flavors_list = [1,2,3,21]
-    for x in x_pdf:
-        row = [x]
-        for fl in flavors_list:
-            if (fl<3): row.append(pdf_central.xfxQ2(fl,x,Q_pdf)-pdf_central.xfxQ2(-fl,x,Q_pdf))
-            else : row.append(pdf_central.xfxQ2(fl,x,Q_pdf))
-        data.append(row)
+    for p in pdf_central:
+        repl = []
+        for x in x_pdf:
+            row = [x]
+            for fl in flavors_list:
+                if (fl<3): row.append(p.xfxQ2(fl,x,Q_pdf)-p.xfxQ2(-fl,x,Q_pdf))
+                else : row.append(p.xfxQ2(fl,x,Q_pdf)/3)
+            repl.append(row)
+        data.append(repl)
     return np.array(data)
 
 # Define the function which generates the noise data
@@ -58,10 +63,11 @@ def sorting(lst):
     return new_lst
 
 # Define the hidden layers 
-hidden = [16,16]
+nb_points = 256
+hidden_gen = [16,32]
+hidden_dis = [32,16]
 # Take the data shape
-data_shape = sample_pdf().shape[1]
-
+data_shape = sample_pdf(n=nb_points).shape[2]
 
 # Implement the GENERATOR Model
 
@@ -69,7 +75,7 @@ data_shape = sample_pdf().shape[1]
 # A Random Sample Z
 # A list which contains the Structure of the NN (layers)
 # A variable called "reuse"
-def generator(input_noise, layers_size=hidden,reuse=False):
+def generator(input_noise, layers_size=hidden_gen,reuse=False):
     # Create and Share a variable named "Generator"
     # Here "reuse" allows us to share the variable
     with tf.variable_scope("Generator",reuse=reuse):
@@ -87,7 +93,7 @@ def generator(input_noise, layers_size=hidden,reuse=False):
 # A sample from the "REAL" dataset
 # A list which contains the structure of the first 2 "hidden layer"
 # A variable called "reuse"
-def discriminator(input_true,layers_size=hidden,reuse=False):
+def discriminator(input_true,layers_size=hidden_dis,reuse=False):
     # Create and share a variable named "Discriminator"
     with tf.variable_scope("Discriminator",reuse=reuse):
         # Define the 1st and 2nd layer with "leaky_relu" as an activation fucnction
@@ -102,9 +108,9 @@ def discriminator(input_true,layers_size=hidden,reuse=False):
 # Adversarial Training
 
 # Initialize the placeholder for the real sample
-X = tf.placeholder(tf.float32,[None,data_shape])
+X = tf.placeholder(tf.float32,[None,nb_points,data_shape])
 # Initialize the placeholder for the random sample
-Z = tf.placeholder(tf.float32,[None,data_shape])
+Z = tf.placeholder(tf.float32,[None,nb_points,data_shape])
 
 # Define the Graph which Generate fake data from the Generator and feed the Discriminator
 G_sample = generator(Z)
@@ -128,13 +134,12 @@ DiscriminatorStep = tf.train.RMSPropOptimizer(learning_rate=0.001).minimize(Disc
 sess = tf.Session()
 tf.global_variables_initializer().run(session=sess)
 
-batch_size = 256
 nd_steps   = 10
 ng_steps   = 10
 
 # Fetch the real PDF in order to plot them
-x_plot  = sample_pdf(n=batch_size)
-sx_plot = x_plot[x_plot[:,0].argsort()] 
+x_plot  = sample_pdf(n=nb_points)
+# sx_plot = x_plot[x_plot[:,0].argsort()] 
 
 f = open('loss.csv','w')
 f.write('Iteration,Discriminator Loss,Generator Loss\n')
@@ -143,25 +148,30 @@ f.write('Iteration,Discriminator Loss,Generator Loss\n')
 # Generate random colors
 col1 = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])for i in range(data_shape)]
 col2 = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])for i in range(data_shape)]
-def plot_generated_pdf(generator, noise, iteration, shape_data=data_shape, s=14, a=0.95):
+def plot_generated_pdf(generator, noise, iteration, replicas, shape_data=data_shape, s=14, a=0.95):
     g_plot  = sess.run(generator, feed_dict={Z: noise})
-    sg_plot = g_plot[g_plot[:,0].argsort()] 
+    # sg_plot = g_plot[g_plot[:,0].argsort()] 
 
     plt.figure()
-    for gen in range(1,shape_data):
-        plt.plot(sx_plot[:,0],sx_plot[:,gen],color=col1[gen],alpha=a)
-        plt.plot(sg_plot[:,0],sg_plot[:,gen],color=col2[gen],alpha=a)
+    for r in range(replicas):
+        for gen in range(1,shape_data):
+            plt.scatter(x_plot[r][:,0],x_plot[r][:,gen],color=col1[gen],s=14,alpha=a)
+            plt.scatter(g_plot[r][:,0],g_plot[r][:,gen],color=col2[gen],s=14,alpha=a)
     plt.title('Samples at Iteration %d'%iteration)
+    plt.xlim([0.001,1])
+    plt.ylim([0,0.8])
     plt.tight_layout()
     plt.savefig('iterations/iteration_%d.png'%iteration, dpi=250)
     plt.close()
 
 numb_training = 10001
+batch_size  = 5
+batch_count = int(sample_pdf().shape[0] / batch_size)
 
 # Training
 for i in range(numb_training):
-    X_batch = sample_pdf(n=batch_size)
-    Z_batch = sample_noise(batch_size,data_shape)
+    X_batch = sample_pdf(n=nb_points)[np.random.randint(0, sample_pdf().shape[0], size = batch_size)]
+    Z_batch = [sample_noise(nb_points,data_shape) for i in range(batch_size)]
 
     # Train independently G&D in multiple steps
     for _ in range(nd_steps):
@@ -176,6 +186,6 @@ for i in range(numb_training):
 
     # Plot each 1000 iteration
     if i%1000 == 0:
-        plot_generated_pdf(G_sample, Z_batch, i, shape_data=data_shape)
+        plot_generated_pdf(G_sample, Z_batch, i, 5, shape_data=data_shape)
 
 f.close()
