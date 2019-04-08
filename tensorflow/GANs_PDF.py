@@ -133,7 +133,8 @@ nd_steps   = 10
 ng_steps   = 10
 
 # Fetch the real PDF in order to plot them
-x_plot = sample_pdf(n=batch_size)
+x_plot  = sample_pdf(n=batch_size)
+sx_plot = x_plot[x_plot[:,0].argsort()] 
 
 f = open('loss.csv','w')
 f.write('Iteration,Discriminator Loss,Generator Loss\n')
@@ -143,12 +144,13 @@ f.write('Iteration,Discriminator Loss,Generator Loss\n')
 col1 = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])for i in range(data_shape)]
 col2 = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])for i in range(data_shape)]
 def plot_generated_pdf(generator, noise, iteration, shape_data=data_shape, s=14, a=0.95):
-    g_plot = sess.run(generator, feed_dict={Z: noise})
+    g_plot  = sess.run(generator, feed_dict={Z: noise})
+    sg_plot = g_plot[g_plot[:,0].argsort()] 
 
     plt.figure()
     for gen in range(1,shape_data):
-        plt.scatter(x_plot[:,0],x_plot[:,gen],color=col1[gen],s=14,alpha=a)
-        plt.scatter(g_plot[:,0],g_plot[:,gen],color=col2[gen],s=14,alpha=a)
+        plt.plot(sx_plot[:,0],sx_plot[:,gen],color=col1[gen],alpha=a)
+        plt.plot(sg_plot[:,0],sg_plot[:,gen],color=col2[gen],alpha=a)
     plt.title('Samples at Iteration %d'%iteration)
     plt.tight_layout()
     plt.savefig('iterations/iteration_%d.png'%iteration, dpi=250)
