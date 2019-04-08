@@ -44,7 +44,7 @@ pdf_data = pdf_dataX.reshape(length,)
 random_noise_dim = 100
 learning_rate = 0.001
 optimizer1 = RMSprop(lr=learning_rate)
-optimizer2 = Adadelta() # this one has a different learning rate per weight, just to see
+optimizer2 = Adadelta() 
 
 # Generator Architecture 
 Generator = Sequential([
