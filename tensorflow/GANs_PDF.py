@@ -1,6 +1,7 @@
 # Import the Libraries
 import lhapdf
 import math
+import random
 import tensorflow as tf
 import numpy as np
 import seaborn as sb
@@ -33,11 +34,13 @@ def sample_pdf(n=1000):
     # Taake (n-m) values between 0.1 and 1 
     for i in np.random.uniform(0.1,1,n-m): x_pdf.append(i)
     # Construct the sampling
+    flavors_list = [1,2,3,21]
     for x in x_pdf:
-        y_pdf1 = pdf_central.xfxQ2(21,x,Q_pdf)/5                                # gluon
-        y_pdf2 = pdf_central.xfxQ2(2,x,Q_pdf)-pdf_central.xfxQ2(-2,x,Q_pdf)     # valence u_quark
-        y_pdf3 = pdf_central.xfxQ2(1,x,Q_pdf)-pdf_central.xfxQ2(-1,x,Q_pdf)     # valence u_quark
-        data.append([x,y_pdf1,y_pdf2,y_pdf3])
+        row = [x]
+        for fl in flavors_list:
+            if (fl<3): row.append(pdf_central.xfxQ2(fl,x,Q_pdf)-pdf_central.xfxQ2(-fl,x,Q_pdf))
+            else : row.append(pdf_central.xfxQ2(fl,x,Q_pdf))
+        data.append(row)
     return np.array(data)
 
 # Define the function which generates the noise data
@@ -135,6 +138,22 @@ x_plot = sample_pdf(n=batch_size)
 f = open('loss.csv','w')
 f.write('Iteration,Discriminator Loss,Generator Loss\n')
 
+# Plot pdfs for every x trainings
+# Generate random colors
+col1 = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])for i in range(data_shape)]
+col2 = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])for i in range(data_shape)]
+def plot_generated_pdf(generator, noise, iteration, shape_data=data_shape, s=14, a=0.95):
+    g_plot = sess.run(generator, feed_dict={Z: noise})
+
+    plt.figure()
+    for gen in range(1,shape_data):
+        plt.scatter(x_plot[:,0],x_plot[:,gen],color=col1[gen],s=14,alpha=a)
+        plt.scatter(g_plot[:,0],g_plot[:,gen],color=col2[gen],s=14,alpha=a)
+    plt.title('Samples at Iteration %d'%iteration)
+    plt.tight_layout()
+    plt.savefig('iterations/iteration_%d.png'%iteration, dpi=250)
+    plt.close()
+
 numb_training = 10001
 
 # Training
@@ -155,24 +174,6 @@ for i in range(numb_training):
 
     # Plot each 1000 iteration
     if i%1000 == 0:
-        
-        # Fetch the generated data
-        g_plot = sess.run(G_sample, feed_dict={Z: Z_batch})
-
-        plt.figure()
-        xax_g = plt.scatter(x_plot[:,0],x_plot[:,1],s=14)
-        gax_g = plt.scatter(g_plot[:,0],g_plot[:,1],s=14)
-
-        xax_u = plt.scatter(x_plot[:,0],x_plot[:,2],s=14)
-        gax_u = plt.scatter(g_plot[:,0],g_plot[:,2],s=14)
-
-        xax_d = plt.scatter(x_plot[:,0],x_plot[:,3],s=14)
-        gax_d = plt.scatter(g_plot[:,0],g_plot[:,3],s=14)
-
-        plt.legend((xax_g,gax_g,xax_u,gax_u,xax_d,gax_d), ("xg/5 Real PDF","xg/5 Generated PDF","xu_v Real PDF","xu_v Generated PDF","xd_v Real PDF","xd_v Generated PDF"))
-        plt.title('Samples at Iteration %d'%i)
-        plt.tight_layout()
-        plt.savefig('iterations/iteration_%d.png'%i, dpi=250)
-        plt.close()
+        plot_generated_pdf(G_sample, Z_batch, i, shape_data=data_shape)
 
 f.close()
