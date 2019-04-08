@@ -3,6 +3,7 @@ import lhapdf
 import math
 import random
 import tensorflow as tf
+import tensorflow.contrib.slim as slim
 import numpy as np
 import seaborn as sb
 from random import sample
@@ -129,6 +130,12 @@ DiscriminatorVars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,scope="Discr
 # Define the Optimizer for G&D
 GeneratorStep     = tf.train.RMSPropOptimizer(learning_rate=0.001).minimize(GeneratorLoss,var_list = GeneratorVars)
 DiscriminatorStep = tf.train.RMSPropOptimizer(learning_rate=0.001).minimize(DiscriminatorLoss,var_list = DiscriminatorVars)
+
+def model_summary():
+    model_vars = tf.trainable_variables()
+    slim.model_analyzer.analyze_vars(model_vars, print_info=True)
+
+model_summary()
 
 # sess = tf.Session(config=config)
 sess = tf.Session()
