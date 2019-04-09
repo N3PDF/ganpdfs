@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from keras import Model
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Input
-from keras.optimizers import Adam, RMSprop, Adadelta
+from keras.optimizers import Adam, RMSprop, Adadelta, SGD
 from keras.layers.advanced_activations import LeakyReLU
 
 # Get the PDF4LHC15 for test purpose and print some description
@@ -24,8 +24,8 @@ flavors_list = [1,2]
 def sample_pdf(n):
     x_pdf, data  = [], []
     m = math.floor(n/3)
-    for i in np.logspace(-3,-1,m): x_pdf.append(i)
-    for i in np.linspace(0.1,1,n-m): x_pdf.append(i)
+    for i in np.logspace(-3,-1,n-m): x_pdf.append(i)
+    for i in np.linspace(0.1,1,m): x_pdf.append(i)
     for x in x_pdf:
         row = []
         for fl in flavors_list:
@@ -42,9 +42,9 @@ pdf_data = pdf_dataX.reshape(length,)
 
 # Define parameters
 random_noise_dim = 100
-learning_rate = 0.001
-optimizer1 = RMSprop(lr=learning_rate)
-optimizer2 = Adadelta() 
+learning_rate = 0.01
+optimizer1 = SGD(lr=learning_rate)
+optimizer2 = SGD(lr=learning_rate)
 
 # Generator Architecture 
 Generator = Sequential([
