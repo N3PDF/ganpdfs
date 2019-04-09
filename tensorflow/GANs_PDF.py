@@ -56,12 +56,16 @@ def sample_noise(m, n):
     return np.random.uniform(0,1.,size=[m, n])
 
 # Define a function which sorts a multi-dimensional list wtr to the 1st row
-def sorting(lst):
+def sort_wrt_row(lst):
     new_lst = []
     ordering = lst[0].argsort()
     for i in range(len(lst)):
         new_lst.append(lst[i][ordering])
     return new_lst
+
+# Sort with respect to the 1s column
+def sort_wrt_col(lst):
+    return lst[lst[:,0].argsort()]     
 
 # Define the hidden layers 
 nb_points = 256
@@ -146,7 +150,7 @@ ng_steps   = 10
 
 # Fetch the real PDF in order to plot them
 x_plot  = sample_pdf(n=nb_points)
-# sx_plot = x_plot[x_plot[:,0].argsort()] 
+# sx_plot = [sort_wrt_col(xp) for xp in x_plot]
 
 f = open('loss.csv','w')
 f.write('Iteration,Discriminator Loss,Generator Loss\n')
@@ -157,7 +161,7 @@ col1 = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])for i 
 col2 = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])for i in range(data_shape)]
 def plot_generated_pdf(generator, noise, iteration, replicas, shape_data=data_shape, s=14, a=0.95):
     g_plot  = sess.run(generator, feed_dict={Z: noise})
-    # sg_plot = g_plot[g_plot[:,0].argsort()] 
+    # sg_plot = [sort_wrt_col(xg) for xg in g_plot]
 
     plt.figure()
     for r in range(replicas):
