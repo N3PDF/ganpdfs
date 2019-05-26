@@ -27,7 +27,7 @@ else:
 batch_count = int(pdf_dataX.shape[0]/batch_size)
 
 
-def hyper_params(params):
+def hyper_params(params, plot=False):
 
     K.clear_session()
 
@@ -67,9 +67,9 @@ def hyper_params(params):
     GAN.summary()
     
     # Set the number of training
-    number_training = 14000
+    number_training = 15000
     
-    # Number of steps to train G&D
+    # Number of steps to train each G&D
     nd_steps = 1
     ng_steps = 1
     
@@ -100,16 +100,16 @@ def hyper_params(params):
                 if not always_train_Discriminator:
                     Discriminator.trainable = False
                 gloss = GAN.train_on_batch(noise, y_gen)
+        if plot:
+            loss_info = "Iteration %d: \t .D loss: %f \t D acc: %f" % (k, dloss[0], dloss[1])
+            loss_info = "%s  \t .G loss: %f" % (loss_info, gloss)
     
-        # loss_info = "Iteration %d: \t .D loss: %f \t D acc: %f" % (k, dloss[0], dloss[1])
-        # loss_info = "%s  \t .G loss: %f" % (loss_info, gloss)
+            if k % 100 == 0:
+                print(loss_info)
+                f.write("%d,%f,%f,%f\n"%(k,dloss[0],dloss[1],gloss))
     
-        # if k % 100 == 0:
-        #     print(loss_info)
-        #     f.write("%d,%f,%f,%f\n"%(k,dloss[0],dloss[1],gloss))
-    
-        # if k % 1000==0:
-        #     plot_generated_pdf(x_pdf, pdf_dataX, random_noise_dim, k, Generator, always_train_Discriminator, pdf_repl=batch_size)
+            if k % 1000==0:
+                plot_generated_pdf(x_pdf, pdf_dataX, random_noise_dim, k, Generator, always_train_Discriminator, pdf_repl=batch_size)
 
     return {'loss': gloss, 'status': 'ok'}
     
@@ -122,7 +122,9 @@ params = {'g_nodes' : hyperopt.hp.choice('g_nodes', [128,256,512]),
           'gan_loss': hyperopt.hp.choice('gan_loss', ['mean_squared_error', 'binary_crossentropy']),
           'g_opt'   : hyperopt.hp.choice('g_opt', ['Adadelta', 'Adam', 'RMSprop']),
           'd_opt'   : hyperopt.hp.choice('d_opt', ['Adadelta', 'Adam', 'RMSprop']),
-          'gan_opt' : hyperopt.hp.choice('gan_opt', ['Adadelta', 'Adam', 'RMSprop'])}
+          'gan_opt' : hyperopt.hp.choice('gan_opt', ['Adadelta', 'Adam', 'RMSprop']),
+          'g_activ' : hyperopt.hp.choice('g_activ', ['relu', 'elu']),
+          'd_activ' : hyperopt.hp.choice('d_activ', ['relu', 'elu'])}
 
 trials = hyperopt.Trials()
 

@@ -41,14 +41,14 @@ def generator_model(noise_size, output_size, params):
     G_input = Input(shape=(noise_size,))
 
     # Construct the Model
-    G = Dense(params['g_nodes']//4)(G_input)
-    G = LeakyReLU(0.2)(G)
+    G = Dense(params['g_nodes']//4, activation=params['g_activ'])(G_input)
+    # G = LeakyReLU(0.2)(G)
 
     G = xlayer(params['g_nodes']//2)(G)
     G = LeakyReLU(0.2)(G)
 
-    G = Dense(params['g_nodes'])(G)
-    G = LeakyReLU(0.2)(G)
+    G = Dense(params['g_nodes'], activation=params['g_activ'])(G)
+    # G = LeakyReLU(0.2)(G)
 
     G_output = Dense(output_size, activation='sigmoid')(G)
     # G_output = Activation("tanh")(G_output)
@@ -64,14 +64,14 @@ def discriminator_model(GAN_size, params):
     D_input = Input(shape=(GAN_size,))
 
     # Construct the Model
-    D = Dense(params['d_nodes'])(D_input)
-    D = LeakyReLU(0.2)(D)
+    D = Dense(params['d_nodes'], activation=params['d_activ'])(D_input)
+    # D = LeakyReLU(0.2)(D)
 
-    D = Dense(params['d_nodes']//2)(D)
-    D = LeakyReLU(0.2)(D)
+    D = Dense(params['d_nodes']//2, activation=params['d_activ'])(D)
+    # D = LeakyReLU(0.2)(D)
     
-    D = Dense(params['d_nodes']//4)(D)
-    D = LeakyReLU(0.2)(D)
+    D = Dense(params['d_nodes']//4, activation=params['d_activ'])(D)
+    # D = LeakyReLU(0.2)(D)
     # D = Dropout(0.2)(D)
 
     D_output = Dense(1, activation='sigmoid')(D)
