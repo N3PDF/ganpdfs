@@ -1,0 +1,17 @@
+# Input data setup
+pdf: NNPDF31_nnlo_as_0118
+
+# GAN setup
+g_nodes: 128
+d_nodes: 128
+g_loss: mean_squared_error
+d_loss: mean_squared_error
+gan_loss: mean_squared_error
+g_activ: relu
+d_activ: relu
+
+# Optimizer setup
+g_opt: RMSprop
+d_opt: RMSprop
+gan_opt: RMSprop
+epochs: 15000

@@ -5,7 +5,7 @@ from keras.layers import Reshape, Conv2D, Flatten, BatchNormalization, LSTM, Act
 from keras.layers.advanced_activations import LeakyReLU
 from keras.layers import initializers
 import keras.backend as K
-from pdformat import x_pdf
+from ganpdfs.pdformat import x_pdf
 import pdb
 
 # Define a custom layer containing information about x

@@ -3,16 +3,7 @@ import math
 import numpy as np
 from random import sample
 
-# Get the PDF4LHC15 for test purpose and print some description
-pdf = lhapdf.getPDFSet("NNPDF31_nnlo_as_0118")
-print(pdf.description)
 nb_input_rep = 1
-if nb_input_rep == 1:
-    pdf_central = [pdf.mkPDF(0)] # Make sure to choose the Central Value for the time being
-else:
-    pdf_init = pdf.mkPDFs()
-    pdf_central = sample(pdf_init, nb_input_rep) # This will be updated as well
-size_member = len(pdf_central)
 
 # Define the scale
 Q_pdf = 1.7874388
@@ -24,11 +15,20 @@ x_nodes = "1.0000000e-09 1.2805087e-09 1.6397027e-09 2.0996536e-09 2.6886248e-09
 sx_nodes = x_nodes.split()
 x_pdf = np.array([float(x) for x in sx_nodes])
 
-# Define the list of flavors
-fl = 2 # Choose u-quark for testing purpose
-
 # Define a function which does the sampling
-def sample_pdf(n=len(x_pdf)):
+def sample_pdf(pdfname):
+
+    # Get the PDF4LHC15 for test purpose and print some description
+    if nb_input_rep == 1:
+        pdf_central = [lhapdf.mkPDF(pdfname, 0)] # Make sure to choose the Central Value for the time being
+    else:
+        pdf_init = lhapdf.mkPDFs(pdfname)
+        pdf_central = sample(pdf_init, nb_input_rep) # This will be updated as well
+    size_member = len(pdf_central)
+
+    # Define the list of flavors
+    fl = 2 # Choose u-quark for testing purpose
+
     data  = []
     for pdf in pdf_central:
         row = []
