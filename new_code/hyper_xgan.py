@@ -252,14 +252,15 @@ class xgan_train(object):
 X_PDF = np.load('x_grid.npy')
 NB_INPUT_REP = 1
 
-# Dictionary for activation funtions
-activ = {'leakyrelu': LeakyReLU(alpha=0.2), 'elu': ELU(alpha=1.0), 'relu': ReLU()}
 
-# Dictionary for optimization functions
-optmz = {'sgd': SGD(lr=0.01), 'rms': RMSprop(lr=0.001), 'adadelta': Adadelta(lr=1.0)}
 
 # Define the hyper parameter optimization function
 def hyper_train(params):
+    K.clear_session()
+    # Dictionary for activation funtions
+    activ = {'leakyrelu': LeakyReLU(alpha=0.2), 'elu': ELU(alpha=1.0), 'relu': ReLU()}
+    # Dictionary for optimization functions
+    optmz = {'sgd': SGD(lr=0.01), 'rms': RMSprop(lr=0.001), 'adadelta': Adadelta(lr=1.0)}
     xgan_pdfs = xgan_train(X_PDF, "NNPDF31_nnlo_as_0118", 100, params, activ, optmz, nb_replicas=NB_INPUT_REP)
     g_loss = xgan_pdfs.train(nb_training=14000, batch_size=1, nd_steps=2, ng_steps=3, verbose=False)
     return {'loss': g_loss, 'status': 'ok'}
