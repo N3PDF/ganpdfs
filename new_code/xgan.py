@@ -4,13 +4,12 @@ from keras import Model
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Input
 from keras.layers import Reshape, Conv2D, Flatten, BatchNormalization, LSTM, Activation, Layer
-from keras.layers.advanced_activations import LeakyReLU, ELU, ReLU
+from keras.layers.advanced_activations import LeakyReLU
 from keras.layers import initializers
-from keras.optimizers import Adam, RMSprop, SGD, Adadelta
+from keras.optimizers import Adam, RMSprop, SGD
 
 import pdb
 import lhapdf
-import hyperopt
 import numpy as np
 from random import sample
 import matplotlib.pyplot as plt
@@ -72,7 +71,7 @@ class xlayer(Layer):
 # Construct the Model
 class xgan_model(object):
 
-    def __init__(self, noise_size, output_size, x_pdf, params, activ, optmz):
+    def __init__(self, noise_size, output_size, x_pdf):
         self.noise_size  = noise_size
         self.output_size = output_size
         self.G = None
@@ -80,13 +79,9 @@ class xgan_model(object):
         self.G_M = None
         self.D_M = None
         self.GAN_M = None
+        self.g_nodes = 128
+        self.d_nodes = 256
         self.x_pdf = x_pdf
-
-        self.params = params
-        self.activ  = activ
-        self.optmz  = optmz
-        self.g_nodes = params['g_nodes']
-        self.d_nodes = params['d_nodes']
 
     def generator(self):
 
@@ -95,13 +90,13 @@ class xgan_model(object):
 
         # 1st hidden dense layer
         G_in = Dense(self.g_nodes//4)(G_input)
-        G_in = self.activ[self.params['g_act']](G_in)
+        G_in = LeakyReLU(alpha=0.2)(G_in)
         # 2nd hidden custom layer with x-grid
         G_in = xlayer(self.g_nodes//2, self.x_pdf)(G_in)
-        G_in = self.activ[self.params['g_act']](G_in)
+        G_in = LeakyReLU(alpha=0.2)(G_in)
         # 3rd hidden dense layer
         G_in = Dense(self.g_nodes)(G_in)
-        G_in = self.activ[self.params['g_act']](G_in)
+        G_in = LeakyReLU(alpha=0.2)(G_in)
         # Output layer
         G_output = Dense(self.output_size, activation='sigmoid')(G_in)
 
@@ -116,13 +111,13 @@ class xgan_model(object):
 
         # 1st hidden dense layer
         D_in = Dense(self.d_nodes)(D_input)
-        D_in = self.activ[self.params['d_act']](D_in)
+        D_in = LeakyReLU(alpha=0.2)(D_in)
         # 2nd hidden dense layer
         D_in = Dense(self.d_nodes//2)(D_in)
-        D_in = self.activ[self.params['d_act']](D_in)
+        D_in = LeakyReLU(alpha=0.2)(D_in)
         # 3rd hidden dense layer
         D_in = Dense(self.d_nodes//8)(D_in)
-        D_in = self.activ[self.params['d_act']](D_in)
+        D_in = LeakyReLU(alpha=0.2)(D_in)
 
         # Output 1 dimensional probability
         D_output = Dense(1, activation='sigmoid')(D_in)
@@ -133,11 +128,12 @@ class xgan_model(object):
 
     def generator_model(self):
 
-        gen_optimizer = self.optmz[self.params['g_opt']]
+        # gen_optimizer = RMSprop(lr=0.01)
+        gen_optimizer = SGD(lr=0.01)
 
         self.G_M = Sequential()
         self.G_M.add(self.generator())
-        self.G_M.compile(loss=self.params['g_loss'], optimizer=gen_optimizer,
+        self.G_M.compile(loss='binary_crossentropy', optimizer=gen_optimizer,
                         metrics=['accuracy'])
         self.G_M.name = 'Generator'
         self.G.summary()
@@ -146,11 +142,12 @@ class xgan_model(object):
 
     def discriminator_model(self):
 
-        disc_optimizer = self.optmz[self.params['d_opt']]
+        # disc_optimizer = RMSprop(lr=0.01)
+        disc_optimizer = SGD(lr=0.01)
 
         self.D_M = Sequential()
         self.D_M.add(self.discriminator())
-        self.D_M.compile(loss=self.params['d_loss'], optimizer=disc_optimizer,
+        self.D_M.compile(loss='binary_crossentropy', optimizer=disc_optimizer,
                         metrics=['accuracy'])
         self.D_M.name = 'Discriminator'
         self.D.summary()
@@ -159,17 +156,22 @@ class xgan_model(object):
 
     def gan_model(self):
 
-        gan_optimizer = self.optmz[self.params['gan_opt']]
+        # gan_optimizer = RMSprop(lr=0.01)
+        gan_optimizer = SGD(lr=0.01)
 
         Gan_input  = Input(shape=(self.noise_size,))
         Gan_latent = self.G_M(Gan_input)
         Gan_output = self.D_M(Gan_latent)
         self.GAN_M = Model(Gan_input, Gan_output)
 
+        # self.GAN_M = Sequential()
+        # self.GAN_M.add(self.generator())
+        # self.GAN_M.add(self.discriminator())
+
         self.D_M.trainable = False
 
         self.GAN_M.name = 'GAN'
-        self.GAN_M.compile(loss=self.params['gan_loss'], optimizer=gan_optimizer,
+        self.GAN_M.compile(loss='binary_crossentropy', optimizer=gan_optimizer,
                         metrics=['accuracy'])
         self.GAN_M.summary()
 
@@ -179,14 +181,15 @@ class xgan_model(object):
 # Do the training
 class xgan_train(object):
 
-    def __init__(self, x_pdf, pdf_name, noise_size, params, activ, optmz, nb_replicas=1, Q_value=1.7874388, flavors=2):
+    def __init__(self, x_pdf, pdf_name, noise_size, folder_name, nb_replicas=1, Q_value=1.7874388, flavors=2):
         self.sampled_pdf = input_pdfs(pdf_name, x_pdf, nb_replicas, Q_value, flavors).build_pdf()
         self.x_pdf = x_pdf
         self.nb_replicas = nb_replicas
         self.output_size = len(x_pdf)
         self.noise_size = noise_size
+        self.folder_name = folder_name
 
-        self.xgan_model = xgan_model(noise_size, self.output_size, x_pdf, params, activ, optmz)
+        self.xgan_model = xgan_model(noise_size, self.output_size, x_pdf)
         self.generator = self.xgan_model.generator_model()
         self.discriminator = self.xgan_model.discriminator_model()
         self.gan = self.xgan_model.gan_model()
@@ -201,10 +204,10 @@ class xgan_train(object):
             plt.plot(self.x_pdf, generated_pdf[i], color='red', alpha=0.75)
         plt.title('Samples at Iteration %d'%nth_training)
         plt.tight_layout()
-        plt.savefig('iterations/gan_generated_pdf_at_training_%d.png' % nth_training, dpi=250)
+        plt.savefig('%s/gan_generated_pdf_at_training_%d.png' % (self.folder_name, nth_training), dpi=250)
         plt.close()
 
-    def train(self, nb_training=20000, batch_size=4, nd_steps=6, ng_steps=1, verbose=False):
+    def train(self, nb_training=20000, batch_size=4, nd_steps=6, ng_steps=1, verbose=True):
 
         for k in range(1, nb_training+1):
             for _ in range(int(self.sampled_pdf.shape[0]/batch_size)):
@@ -244,48 +247,20 @@ class xgan_train(object):
                     if k % 1000 == 0:
                         self.plot_generated_pdf(k, self.nb_replicas)
 
-        return gloss[0]
-
 
 
 # Define global Variable
 X_PDF = np.load('x_grid.npy')
 NB_INPUT_REP = 1
-
-# Dictionary for activation funtions
-activ = {'leakyrelu': LeakyReLU(alpha=0.2), 'elu': ELU(alpha=1.0), 'relu': ReLU()}
-
-# Dictionary for optimization functions
-optmz = {'sgd': SGD(lr=0.01), 'rms': RMSprop(lr=0.001), 'adadelta': Adadelta(lr=1.0)}
-
-# Define the hyper parameter optimization function
-def hyper_train(params):
-    xgan_pdfs = xgan_train(X_PDF, "NNPDF31_nnlo_as_0118", 100, params, activ, optmz, nb_replicas=NB_INPUT_REP)
-    g_loss = xgan_pdfs.train(nb_training=14000, batch_size=1, nd_steps=2, ng_steps=3, verbose=False)
-    return {'loss': g_loss, 'status': 'ok'}
-
-# Define the hyper parameters
-hparams = {'g_nodes'  : hyperopt.hp.choice('g_nodes', [128,256,512]),
-           'd_nodes'  : hyperopt.hp.choice('d_nodes', [128,256,512,1024]),
-           'g_act'    : hyperopt.hp.choice('g_act', ['leakyrelu', 'elu', 'relu']),
-           'd_act'    : hyperopt.hp.choice('d_act', ['leakyrelu', 'elu', 'relu']),
-           'g_opt'    : hyperopt.hp.choice('g_opt', ['sgd', 'rms', 'adadelta']),
-           'd_opt'    : hyperopt.hp.choice('d_opt', ['sgd', 'rms', 'adadelta']),
-           'gan_opt'  : hyperopt.hp.choice('gan_opt', ['sgd', 'rms', 'adadelta']),
-           'g_loss'   : hyperopt.hp.choice('g_loss', ['binary_crossentropy','mean_squared_error']),
-           'd_loss'   : hyperopt.hp.choice('d_loss', ['binary_crossentropy','mean_squared_error']),
-           'gan_loss' : hyperopt.hp.choice('gan_loss', ['binary_crossentropy','mean_squared_error'])}
+FOLDER_NAME = "iteration_plots"
 
 if __name__ == '__main__':
 
-    # Hyper Scan
-    trials = hyperopt.Trials()
+    # Create the folder
+    if not os.path.exists(FOLDER_NAME):
+        os.mkdir(FOLDER_NAME)
+    else:
+        pass
 
-    hyper_result = hyperopt.fmin(
-                fn        = hyper_train,
-                space     = hparams,
-                algo      = hyperopt.tpe.suggest,
-                trials    = trials,
-                max_evals = 4)
-
-    print(hyper_result)
+    xgan_train = xgan_train(X_PDF, "NNPDF31_nnlo_as_0118", 100, FOLDER_NAME, nb_replicas=NB_INPUT_REP)
+    xgan_train.train(nb_training=14000, batch_size=1, nd_steps=2, ng_steps=3, verbose=True)
