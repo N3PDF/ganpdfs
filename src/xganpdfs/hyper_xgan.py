@@ -10,7 +10,6 @@ from keras.optimizers import Adam, RMSprop, SGD, Adadelta
 
 import pdb
 import lhapdf
-import hyperopt
 import numpy as np
 from random import sample
 import matplotlib.pyplot as plt
@@ -248,45 +247,44 @@ class xgan_train(object):
 
 
 
-# Define global Variable
-X_PDF = np.load('x_grid.npy')
-NB_INPUT_REP = 1
-
-
-
-# Define the hyper parameter optimization function
-def hyper_train(params):
-    K.clear_session()
-    # Dictionary for activation funtions
-    activ = {'leakyrelu': LeakyReLU(alpha=0.2), 'elu': ELU(alpha=1.0), 'relu': ReLU()}
-    # Dictionary for optimization functions
-    optmz = {'sgd': SGD(lr=0.01), 'rms': RMSprop(lr=0.001), 'adadelta': Adadelta(lr=1.0)}
-    xgan_pdfs = xgan_train(X_PDF, "NNPDF31_nnlo_as_0118", 100, params, activ, optmz, nb_replicas=NB_INPUT_REP)
-    g_loss = xgan_pdfs.train(nb_training=14000, batch_size=1, nd_steps=2, ng_steps=3, verbose=False)
-    return {'loss': g_loss, 'status': 'ok'}
-
-# Define the hyper parameters
-hparams = {'g_nodes'  : hyperopt.hp.choice('g_nodes', [128,256,512]),
-           'd_nodes'  : hyperopt.hp.choice('d_nodes', [128,256,512,1024]),
-           'g_act'    : hyperopt.hp.choice('g_act', ['leakyrelu', 'elu', 'relu']),
-           'd_act'    : hyperopt.hp.choice('d_act', ['leakyrelu', 'elu', 'relu']),
-           'g_opt'    : hyperopt.hp.choice('g_opt', ['sgd', 'rms', 'adadelta']),
-           'd_opt'    : hyperopt.hp.choice('d_opt', ['sgd', 'rms', 'adadelta']),
-           'gan_opt'  : hyperopt.hp.choice('gan_opt', ['sgd', 'rms', 'adadelta']),
-           'g_loss'   : hyperopt.hp.choice('g_loss', ['binary_crossentropy','mean_squared_error']),
-           'd_loss'   : hyperopt.hp.choice('d_loss', ['binary_crossentropy','mean_squared_error']),
-           'gan_loss' : hyperopt.hp.choice('gan_loss', ['binary_crossentropy','mean_squared_error'])}
-
-if __name__ == '__main__':
-
-    # Hyper Scan
-    trials = hyperopt.Trials()
-
-    hyper_result = hyperopt.fmin(
-                fn        = hyper_train,
-                space     = hparams,
-                algo      = hyperopt.tpe.suggest,
-                trials    = trials,
-                max_evals = 4)
-
-    print(hyper_result)
+# # Define global Variable
+# X_PDF = np.load('x_grid.npy')
+# NB_INPUT_REP = 1
+# 
+# # Dictionary for activation funtions
+# activ = {'leakyrelu': LeakyReLU(alpha=0.2), 'elu': ELU(alpha=1.0), 'relu': ReLU()}
+# 
+# # Dictionary for optimization functions
+# optmz = {'sgd': SGD(lr=0.01), 'rms': RMSprop(lr=0.001), 'adadelta': Adadelta(lr=1.0)}
+# 
+# # Define the hyper parameter optimization function
+# def hyper_train(params):
+#     xgan_pdfs = xgan_train(X_PDF, "NNPDF31_nnlo_as_0118", 100, params, activ, optmz, nb_replicas=NB_INPUT_REP)
+#     g_loss = xgan_pdfs.train(nb_training=14000, batch_size=1, nd_steps=2, ng_steps=3, verbose=False)
+#     return {'loss': g_loss, 'status': 'ok'}
+# 
+# # Define the hyper parameters
+# hparams = {'g_nodes'  : hyperopt.hp.choice('g_nodes', [128,256,512]),
+#            'd_nodes'  : hyperopt.hp.choice('d_nodes', [128,256,512,1024]),
+#            'g_act'    : hyperopt.hp.choice('g_act', ['leakyrelu', 'elu', 'relu']),
+#            'd_act'    : hyperopt.hp.choice('d_act', ['leakyrelu', 'elu', 'relu']),
+#            'g_opt'    : hyperopt.hp.choice('g_opt', ['sgd', 'rms', 'adadelta']),
+#            'd_opt'    : hyperopt.hp.choice('d_opt', ['sgd', 'rms', 'adadelta']),
+#            'gan_opt'  : hyperopt.hp.choice('gan_opt', ['sgd', 'rms', 'adadelta']),
+#            'g_loss'   : hyperopt.hp.choice('g_loss', ['binary_crossentropy','mean_squared_error']),
+#            'd_loss'   : hyperopt.hp.choice('d_loss', ['binary_crossentropy','mean_squared_error']),
+#            'gan_loss' : hyperopt.hp.choice('gan_loss', ['binary_crossentropy','mean_squared_error'])}
+# 
+# if __name__ == '__main__':
+# 
+#     # Hyper Scan
+#     trials = hyperopt.Trials()
+# 
+#     hyper_result = hyperopt.fmin(
+#                 fn        = hyper_train,
+#                 space     = hparams,
+#                 algo      = hyperopt.tpe.suggest,
+#                 trials    = trials,
+#                 max_evals = 4)
+# 
+#     print(hyper_result)

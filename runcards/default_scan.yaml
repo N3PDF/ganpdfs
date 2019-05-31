@@ -7,11 +7,11 @@ d_nodes: hp.choice('d_nodes', [128,256,512,1024])
 g_loss: hp.choice('g_loss', ['mean_squared_error', 'binary_crossentropy'])
 d_loss: hp.choice('d_loss', ['mean_squared_error', 'binary_crossentropy'])
 gan_loss: hp.choice('gan_loss', ['mean_squared_error', 'binary_crossentropy'])
-g_activ: hp.choice('g_activ', ['relu', 'elu'])
-d_activ: hp.choice('d_activ', ['relu', 'elu'])
+g_act: hp.choice('g_activ', ['leakyrelu', 'elu', 'relu'])
+d_act: hp.choice('d_activ', ['leakyrelu', 'elu', 'relu'])
 
 # Optimizer setup
-g_opt: hp.choice('g_opt', ['Adadelta', 'Adam', 'RMSprop'])
-d_opt: hp.choice('d_opt', ['Adadelta', 'Adam', 'RMSprop'])
-gan_opt: hp.choice('gan_opt', ['Adadelta', 'Adam', 'RMSprop'])
-epochs: 1000
+g_opt: hp.choice('g_opt', ['adadelta', 'sgd', 'rms'])
+d_opt: hp.choice('d_opt', ['adadelta', 'sgd', 'rms'])
+gan_opt: hp.choice('gan_opt', ['adadelta', 'sgd', 'rms'])
+epochs: 10000

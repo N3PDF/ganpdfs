@@ -2,16 +2,16 @@
 pdf: NNPDF31_nnlo_as_0118
 
 # GAN setup
-g_nodes: 128
-d_nodes: 128
+g_nodes: 256
+d_nodes: 256
 g_loss: mean_squared_error
 d_loss: mean_squared_error
 gan_loss: mean_squared_error
-g_activ: relu
-d_activ: relu
+g_act: relu
+d_act: leakyrelu
 
 # Optimizer setup
-g_opt: RMSprop
-d_opt: RMSprop
-gan_opt: RMSprop
+g_opt: sgd
+d_opt: sgd
+gan_opt: adadelta
 epochs: 15000

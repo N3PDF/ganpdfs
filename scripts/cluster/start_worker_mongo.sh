@@ -4,4 +4,4 @@ IP=hostname --ip-address
 PORT=1234
 workdir=`pwd`
 echo $IP:$PORT
-hyperopt-mongo-worker --mongo=$IP:$PORT/ganpdfs --workdir=$workdir
+hyperopt-mongo-worker --mongo=$IP:$PORT/xganpdfs --workdir=$workdir

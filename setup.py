@@ -11,7 +11,7 @@ if sys.version_info < (3,6):
 with open('README.md') as f:
     long_desc = f.read()
 
-setup(name= "ganpdfs",
+setup(name= "xganpdfs",
       version = '0.0.1',  
       description = "GAN models for PDFs",
       author = "",
@@ -19,7 +19,7 @@ setup(name= "ganpdfs",
       url="https://gitlab.cern.ch/N3PDF/ganpdfs",
       long_description = long_desc,
       entry_points = {'console_scripts':
-                      ['ganpdfs = ganpdfs.scripts.app:main',]},
+                      ['xganpdfs = xganpdfs.run:main',]},
       package_dir = {'': 'src'},
       packages = find_packages('src'),
       zip_safe = False,

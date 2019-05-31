@@ -1,0 +1,109 @@
+import hyperopt
+import numpy as np
+import argparse, shutil
+import keras.backend as K
+import yaml, os, pprint, time, pickle
+from xganpdfs.xgrid import xnodes
+from xganpdfs.hyper_xgan import xgan_train
+from hyperopt import fmin, tpe, hp, Trials, space_eval, STATUS_OK
+from hyperopt.mongoexp import MongoTrials
+from keras.layers.advanced_activations import LeakyReLU, ELU, ReLU
+from keras.optimizers import Adam, RMSprop, SGD, Adadelta
+
+
+#----------------------------------------------------------------------
+def run_hyperparameter_scan(search_space, max_evals, cluster, folder):
+    """Running hyperparameter scan using hyperopt"""
+
+    print('[+] Performing hyperparameter scan...')
+    if cluster:
+        trials = MongoTrials(cluster, exp_key='exp1')
+    else:
+        trials = Trials()
+    best = fmin(hyper_train, search_space, algo=tpe.suggest, 
+                max_evals=max_evals, trials=trials)
+    best_setup = space_eval(search_space, best)
+    print('\n[+] Best scan setup:')
+    pprint.pprint(best_setup)
+    with open('%s/best-model.yaml' % folder, 'w') as wfp:
+        yaml.dump(best_setup, wfp, default_flow_style=False)
+    log = '%s/hyperopt_log_{}.pickle'.format(time.time()) % folder
+    with open(log, 'wb') as wfp:
+        print(f'[+] Saving trials in {log}')
+        pickle.dump(trials.trials, wfp)
+    return best_setup
+
+
+#----------------------------------------------------------------------
+# Define the hyper parameter optimization function
+def hyper_train(params):
+    # Load the x_grid
+    X_PDF = xnodes().build_xgrid()
+    # Define the number of input replicas
+    NB_INPUT_REP = 1
+    # Clear Keras session
+    K.clear_session()
+    # Dictionary for activation funtions
+    activ = {'leakyrelu': LeakyReLU(alpha=0.2), 'elu': ELU(alpha=1.0), 'relu': ReLU()}
+    # Dictionary for optimization functions
+    optmz = {'sgd': SGD(lr=0.01), 'rms': RMSprop(lr=0.001), 'adadelta': Adadelta(lr=1.0)}
+    xgan_pdfs = xgan_train(X_PDF, params['pdf'], 100, params, activ, optmz, nb_replicas=NB_INPUT_REP)
+    g_loss = xgan_pdfs.train(nb_training=params['epochs'], batch_size=1, nd_steps=2, ng_steps=3, verbose=False)
+    return {'loss': g_loss, 'status': STATUS_OK} 
+
+
+#----------------------------------------------------------------------
+def load_yaml(runcard_file):
+    """Loads yaml runcard"""
+    with open(runcard_file, 'r') as stream:
+        runcard = yaml.load(stream)
+    for key, value in runcard.items():
+        if 'hp.' in str(value):
+            runcard[key] = eval(value)
+    return runcard
+
+
+#----------------------------------------------------------------------
+def main():
+    """Main controller"""
+    # read command line arguments
+    parser = argparse.ArgumentParser(description='Train a PDF GAN.')
+    parser.add_argument('runcard', action='store', default=None,
+                        help='A json file with the setup.')
+    parser.add_argument('--output', '-o', type=str, default=None,
+                        help='The output folder.', required=True)
+    parser.add_argument('--force', action='store_true')
+    parser.add_argument('--hyperopt', default=None, type=int,
+                        help='Enable hyperopt scan.')
+    parser.add_argument('--cluster', default=None, type=str, 
+                        help='Enable cluster scan.')
+    args = parser.parse_args()
+
+    # check input is coherent
+    if not os.path.isfile(args.runcard):
+        raise ValueError('Invalid runcard: not a file.')
+    if args.force:
+        print('WARNING: Running with --force option will overwrite existing model.')
+
+    # prepare the output folder
+    if not os.path.exists(args.output):
+        os.mkdir(args.output)
+    elif args.force:
+        shutil.rmtree(args.output)
+        os.mkdir(args.output)
+    else:
+        raise Exception(f'{args.output} already exists, use "--force" to overwrite.')
+    out = args.output.strip('/')
+
+    # copy runcard to output folder
+    shutil.copyfile(args.runcard, f'{out}/input-runcard.json')
+
+    print('[+] Loading runcard')
+    hps = load_yaml(args.runcard)
+
+    if args.hyperopt:
+        hps['scan'] = True
+        hps = run_hyperparameter_scan(hps, args.hyperopt, args.cluster, out)
+    hps['scan'] = False
+
+    loss = hyper_train(hps)

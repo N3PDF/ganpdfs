@@ -17,5 +17,5 @@ python setup.py develop
 ## Running the code
 
 ```
-ganpdfs <runcard> -o <output> [--force] [--hyperopt n] [--cluster url]
+xganpdfs <runcard> -o <output> [--force] [--hyperopt n] [--cluster url]
 ```
