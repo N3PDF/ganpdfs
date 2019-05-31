@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+import pandas as pd
 import pickle
 import argparse
 import matplotlib.pyplot as plt
 import pprint
-import pandas as pd
 import numpy as np
 import seaborn as sns
 
@@ -25,7 +25,7 @@ def build_dataframe(trials, bestid):
     bestdf = df[df['iteration'] == bestid['tid']]
     return df, bestdf
 
-def plot_scans(df, bestdf, trials, bestid, file):
+def plot_scans(df, bestdf, trials, bestid, filename):
     print('plotting scan results...')
     # plot loss
     nplots = len(trials[0]['misc']['vals'].keys())+1
@@ -51,20 +51,20 @@ def plot_scans(df, bestdf, trials, bestid, file):
         axs[p+1].set_xlabel(k)
         axs[p+1].scatter(bestdf.get(k), bestdf.get('loss'), color='orange')
 
-    plt.savefig(f'{file}', bbox_inches="tight")
+    plt.savefig("{0}".format(filename), bbox_inches='tight')
 
-def plot_correlations(df, file):
+def plot_correlations(df, filename):
     print('plotting correlations...')
     plt.figure(figsize=(20,20))
     sns.heatmap(df.corr(), mask=np.zeros_like(df.corr(), dtype=np.bool), cmap=sns.diverging_palette(220, 10, as_cmap=True),
             square=True, vmax=1, vmin=-1, annot=True, fmt=".2f")
-    plt.savefig(f'{file}', bbox_inches='tight')
+    plt.savefig("{0}".format(filename), bbox_inches='tight')
 
-def plot_pairs(df, file):
+def plot_pairs(df, filename):
     print('plotting pairs')
     plt.figure(figsize=(50,50))
     sns.pairplot(df)
-    plt.savefig(f'{file}', bbox_inches='tight')
+    plt.savefig("{0}".format(filename), bbox_inches='tight')
 
 #----------------------------------------------------------------------
 def main(args):
