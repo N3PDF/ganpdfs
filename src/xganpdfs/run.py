@@ -48,7 +48,7 @@ def hyper_train(params):
     # Dictionary for optimization functions
     optmz = {'sgd': SGD(lr=0.01), 'rms': RMSprop(lr=0.001), 'adadelta': Adadelta(lr=1.0)}
     xgan_pdfs = xgan_train(X_PDF, params['pdf'], 100, params, activ, optmz, nb_replicas=NB_INPUT_REP)
-    g_loss = xgan_pdfs.train(nb_training=params['epochs'], batch_size=1, nd_steps=2, ng_steps=3, verbose=False)
+    g_loss = xgan_pdfs.train(nb_training=params['epochs'], batch_size=1, nd_steps=2, ng_steps=3, verbose=params['verbose'])
     return {'loss': g_loss, 'status': STATUS_OK} 
 
 
@@ -77,6 +77,7 @@ def main():
                         help='Enable hyperopt scan.')
     parser.add_argument('--cluster', default=None, type=str, 
                         help='Enable cluster scan.')
+    parser.add_argument('--pplot', action='store_true')
     args = parser.parse_args()
 
     # check input is coherent
@@ -101,6 +102,13 @@ def main():
     print('[+] Loading runcard')
     hps = load_yaml(args.runcard)
 
+    # Set Verbosity
+    if args.pplot:
+        hps['verbose'] = True
+    else:
+        hps['verbose'] = False
+
+    # If hyperscan is set true
     if args.hyperopt:
         hps['scan'] = True
         hps = run_hyperparameter_scan(hps, args.hyperopt, args.cluster, out)

@@ -200,7 +200,7 @@ class xgan_train(object):
             plt.plot(self.x_pdf, generated_pdf[i], color='red', alpha=0.75)
         plt.title('Samples at Iteration %d'%nth_training)
         plt.tight_layout()
-        plt.savefig('iterations/gan_generated_pdf_at_training_%d.png' % nth_training, dpi=250)
+        plt.savefig('gan_generated_pdf_at_training_%d.png' % nth_training, dpi=250)
         plt.close()
 
     def train(self, nb_training=20000, batch_size=4, nd_steps=6, ng_steps=1, verbose=False):
