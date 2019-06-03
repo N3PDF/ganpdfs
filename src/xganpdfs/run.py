@@ -48,7 +48,7 @@ def hyper_train(params):
     # Dictionary for optimization functions
     optmz = {'sgd': SGD(lr=0.01), 'rms': RMSprop(lr=0.001), 'adadelta': Adadelta(lr=1.0)}
     xgan_pdfs = xgan_train(X_PDF, params['pdf'], 100, params, activ, optmz, nb_replicas=NB_INPUT_REP)
-    g_loss = xgan_pdfs.train(nb_training=params['epochs'], batch_size=1, nd_steps=2, ng_steps=3, verbose=params['verbose'])
+    g_loss = xgan_pdfs.train(nb_training=params['epochs'], batch_size=1, verbose=params['verbose'])
     return {'loss': g_loss, 'status': STATUS_OK} 
 
 
@@ -77,7 +77,8 @@ def main():
                         help='Enable hyperopt scan.')
     parser.add_argument('--cluster', default=None, type=str, 
                         help='Enable cluster scan.')
-    parser.add_argument('--pplot', action='store_true')
+    parser.add_argument('--pplot', default=None, type=int,
+                        help='Define the number of output replicas.')
     args = parser.parse_args()
 
     # check input is coherent
@@ -101,17 +102,24 @@ def main():
 
     print('[+] Loading runcard')
     hps = load_yaml(args.runcard)
+    hps['verbose'] = False
+    hps['save_output'] = out
 
-    # Set Verbosity
-    if args.pplot:
-        hps['verbose'] = True
+    # Check the number of output replicas
+    if args.pplot == None:
+        hps['out_replicas'] = 1
+    elif args.pplot > 0:
+        hps['out_replicas'] = args.pplot
     else:
-        hps['verbose'] = False
+        raise Exception(f'{args.pplot} must be a positive value.')
 
     # If hyperscan is set true
     if args.hyperopt:
         hps['scan'] = True
         hps = run_hyperparameter_scan(hps, args.hyperopt, args.cluster, out)
+
+    # Run the best Model and output log
     hps['scan'] = False
+    hps['verbose'] = True
 
     loss = hyper_train(hps)
