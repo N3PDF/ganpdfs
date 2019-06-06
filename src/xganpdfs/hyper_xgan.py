@@ -209,35 +209,40 @@ class xgan_train(object):
         plt.savefig('%s/iterations/pdf_generated_at_training_%d.png' %(folder,nth_training), dpi=250)
         plt.close()
 
-    def train(self, nb_training=20000, batch_size=4, verbose=False):
+    def sample_input_and_gen(self, batch_size):
+        pdf_index = np.random.choice(self.sampled_pdf.shape[0], batch_size, replace=False)
+        pdf_batch = self.sampled_pdf[pdf_index]
+        noise = np.random.normal(0,1,size=[batch_size, self.noise_size])
+        pdf_fake = self.generator.predict(noise)
+        xinput = np.concatenate([pdf_batch, pdf_fake])
+        y_disc = np.zeros(2*batch_size)
+        y_disc[:batch_size] = 1.0
+        return xinput, y_disc
+
+    def sample_output_noise(self, batch_size):
+        noise = np.random.normal(0,1,size=[batch_size,self.noise_size])
+        y_gen = np.ones(batch_size)
+        return noise, y_gen
+
+
+    def train(self, nb_training=20000, batch_size=1, verbose=False):
         f = open('%s/losses_info.csv' %self.params['save_output'],'w')
         f.write('Iter., Disc_Loss, Gen_Loss, Disc_acc, Gen_acc\n')
         for k in range(1, nb_training+1):
             for _ in range(int(self.sampled_pdf.shape[0]/batch_size)):
 
-                pdf_batch = self.sampled_pdf[np.random.randint(0, self.sampled_pdf.shape[0],
-                                            size=batch_size)]
-
                 # Train the Discriminator
+                # Make sure to train the Discriminator
+                self.discriminator.trainable = True
                 for _ in range(self.params['nd_steps']):
-                    noise = np.random.normal(0,1,size=[batch_size, self.noise_size])
-                    pdf_fake = self.generator.predict(noise)
-                    xinput = np.concatenate([pdf_batch, pdf_fake])
-
-                    y_disc = np.zeros(2*batch_size)
-                    y_disc[:batch_size] = 1.0
-
-                    # Make sure to train the Discriminator
-                    self.discriminator.trainable = True
+                    xinput, y_disc = self.sample_input_and_gen(batch_size)
                     dloss = self.discriminator.train_on_batch(xinput, y_disc)
 
                 # Train the GAN
+                # Make sure that the Discriminator is not trained
+                self.discriminator.trainable = False
                 for _ in range(self.params['ng_steps']):
-                    noise = np.random.normal(0,1,size=[batch_size,self.noise_size])
-                    y_gen = np.ones(batch_size)
-
-                    # Make sure that the Discriminator is not trained
-                    self.discriminator.trainable = False
+                    noise, y_gen = self.sample_output_noise(batch_size)
                     gloss = self.gan.train_on_batch(noise, y_gen)
 
                 if verbose:
@@ -245,7 +250,7 @@ class xgan_train(object):
                     if k % 100 == 0:
                         print ("Iterations: %d\t out of %d\t. Discriminator loss: %.4f\t Generator loss: %.4f"
                                 %(k, nb_training, dloss[0], gloss[0]))
-                        f.write("%d,\t%f,\t%f,\t%f,\t%f\n"%(k,dloss[0],gloss[0],dloss[1],gloss[1]))
+                        f.write("%d,\t%f,\t%f,\t%f,\t%f\n" % (k,dloss[0],gloss[0],dloss[1],gloss[1]))
 
                     if k % 1000 == 0:
                         self.plot_generated_pdf(k, self.params['out_replicas'], self.params['save_output'])

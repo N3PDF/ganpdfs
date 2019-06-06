@@ -40,7 +40,13 @@ def hyper_train(params):
     # Load the x_grid
     X_PDF = xnodes().build_xgrid()
     # Define the number of input replicas
-    NB_INPUT_REP = 1
+    NB_INPUT_REP = params['input_replicas']
+    # Define the number of batches
+    if NB_INPUT_REP < 5:
+        BATCH_SIZE = 1
+    else:
+        BATCH_SIZE = int(NB_INPUT_REP/5)
+
     # Clear Keras session
     K.clear_session()
     # Dictionary for activation funtions
@@ -48,7 +54,7 @@ def hyper_train(params):
     # Dictionary for optimization functions
     optmz = {'sgd': SGD(lr=0.01), 'rms': RMSprop(lr=0.001), 'adadelta': Adadelta(lr=1.0)}
     xgan_pdfs = xgan_train(X_PDF, params['pdf'], 100, params, activ, optmz, nb_replicas=NB_INPUT_REP)
-    g_loss = xgan_pdfs.train(nb_training=params['epochs'], batch_size=1, verbose=params['verbose'])
+    g_loss = xgan_pdfs.train(nb_training=params['epochs'], batch_size=BATCH_SIZE, verbose=params['verbose'])
     return {'loss': g_loss, 'status': STATUS_OK} 
 
 
@@ -79,6 +85,8 @@ def main():
                         help='Enable cluster scan.')
     parser.add_argument('--pplot', default=None, type=int,
                         help='Define the number of output replicas.')
+    parser.add_argument('--nreplicas', default=None, type=int,
+                        help='Define the number of output replicas.')
     args = parser.parse_args()
 
     # check input is coherent
@@ -105,13 +113,21 @@ def main():
     hps['verbose'] = False
     hps['save_output'] = out
 
-    # Check the number of output replicas
+    # Define the number of input replicas
+    if args.nreplicas == None:
+        hps['input_replicas'] = 1
+    elif args.nreplicas > 0 :
+        hps['input_replicas'] = args.nreplicas
+    else:
+        raise Exception(f'{args.nreplicas} must be a positive value!!!')
+
+    # Define the number of output replicas
     if args.pplot == None:
         hps['out_replicas'] = 1
     elif args.pplot > 0:
         hps['out_replicas'] = args.pplot
     else:
-        raise Exception(f'{args.pplot} must be a positive value.')
+        raise Exception(f'{args.pplot} must be a positive value!!!')
 
     # If hyperscan is set true
     if args.hyperopt:
