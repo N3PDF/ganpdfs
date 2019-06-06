@@ -83,9 +83,9 @@ def main():
                         help='Enable hyperopt scan.')
     parser.add_argument('--cluster', default=None, type=str, 
                         help='Enable cluster scan.')
-    parser.add_argument('--pplot', default=None, type=int,
-                        help='Define the number of output replicas.')
     parser.add_argument('--nreplicas', default=None, type=int,
+                        help='Define the number of input replicas.')
+    parser.add_argument('--pplot', default=None, type=int,
                         help='Define the number of output replicas.')
     args = parser.parse_args()
 
