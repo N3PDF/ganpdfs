@@ -201,9 +201,9 @@ class xgan_train(object):
 
         plt.figure()
         for i in range(self.sampled_pdf.shape[0]):
-            plt.plot(self.x_pdf, self.sampled_pdf[i], color='blue', alpha=0.75)
+            plt.plot(self.x_pdf, self.sampled_pdf[i], color='blue', alpha=0.45)
         for j in range(generated_pdf.shape[0]):
-            plt.plot(self.x_pdf, generated_pdf[j], color='red', alpha=0.75)
+            plt.plot(self.x_pdf, generated_pdf[j], color='red', alpha=0.45)
         plt.title('Samples at Iteration %d'%nth_training)
         plt.tight_layout()
         plt.savefig('%s/iterations/pdf_generated_at_training_%d.png' %(folder,nth_training), dpi=250)
@@ -223,6 +223,11 @@ class xgan_train(object):
         noise = np.random.normal(0,1,size=[batch_size,self.noise_size])
         y_gen = np.ones(batch_size)
         return noise, y_gen
+
+    def pretrain_disc(self, batch_size):
+        xinput, y_disc = self.sample_input_and_gen(batch_size)
+        self.discriminator.trainale = True
+        self.discriminator.fit(xinput, y_disc, epochs=4, batch_size=batch_size)
 
 
     def train(self, nb_training=20000, batch_size=1, verbose=False):
