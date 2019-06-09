@@ -123,7 +123,7 @@ def main():
 
     # Define the number of output replicas
     if args.pplot == None:
-        hps['out_replicas'] = 1
+        hps['out_replicas'] = hps['input_replicas']
     elif args.pplot > 0:
         hps['out_replicas'] = args.pplot
     else:
