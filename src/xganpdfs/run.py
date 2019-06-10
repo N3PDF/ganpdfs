@@ -53,7 +53,9 @@ def hyper_train(params):
     activ = {'leakyrelu': LeakyReLU(alpha=0.2), 'elu': ELU(alpha=1.0), 'relu': ReLU()}
     # Dictionary for optimization functions
     optmz = {'sgd': SGD(lr=0.01), 'rms': RMSprop(lr=0.001), 'adadelta': Adadelta(lr=1.0)}
-    xgan_pdfs = xgan_train(X_PDF, params['pdf'], 100, params, activ, optmz, nb_replicas=NB_INPUT_REP)
+    xgan_pdfs = xgan_train(X_PDF, params['pdf'], 100, params, activ, optmz, nb_replicas=NB_INPUT_REP, flavors=params['fl'])
+    # In case one needs to pretrain the Discriminator
+    # xgan_pdfs.pretrain_disc(BATCH_SIZE)
     g_loss = xgan_pdfs.train(nb_training=params['epochs'], batch_size=BATCH_SIZE, verbose=params['verbose'])
     return {'loss': g_loss, 'status': STATUS_OK} 
 
@@ -87,6 +89,8 @@ def main():
                         help='Define the number of input replicas.')
     parser.add_argument('--pplot', default=None, type=int,
                         help='Define the number of output replicas.')
+    parser.add_argument('--flavors', default=None, type=int,
+                        help='Choose the falvours.')
     args = parser.parse_args()
 
     # check input is coherent
@@ -128,6 +132,21 @@ def main():
         hps['out_replicas'] = args.pplot
     else:
         raise Exception(f'{args.pplot} must be a positive value!!!')
+
+    # Check the input flavor
+    if args.flavors == None:
+        hps['fl'] = 2       # Take the u quark as a default
+    elif args.flavors in [1,2,3,21]:
+        hps['fl'] = args.flavors
+    else:
+        raise Exception(f'{args.falvors} must be one of the particle IDs!!!')
+
+    # # Print the Summary
+    # print("""[*] Summary of the parameters: \n 
+    #         \t - Number of input replicas : %d \n
+    #         \t - Number of ouput replicas : %d \n
+    #         \t - Chosen flavor            : %d """
+    #         %(hps['input_replicas'], hps['out_replicas'], hps['fl']))
 
     # If hyperscan is set true
     if args.hyperopt:

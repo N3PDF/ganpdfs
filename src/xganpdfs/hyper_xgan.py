@@ -38,7 +38,10 @@ class input_pdfs(object):
         for pdf in pdf_central:
             row = []
             for x in self.x_pdf:
-                row.append(pdf.xfxQ2(self.flavors,x,self.Q_value)-pdf.xfxQ2(-self.flavors,x,self.Q_value))
+                if self.flavors == 3 or self.flavors == 21:
+                    row.append(pdf.xfxQ2(self.flavors,x,self.Q_value))
+                else:
+                    row.append(pdf.xfxQ2(self.flavors,x,self.Q_value)-pdf.xfxQ2(-self.flavors,x,self.Q_value))
             data.append(row)
         return np.array(data)
 
