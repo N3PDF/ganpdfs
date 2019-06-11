@@ -1,6 +1,6 @@
 #!/bin/bash
 
 IP=`hostname --ip-address`
-PORT=1234
+PORT=121817
 echo $IP:$PORT
 mongod --dbpath ./db --bind_ip $IP --port $PORT --noprealloc
