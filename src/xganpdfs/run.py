@@ -5,6 +5,7 @@ import keras.backend as K
 import yaml, os, pprint, time, pickle
 from xganpdfs.xgrid import xnodes
 from xganpdfs.hyper_xgan import xgan_train
+from xganpdfs.filetrials import FileTrials
 from hyperopt import fmin, tpe, hp, Trials, space_eval, STATUS_OK
 from hyperopt.mongoexp import MongoTrials
 from keras.layers.advanced_activations import LeakyReLU, ELU, ReLU
@@ -19,9 +20,14 @@ def run_hyperparameter_scan(search_space, max_evals, cluster, folder):
     if cluster:
         trials = MongoTrials(cluster, exp_key='exp1')
     else:
-        trials = Trials()
+        """
+        Use constum trials in order to save the model after each trials.
+        The following will generate a .json file containing the trials.
+        """
+        trials = FileTrials(folder, parameters=search_space)
     best = fmin(hyper_train, search_space, algo=tpe.suggest, 
                 max_evals=max_evals, trials=trials)
+    # Save the overall best model
     best_setup = space_eval(search_space, best)
     print('\n[+] Best scan setup:')
     pprint.pprint(best_setup)
