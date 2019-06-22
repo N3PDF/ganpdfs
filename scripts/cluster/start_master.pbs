@@ -8,4 +8,4 @@
 #PBS -l nodes=1:ppn=2,mem=5gb
 #PBS -l walltime=240:00:00
 
-xganpdfs runcards/default_scan.yaml -o hyper_1000 --hyperopt 1000 --nreplicas 50 --pplot 70 -cluster mongo://192.168.111.1:181217/xganpdfs/jobs
+xganpdfs runcards/default_scan.yaml -o hyper_test --hyperopt 1000 --nreplicas 25 --pplot 50 -cluster mongo://192.168.111.1:40000/xganpdfs/jobs
