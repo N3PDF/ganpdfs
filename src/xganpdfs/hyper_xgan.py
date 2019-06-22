@@ -253,15 +253,15 @@ class xgan_train(object):
                     noise, y_gen = self.sample_output_noise(batch_size)
                     gloss = self.gan.train_on_batch(noise, y_gen)
 
-                if verbose:
+            if verbose:
 
-                    if k % 100 == 0:
-                        print ("Iterations: %d\t out of %d\t. Discriminator loss: %.4f\t Generator loss: %.4f"
-                                %(k, nb_training, dloss[0], gloss[0]))
-                        f.write("%d,\t%f,\t%f,\t%f,\t%f\n" % (k,dloss[0],gloss[0],dloss[1],gloss[1]))
+                if k % 100 == 0:
+                    print ("Iterations: %d\t out of %d\t. Discriminator loss: %.4f\t Generator loss: %.4f"
+                            %(k, nb_training, dloss[0], gloss[0]))
+                    f.write("%d,\t%f,\t%f,\t%f,\t%f\n" % (k,dloss[0],gloss[0],dloss[1],gloss[1]))
 
-                    if k % 1000 == 0:
-                        self.plot_generated_pdf(k, self.params['out_replicas'], self.params['save_output'])
+                if k % 1000 == 0:
+                    self.plot_generated_pdf(k, self.params['out_replicas'], self.params['save_output'])
         f.close()
 
         return gloss[0]
