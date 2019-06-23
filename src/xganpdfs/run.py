@@ -14,7 +14,10 @@ from keras.optimizers import Adam, RMSprop, SGD, Adadelta
 
 #----------------------------------------------------------------------
 def run_hyperparameter_scan(search_space, max_evals, cluster, folder):
-    """Running hyperparameter scan using hyperopt"""
+
+    """
+    Running hyperparameter scan using hyperopt.
+    """
 
     print('[+] Performing hyperparameter scan...')
     if cluster:
@@ -25,7 +28,7 @@ def run_hyperparameter_scan(search_space, max_evals, cluster, folder):
         The following will generate a .json file containing the trials.
         """
         trials = FileTrials(folder, parameters=search_space)
-    best = fmin(hyper_train, search_space, algo=tpe.suggest, 
+    best = fmin(hyper_train, search_space, algo=tpe.suggest,
                 max_evals=max_evals, trials=trials)
     # Save the overall best model
     best_setup = space_eval(search_space, best)
@@ -41,8 +44,11 @@ def run_hyperparameter_scan(search_space, max_evals, cluster, folder):
 
 
 #----------------------------------------------------------------------
-# Define the hyper parameter optimization function
 def hyper_train(params):
+
+    """
+    Define the hyper parameters optimization function.
+    """
     # Load the x_grid
     X_PDF = xnodes().build_xgrid()
     # Define the number of input replicas
@@ -55,15 +61,17 @@ def hyper_train(params):
 
     # Clear Keras session
     K.clear_session()
-    # Dictionary for activation funtions
+    # List of activation funtions
     activ = {'leakyrelu': LeakyReLU(alpha=0.2), 'elu': ELU(alpha=1.0), 'relu': ReLU()}
-    # Dictionary for optimization functions
+    # List of optimization functions
     optmz = {'sgd': SGD(lr=0.01), 'rms': RMSprop(lr=0.001), 'adadelta': Adadelta(lr=1.0)}
     xgan_pdfs = xgan_train(X_PDF, params['pdf'], 100, params, activ, optmz, nb_replicas=NB_INPUT_REP, flavors=params['fl'])
+
     # In case one needs to pretrain the Discriminator
-    # xgan_pdfs.pretrain_disc(BATCH_SIZE)
+    # xgan_pdfs.pretrain_disc(BATCH_SIZE, epochs=4)
+
     g_loss = xgan_pdfs.train(nb_training=params['epochs'], batch_size=BATCH_SIZE, verbose=params['verbose'])
-    return {'loss': g_loss, 'status': STATUS_OK} 
+    return {'loss': g_loss, 'status': STATUS_OK}
 
 
 #----------------------------------------------------------------------
@@ -89,7 +97,7 @@ def main():
     parser.add_argument('--force', action='store_true')
     parser.add_argument('--hyperopt', default=None, type=int,
                         help='Enable hyperopt scan.')
-    parser.add_argument('--cluster', default=None, type=str, 
+    parser.add_argument('--cluster', default=None, type=str,
                         help='Enable cluster scan.')
     parser.add_argument('--nreplicas', default=None, type=int,
                         help='Define the number of input replicas.')
@@ -129,7 +137,7 @@ def main():
     elif args.nreplicas > 0 :
         hps['input_replicas'] = args.nreplicas
     else:
-        raise Exception(f'{args.nreplicas} must be a positive value!!!')
+        raise Exception(f'{args.nreplicas} not valid. Value must be positive!!!')
 
     # Define the number of output replicas
     if args.pplot == None:
@@ -137,7 +145,7 @@ def main():
     elif args.pplot > 0:
         hps['out_replicas'] = args.pplot
     else:
-        raise Exception(f'{args.pplot} must be a positive value!!!')
+        raise Exception(f'{args.pplot} not valid. Value must be positive!!!')
 
     # Check the input flavor
     if args.flavors == None:
@@ -145,10 +153,10 @@ def main():
     elif args.flavors in [1,2,3,21]:
         hps['fl'] = args.flavors
     else:
-        raise Exception(f'{args.falvors} must be one of the particle IDs!!!')
+        raise Exception(f'{args.falvors} not valid. Must be one of the particle IDs!!!')
 
-    # # Print the Summary
-    # print("""[*] Summary of the parameters: \n 
+    # # Print Summary
+    # print("""[*] Summary of the parameters: \n
     #         \t - Number of input replicas : %d \n
     #         \t - Number of ouput replicas : %d \n
     #         \t - Chosen flavor            : %d """

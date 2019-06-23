@@ -8,6 +8,9 @@ import numpy as np
 import seaborn as sns
 
 def build_dataframe(trials, bestid):
+    """
+    Frame the hyperscan result from the .pickle and .json file.
+    """
     data = {}
     data['iteration'] = [t['tid'] for t in trials]
     data['loss'] = [t['result']['loss'] for t in trials]
@@ -15,7 +18,6 @@ def build_dataframe(trials, bestid):
     for p, k in enumerate(trials[0]['misc']['vals'].keys()):
         data[k] = []
         for t in trials:
-            #pprint.pprint(t)
             try:
                 data[k].append(t['misc']['vals'][k][0])
             except:
@@ -26,6 +28,9 @@ def build_dataframe(trials, bestid):
     return df, bestdf
 
 def plot_scans(df, bestdf, trials, bestid, filename):
+    """
+    Plot the hyperscan result.
+    """
     print('plotting scan results...')
     # plot loss
     nplots = len(trials[0]['misc']['vals'].keys())+1
@@ -68,7 +73,9 @@ def plot_pairs(df, filename):
 
 #----------------------------------------------------------------------
 def main(args):
-    """Load trials and generate plots"""
+    """
+    Load trial files and generate plots
+    """
     with open(args.trials, 'rb') as f:
         input_trials = pickle.load(f)
 
@@ -99,7 +106,9 @@ def main(args):
 
 #----------------------------------------------------------------------
 if __name__ == "__main__":
-    """read command line arguments"""
+    """
+    Read command line arguments
+    """
     parser = argparse.ArgumentParser(description='Analyse hyperopt GANPDFs.')
     parser.add_argument('trials', help='Pickle file with trials.')
     args = parser.parse_args()

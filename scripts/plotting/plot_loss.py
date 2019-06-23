@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import csv
+import argparse
 import seaborn as sb
 import matplotlib.pyplot as plt
 sb.set_style("whitegrid")
 
-with open('losses_info.csv') as csv_file:
-    csv_reader = csv.reader(csv_file, delimiter=',')
+def read_csv(csv_reader):
     line_count = 0
     iteration, DisLoss, GenLoss = [], [], []
     for row in csv_reader:
@@ -17,13 +17,35 @@ with open('losses_info.csv') as csv_file:
             DisLoss.append(float(row[1]))
             GenLoss.append(float(row[2]))
             line_count += 1
+    return iteration, DisLoss, GenLoss
 
-plt.plot(iteration,DisLoss)
-plt.figure()
-dis = plt.plot(iteration,DisLoss)
-gen = plt.plot(iteration,GenLoss)
-plt.legend([dis[0],gen[0]], ("Discriminator Loss","Generator Loss"))
-plt.title('GANs Loss')
-plt.tight_layout()
-plt.savefig('losses.png', dpi=150)
-plt.close()
+def plot_losses(iteration, DisLoss, GenLoss):
+    plt.figure()
+    dis = plt.plot(iteration,DisLoss)
+    gen = plt.plot(iteration,GenLoss)
+    plt.legend([dis[0],gen[0]], ("Discriminator Loss","Generator Loss"))
+    plt.title('GANs Loss')
+    plt.tight_layout()
+    plt.savefig('losses.png', dpi=150)
+    plt.close()
+
+def main(args):
+    """
+    Load the loss file and plot the results.
+    """
+    # Open the .csv file
+    with open(args.losses) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        iteration, DisLoss, GenLoss = read_csv(csv_reader)
+
+    # Plot the losses
+    plot_losses(iteration, DisLoss, GenLoss)
+
+if __name__ == "__main__":
+    """
+    Read command line arguments.
+    """
+    parser = argparse.ArgumentParser(description='Analyse GANPDFs losses.')
+    parser.add_argument('losses', help='Take as input a .csv file with loss values.')
+    args = parser.parse_args()
+    main(args)

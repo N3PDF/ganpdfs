@@ -14,8 +14,13 @@ import numpy as np
 from random import sample
 import matplotlib.pyplot as plt
 
-# Format the input PDFs
 class input_pdfs(object):
+
+    """
+    This formats the input replicas.
+    It returns a multi-dimensional array with shape
+    (nb_flavors, nb_pdf_members, xgrid_size)
+    """
 
     def __init__(self, pdf_name, x_pdf, nb_replicas, Q_value, flavors):
         self.x_pdf    = x_pdf
@@ -26,14 +31,15 @@ class input_pdfs(object):
 
     def build_pdf(self):
 
-        # Get the PDF4LHC15 for test purpose and print some description
+        # Take n samples from the whole members
         if self.nb_replicas == 1:
+            # Take the central replicas as the default
             pdf_central = [lhapdf.mkPDF(self.pdf_name, 0)]
         else:
             pdf_init = lhapdf.mkPDFs(self.pdf_name)
             pdf_central = sample(pdf_init, self.nb_replicas)
 
-        # Format the input PDFs
+        # Generate the array
         data  = []
         for pdf in pdf_central:
             row = []
@@ -45,8 +51,11 @@ class input_pdfs(object):
             data.append(row)
         return np.array(data)
 
-# Define a custom layer containing information about x
 class xlayer(Layer):
+
+    """
+    Custom array that inputs the information on the x-grid.
+    """
 
     def __init__(self, output_dim, xval, kernel_initializer='glorot_uniform', **kwargs):
         self.output_dim = output_dim
@@ -71,8 +80,15 @@ class xlayer(Layer):
         return (input_shape[0], self.output_dim)
 
 
-# Construct the Model
 class xgan_model(object):
+
+    """
+    Generative Adversarial Neural Network Model.
+    * Discriminator::Learn the features of the true data and
+    and check whether or not the generated data ressembles to the true.
+    * Generator::Learn to generate fake data by tricking the Discriminator.
+    * GAN::Do the adversarial training.
+    """
 
     def __init__(self, noise_size, output_size, x_pdf, params, activ, optmz):
         self.noise_size  = noise_size
@@ -178,8 +194,11 @@ class xgan_model(object):
         return self.GAN_M
 
 
-# Do the training
 class xgan_train(object):
+
+    """
+    Train the model and plot the result.
+    """
 
     def __init__(self, x_pdf, pdf_name, noise_size, params, activ, optmz, nb_replicas=1, Q_value=1.7874388, flavors=2):
         self.sampled_pdf = input_pdfs(pdf_name, x_pdf, nb_replicas, Q_value, flavors).build_pdf()
@@ -227,10 +246,10 @@ class xgan_train(object):
         y_gen = np.ones(batch_size)
         return noise, y_gen
 
-    def pretrain_disc(self, batch_size):
+    def pretrain_disc(self, batch_size, epochs=4):
         xinput, y_disc = self.sample_input_and_gen(batch_size)
         self.discriminator.trainale = True
-        self.discriminator.fit(xinput, y_disc, epochs=4, batch_size=batch_size)
+        self.discriminator.fit(xinput, y_disc, epochs=epochs, batch_size=batch_size)
 
 
     def train(self, nb_training=20000, batch_size=1, verbose=False):
