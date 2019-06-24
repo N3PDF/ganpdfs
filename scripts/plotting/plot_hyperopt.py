@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import pandas as pd
+import json
 import pickle
 import argparse
 import matplotlib.pyplot as plt
@@ -77,7 +78,12 @@ def main(args):
     Load trial files and generate plots
     """
     with open(args.trials, 'rb') as f:
-        input_trials = pickle.load(f)
+        if ".json" in args.trials:
+            input_trials = json.load(f)
+        elif ".pickle" in args.trials:
+            input_trials = pickle.load(f)
+        else:
+            raise Exception ('The file is not in the correct format!')
 
     print('Filtering bad scans...')
     trials = []
@@ -110,6 +116,6 @@ if __name__ == "__main__":
     Read command line arguments
     """
     parser = argparse.ArgumentParser(description='Analyse hyperopt GANPDFs.')
-    parser.add_argument('trials', help='Pickle file with trials.')
+    parser.add_argument('trials', help='Take as input a .pickle or .json file with trials.')
     args = parser.parse_args()
     main(args)
