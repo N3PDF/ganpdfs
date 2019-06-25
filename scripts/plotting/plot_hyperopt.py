@@ -3,6 +3,7 @@ import pandas as pd
 import json
 import pickle
 import argparse
+import yaml, os
 import matplotlib.pyplot as plt
 import pprint
 import numpy as np
@@ -25,7 +26,6 @@ def build_dataframe(trials, bestid):
                 data[k].append(None)
 
     df = pd.DataFrame(data)
-    df.to_excel(r'hyper_scan.xlsx', index=None, header=True)
     bestdf = df[df['iteration'] == bestid['tid']]
     return df, bestdf
 
@@ -73,6 +73,23 @@ def plot_pairs(df, filename):
     sns.pairplot(df)
     plt.savefig("{0}".format(filename), bbox_inches='tight')
 
+def get_model_with_loss(trials, loss):
+    count = 0
+    folder = "losses_model"
+    os.mkdir(folder)
+    for ls in trials:
+        if ls['result']['loss'] <= loss:
+            # Remove undesired keys
+            ls['misc']['space_vals'].pop('scan', None)
+            ls['misc']['space_vals'].pop('fl', None)
+            ls['misc']['space_vals'].pop('input_replicas', None)
+            ls['misc']['space_vals'].pop('out_replicas', None)
+            ls['misc']['space_vals'].pop('save_output', None)
+            ls['misc']['space_vals'].pop('verbose', None)
+            with open('{0}/loss-model_{1}.yaml'.format(folder, count), 'w') as wfp:
+                yaml.dump(ls['misc']['space_vals'], wfp, default_flow_style=False)
+        count += 1
+
 #----------------------------------------------------------------------
 def main(args):
     """
@@ -101,6 +118,10 @@ def main(args):
 
     # compute dataframe
     df, bestdf = build_dataframe(trials, bestid)
+
+
+    # Get models with particular loss values
+    get_model_with_loss(trials, 0.0)
 
     # plot scans
     plot_scans(df, bestdf, trials, bestid, f'{args.trials}_scan.png')
