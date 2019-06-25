@@ -25,6 +25,7 @@ def build_dataframe(trials, bestid):
                 data[k].append(None)
 
     df = pd.DataFrame(data)
+    df.to_excel(r'hyper_scan.xlsx', index=None, header=True)
     bestdf = df[df['iteration'] == bestid['tid']]
     return df, bestdf
 
