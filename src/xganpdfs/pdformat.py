@@ -1,6 +1,12 @@
+import lhapdf
 import numpy as np
+from random import sample
 
 class xnodes(object):
+
+    """
+    Construct the x-grid as in NNPDF
+    """
 
     def __init__(self):
         self.x_nodes = [1.0000000e-09, 1.2805087e-09, 1.6397027e-09, 2.0996536e-09, 2.6886248e-09,
@@ -38,3 +44,41 @@ class xnodes(object):
     def build_xgrid(self):
         x_grid = np.array(self.x_nodes)
         return x_grid
+
+
+class input_pdfs(object):
+
+    """
+    This formats the input replicas.
+    It returns a multi-dimensional array with shape
+    (nb_flavors, nb_pdf_members, xgrid_size)
+    """
+
+    def __init__(self, pdf_name, x_pdf, nb_replicas, Q_value, flavors):
+        self.x_pdf    = x_pdf
+        self.Q_value  = Q_value
+        self.pdf_name = pdf_name
+        self.flavors  = flavors
+        self.nb_replicas = nb_replicas
+
+    def build_pdf(self):
+
+        # Take n samples from the whole members
+        if self.nb_replicas == 1:
+            # Take the central replicas as the default
+            pdf_central = [lhapdf.mkPDF(self.pdf_name, 0)]
+        else:
+            pdf_init = lhapdf.mkPDFs(self.pdf_name)
+            pdf_central = sample(pdf_init, self.nb_replicas)
+
+        # Generate the array
+        data  = []
+        for pdf in pdf_central:
+            row = []
+            for x in self.x_pdf:
+                if self.flavors == 3 or self.flavors == 21:
+                    row.append(pdf.xfxQ2(self.flavors,x,self.Q_value))
+                else:
+                    row.append(pdf.xfxQ2(self.flavors,x,self.Q_value)-pdf.xfxQ2(-self.flavors,x,self.Q_value))
+            data.append(row)
+        return np.array(data)

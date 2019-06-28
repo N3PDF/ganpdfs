@@ -3,7 +3,7 @@ import numpy as np
 import argparse, shutil
 import keras.backend as K
 import yaml, os, pprint, time, pickle
-from xganpdfs.xgrid import xnodes
+from xganpdfs.pdformat import xnodes
 from xganpdfs.hyper_xgan import xgan_train
 from xganpdfs.filetrials import FileTrials
 from hyperopt import fmin, tpe, hp, Trials, space_eval, STATUS_OK
