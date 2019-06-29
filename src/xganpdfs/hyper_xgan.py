@@ -21,11 +21,7 @@ class xgan_train(object):
         self.output_size = len(x_pdf)
         self.noise_size = noise_size
         self.params = params
-
         self.xgan_model = dc_xgan_model(noise_size, self.output_size, x_pdf, params, activ, optmz)
-        # self.xgan_model.generator = self.xgan_model.generator()
-        # self.xgan_model.discriminator = self.xgan_model.discriminator()
-        # self.xgan_model.gan = self.xgan_model.gan()
 
     def plot_generated_pdf(self, nth_training, nrep, folder):
         if not os.path.exists('%s/iterations' % folder):
@@ -68,7 +64,7 @@ class xgan_train(object):
 
     def train(self, nb_training=20000, batch_size=1, verbose=False):
         f = open('%s/losses_info.csv' %self.params['save_output'],'w')
-        f.write('Iter., Disc_Loss, Gen_Loss, Disc_acc, Gen_acc\n')
+        f.write('Iter., Disc_Loss, Gen_Loss, Disc_acc\n')
         for k in range(1, nb_training+1):
             for _ in range(int(self.sampled_pdf.shape[0]/batch_size)):
 
@@ -90,11 +86,11 @@ class xgan_train(object):
 
                 if k % 100 == 0:
                     print ("Iterations: %d\t out of %d\t. Discriminator loss: %.4f\t Generator loss: %.4f"
-                            %(k, nb_training, dloss[0], gloss[0]))
-                    f.write("%d,\t%f,\t%f,\t%f,\t%f\n" % (k,dloss[0],gloss[0],dloss[1],gloss[1]))
+                            %(k, nb_training, dloss[0], gloss))
+                    f.write("%d,\t%f,\t%f,\t%f\n" % (k,dloss[0],gloss,dloss[1]))
 
                 if k % 1000 == 0:
                     self.plot_generated_pdf(k, self.params['out_replicas'], self.params['save_output'])
         f.close()
 
-        return gloss[0]
+        return gloss

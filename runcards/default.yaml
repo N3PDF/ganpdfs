@@ -2,20 +2,20 @@
 pdf: NNPDF31_nnlo_as_0118
 
 # GAN setup
-g_nodes  : 256
-d_nodes  : 256
+g_nodes  : 1024
+d_nodes  : 512
 g_loss   : mean_squared_error
 d_loss   : mean_squared_error
 gan_loss : mean_squared_error
-g_act    : relu
+g_act    : leakyrelu
 d_act    : leakyrelu
 
 # Optimizer setup
 g_opt    : sgd
 d_opt    : sgd
-gan_opt  : adadelta
-epochs   : 15000
+gan_opt  : sgd
+epochs   : 30000
 
 # Intermediate steps to train D&GAN
 nd_steps : 2
-ng_steps : 3
+ng_steps : 4

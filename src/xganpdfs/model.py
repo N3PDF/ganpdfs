@@ -145,13 +145,13 @@ class dc_xgan_model(object):
         G_input = Input(shape=(noise_size,))
 
         # Construct the models
-        self.discriminator = self.disc_build()
+        self.discriminator = self.discriminator_model()
         self.discriminator.compile(loss=self.params['d_loss'], optimizer=disc_optimizer,
                              metrics=['accuracy'])
-        self.generator = self.gen_build()
+        self.generator = self.generator_model()
 
         # Generate fake PDFs
-        fake = self.G_model(G_input)
+        fake = self.generator(G_input)
 
         """
         Set Discriminator training to be false.
@@ -165,7 +165,7 @@ class dc_xgan_model(object):
         # GAN/Combined model
         gan_optimizer = self.optmz[self.params['gan_opt']]
         self.gan = Model(G_input, validity)
-        self.gan.combined(loss=params['gan_loss'], optimizer=gan_optimizer)
+        self.gan.compile(loss=params['gan_loss'], optimizer=gan_optimizer)
 
     def generator_model(self):
 
@@ -173,15 +173,16 @@ class dc_xgan_model(object):
 
         model.add(Dense(self.g_nodes//4, input_dim=self.noise_size))
         model.add(self.activ[self.params['g_act']])
-        model.add(BatchNormalization(momentum=0.8))
-        model.add(self.g_nodes//2)
-        model.add(LeakyReLU(alpha=0.2))
-        model.add(BatchNormalization(momentum=0.8))
-        model.add(self.g_nodes)
-        model.add(LeakyReLU(alpha=0.2))
-        model.add(BatchNormalization(momentum=0.8))
-        model.add(Dense(self.g_nodes*2, activation='tanh'))
-        model.add(Reshape(self.output_size))
+        # model.add(BatchNormalization(momentum=0.8))
+        model.add(Dense(self.g_nodes//2))
+        model.add(self.activ[self.params['g_act']])
+        # model.add(BatchNormalization(momentum=0.8))
+        model.add(Dense(self.g_nodes))
+        model.add(self.activ[self.params['g_act']])
+        # model.add(BatchNormalization(momentum=0.8))
+        model.add(Dense(self.g_nodes*2))
+        model.add(self.activ[self.params['g_act']])
+        model.add(Dense(self.output_size))
 
         model.summary()
 
@@ -194,15 +195,15 @@ class dc_xgan_model(object):
 
         model = Sequential()
 
-        model.add(Flatten(input_shape=self.output_size))
-        model.add(self.d_nodes)
+        # model.add(Flatten(input_shape=self.output_size))
+        model.add(Dense(self.d_nodes, input_dim=self.output_size))
         model.add(self.activ[self.params['d_act']])
-        model.add(self.d_nodes//2)
+        model.add(Dense(self.d_nodes//2))
         model.add(self.activ[self.params['g_act']])
         model.add(Dense(1, activation='sigmoid'))
         model.summary()
 
-        img = Input(shape=self.output_size)
+        img = Input(shape=(self.output_size,))
         validity = model(img)
 
         return Model(img, validity)
