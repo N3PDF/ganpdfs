@@ -1,3 +1,4 @@
+import tensorflow as  tf
 from keras import Model
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Input
@@ -144,10 +145,20 @@ class dc_xgan_model(object):
         disc_optimizer = self.optmz[self.params['d_opt']]
         G_input = Input(shape=(noise_size,))
 
+        # Timeline save
+        if params['timeline']:
+            self.options  = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+            self.metadata = tf.RunMetadata()
+        else:
+            self.options  = None
+            self.metadata = None
+
         # Construct the models
         self.discriminator = self.discriminator_model()
+        # self.discriminator.compile(loss=self.params['d_loss'], optimizer=disc_optimizer, 
+        #         options=self.options, run_metadata=self.metadata, metrics=['accuracy'])
         self.discriminator.compile(loss=self.params['d_loss'], optimizer=disc_optimizer,
-                             metrics=['accuracy'])
+                                    metrics=['accuracy'])
         self.generator = self.generator_model()
 
         # Generate fake PDFs
@@ -161,11 +172,13 @@ class dc_xgan_model(object):
 
         # Discriminator takes the fake PDFs and determines its validity
         validity = self.discriminator(fake)
-
+        
         # GAN/Combined model
         gan_optimizer = self.optmz[self.params['gan_opt']]
         self.gan = Model(G_input, validity)
-        self.gan.compile(loss=params['gan_loss'], optimizer=gan_optimizer)
+        self.gan.compile(loss=params['gan_loss'], optimizer=gan_optimizer, 
+                metrics=['accuracy'], options=self.options, run_metadata=self.metadata)
+
 
     def generator_model(self):
 

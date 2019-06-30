@@ -1,5 +1,6 @@
 from __future__ import division
 
+import numpy as np
 import keras.backend as K
 from keras.layers import Layer
 from keras.layers import initializers
@@ -32,3 +33,24 @@ class xlayer(Layer):
 
     def compute_output_shape(self, input_shape):
         return (input_shape[0], self.output_dim)
+
+class xmetrics(object):
+    """
+    Custom metrics in order to assess the performance of the model.
+    """
+
+    def __init__(self, y_true, y_pred):
+        self.y_true = y_true
+        self.y_pred = y_pred
+
+    def kullback(self):
+        """
+        Kullback-Leibler divergence D(P || Q) for discrete distributions.
+        For each value of p and q:
+        \sum_{i}^{n} p_i*\log(p_i/q_i)
+        """
+        arr = np.where(y_true!=0, y_true*np.log(y_true/y_pred), 0)
+        val = np.sum(arr)
+
+        return K.variable(val)
+
