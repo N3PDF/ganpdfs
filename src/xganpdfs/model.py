@@ -155,7 +155,7 @@ class dc_xgan_model(object):
 
         # Construct the models
         self.discriminator = self.discriminator_model()
-        # self.discriminator.compile(loss=self.params['d_loss'], optimizer=disc_optimizer, 
+        # self.discriminator.compile(loss=self.params['d_loss'], optimizer=disc_optimizer,
         #         options=self.options, run_metadata=self.metadata, metrics=['accuracy'])
         self.discriminator.compile(loss=self.params['d_loss'], optimizer=disc_optimizer,
                                     metrics=['accuracy'])
@@ -172,11 +172,11 @@ class dc_xgan_model(object):
 
         # Discriminator takes the fake PDFs and determines its validity
         validity = self.discriminator(fake)
-        
+
         # GAN/Combined model
         gan_optimizer = self.optmz[self.params['gan_opt']]
         self.gan = Model(G_input, validity)
-        self.gan.compile(loss=params['gan_loss'], optimizer=gan_optimizer, 
+        self.gan.compile(loss=params['gan_loss'], optimizer=gan_optimizer,
                 metrics=['accuracy'], options=self.options, run_metadata=self.metadata)
 
 

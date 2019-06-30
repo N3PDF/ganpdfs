@@ -128,4 +128,4 @@ class xgan_train(object):
         self.run_timeline.save('test.json')
         f.close()
 
-        return gloss
+        return gloss[0]
