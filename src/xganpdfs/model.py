@@ -1,8 +1,8 @@
 import tensorflow as  tf
 from keras import Model
 from keras.models import Sequential
-from xganpdfs.custom import xlayer, xmetrics
 from keras.layers import Dense, Dropout, Input
+from xganpdfs.custom import xlayer, xmetrics, preprocessing
 from keras.layers import Reshape, Conv2D, Flatten, BatchNormalization, LSTM, Activation
 from keras.layers.advanced_activations import LeakyReLU, ELU, ReLU
 from keras.optimizers import Adam, RMSprop, SGD, Adadelta
@@ -58,6 +58,8 @@ class vanilla_xgan_model(object):
         G_in = self.activ[self.params['g_act']](G_in)
         # Output layer
         G_output = Dense(self.output_size, activation='sigmoid')(G_in)
+        # xpreproc = preprocessing(self.x_pdf, 0.2, 6)
+        # G_output = K.multitply([G_output, xpreproc.compute()])
 
         self.G = Model(G_input, G_output)
 
