@@ -2,7 +2,7 @@ import os, sys
 import json, tempfile
 import numpy as np
 import matplotlib.pyplot as plt
-from xganpdfs.custom import xlayer
+from xganpdfs.custom import xmetrics
 from xganpdfs.pdformat import input_pdfs
 from xganpdfs.model import dc_xgan_model
 from xganpdfs.model import vanilla_xgan_model
@@ -84,6 +84,11 @@ class xgan_train(object):
         self.xgan_model.discriminator.trainable = True
         self.xgan_model.discriminator.fit(xinput, y_disc, epochs=epochs, batch_size=batch_size)
 
+    def test_model(self, nrep):
+        noise = np.random.normal(0, 1, size=[nrep, self.noise_size])
+        generated_pdf = self.xgan_model.generator.predict(noise)
+        # First test for one input Replicas only
+        return xmetrics(self.sampled_pdf, generated_pdf).kullback()
 
     def train(self, nb_training=20000, batch_size=1, verbose=False):
         f = open('%s/losses_info.csv' %self.params['save_output'],'w')
@@ -104,6 +109,9 @@ class xgan_train(object):
                 for _ in range(self.params['ng_steps']):
                     noise, y_gen = self.sample_output_noise(batch_size)
                     gloss = self.xgan_model.gan.train_on_batch(noise, y_gen)
+
+            # # Evaluate the performance
+            # smi = self.test_model(self.params['out_replicas'])
 
             # timeline save
             if self.xgan_model.options is not None:

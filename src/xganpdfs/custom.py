@@ -49,7 +49,7 @@ class xmetrics(object):
         For each value of p and q:
         \sum_{i}^{n} p_i*\log(p_i/q_i)
         """
-        arr = np.where(y_true!=0, y_true*np.log(y_true/y_pred), 0)
+        arr = np.where(self.y_true!=0, self.y_true*np.log(self.y_true/self.y_pred), 0)
         val = np.sum(arr)
 
         return K.variable(val)

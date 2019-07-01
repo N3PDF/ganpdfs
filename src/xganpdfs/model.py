@@ -1,7 +1,7 @@
 import tensorflow as  tf
 from keras import Model
-from xganpdfs.custom import xlayer
 from keras.models import Sequential
+from xganpdfs.custom import xlayer, xmetrics
 from keras.layers import Dense, Dropout, Input
 from keras.layers import Reshape, Conv2D, Flatten, BatchNormalization, LSTM, Activation
 from keras.layers.advanced_activations import LeakyReLU, ELU, ReLU
