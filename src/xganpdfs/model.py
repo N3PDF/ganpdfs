@@ -1,5 +1,6 @@
 import tensorflow as  tf
 from keras import Model
+from xganpdfs.custom import xlayer
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Input
 from keras.layers import Reshape, Conv2D, Flatten, BatchNormalization, LSTM, Activation
@@ -32,6 +33,11 @@ class vanilla_xgan_model(object):
         self.optmz   = optmz
         self.g_nodes = params['g_nodes']
         self.d_nodes = params['d_nodes']
+        self.options = None
+
+        self.generator     = self.generator_model()
+        self.discriminator = self.discriminator_model()
+        self.gan           = self.gan_model()
 
     def generator(self):
 
@@ -46,6 +52,9 @@ class vanilla_xgan_model(object):
         G_in = self.activ[self.params['g_act']](G_in)
         # 3rd hidden dense layer
         G_in = Dense(self.g_nodes)(G_in)
+        G_in = self.activ[self.params['g_act']](G_in)
+        # 4th hidden dense layer
+        G_in = Dense(self.g_nodes*2)(G_in)
         G_in = self.activ[self.params['g_act']](G_in)
         # Output layer
         G_output = Dense(self.output_size, activation='sigmoid')(G_in)
@@ -65,9 +74,9 @@ class vanilla_xgan_model(object):
         # 2nd hidden dense layer
         D_in = Dense(self.d_nodes//2)(D_in)
         D_in = self.activ[self.params['d_act']](D_in)
-        # 3rd hidden dense layer
-        D_in = Dense(self.d_nodes//8)(D_in)
-        D_in = self.activ[self.params['d_act']](D_in)
+        # # 3rd hidden dense layer
+        # D_in = Dense(self.d_nodes//8)(D_in)
+        # D_in = self.activ[self.params['d_act']](D_in)
 
         # Output 1 dimensional probability
         D_output = Dense(1, activation='sigmoid')(D_in)
@@ -212,7 +221,7 @@ class dc_xgan_model(object):
         model.add(Dense(self.d_nodes, input_dim=self.output_size))
         model.add(self.activ[self.params['d_act']])
         model.add(Dense(self.d_nodes//2))
-        model.add(self.activ[self.params['g_act']])
+        model.add(self.activ[self.params['d_act']])
         model.add(Dense(1, activation='sigmoid'))
         model.summary()
 
