@@ -35,20 +35,24 @@ class xlayer(Layer):
         return (input_shape[0], self.output_dim)
 
 
-class preprocessing(object):
+class preprocessing(Layer):
 
     """
     Custom array that does the preprocessing.
     """
 
-    def __init__(self, xval, alpha, beta):
+    def __init__(self, xval, alpha, beta, **kwargs):
         self.xval  = xval
         self.alpha = alpha
         self.beta  = beta
+        super().__init__(**kwargs)
 
-    def compute(self):
-        xres = self.xval**alpha * (1-self.xval)**beta
-        return K.constant(xres)
+    def compute_output_shape(self, x):
+        return x
+    
+    def call(self, pdf):
+        xres = self.xval**self.alpha * (1-self.xval)**self.beta
+        return pdf*xres
 
 
 class xmetrics(object):
