@@ -2,7 +2,7 @@ import tensorflow as  tf
 from keras import Model
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Input
-from xganpdfs.custom import xlayer, xmetrics, preprocessing
+from xganpdfs.custom import xlayer, xmetrics, preprocessing_fit
 from keras.layers import Reshape, Conv2D, Flatten, BatchNormalization, LSTM, Activation
 from keras.layers.advanced_activations import LeakyReLU, ELU, ReLU
 from keras.optimizers import Adam, RMSprop, SGD, Adadelta
@@ -41,13 +41,13 @@ class vanilla_xgan_model(object):
         #---------------------------#
         disc_optimizer = self.optmz[params['d_opt']]
         self.discriminator = self.discriminator_model()
-        self.discriminator.compile(loss=params['d_loss'], 
+        self.discriminator.compile(loss=params['d_loss'],
                 optimizer=disc_optimizer, metrics=['accuracy'])
         self.discriminator.name = 'Discriminator'
         self.discriminator.summary()
 
         #---------------------------#
-        #         GENERATOR         # 
+        #         GENERATOR         #
         #---------------------------#
         G_input = Input(shape=(noise_size,))
         self.generator = self.generator_model()
@@ -93,7 +93,7 @@ class vanilla_xgan_model(object):
         # Compute the actual PDF
         G_5l = Dense(self.output_size, activation='sigmoid')(G_4a)
         # Output layer with preprocessing
-        G_output = preprocessing(self.x_pdf, 0.2, 6)(G_5l)
+        G_output = preprocessing_fit(self.x_pdf)(G_5l)
 
         return Model(G_input, G_output)
 
@@ -152,13 +152,13 @@ class dc_xgan_model(object):
         disc_optimizer = self.optmz[params['d_opt']]
         self.discriminator = self.discriminator_model()
         # self.discriminator.compile(loss=params['d_loss'], optimizer=disc_optimizer,
-        #         metrics=['accuracy'], options=self.options, 
+        #         metrics=['accuracy'], options=self.options,
         #         run_metadata=self.metadata, metrics=['accuracy'])
         self.discriminator.compile(loss=params['d_loss'], optimizer=disc_optimizer,
                                     metrics=['accuracy'])
 
         #---------------------------#
-        #         GENERATOR         # 
+        #         GENERATOR         #
         #---------------------------#
         G_input = Input(shape=(noise_size,))
         self.generator = self.generator_model()
@@ -176,8 +176,8 @@ class dc_xgan_model(object):
 
         gan_optimizer = self.optmz[self.params['gan_opt']]
         self.gan = Model(G_input, validity)
-        self.gan.compile(loss=params['gan_loss'], optimizer=gan_optimizer, 
-                metrics=['accuracy'], options=self.options, 
+        self.gan.compile(loss=params['gan_loss'], optimizer=gan_optimizer,
+                metrics=['accuracy'], options=self.options,
                 run_metadata=self.metadata)
 
 

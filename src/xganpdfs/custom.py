@@ -49,9 +49,36 @@ class preprocessing(Layer):
 
     def compute_output_shape(self, x):
         return x
-    
+
     def call(self, pdf):
         xres = self.xval**self.alpha * (1-self.xval)**self.beta
+        return pdf*xres
+
+
+class preprocessing_fit(Layer):
+
+    """
+    Custom array that does the preprocessing.
+    Here, the parameters are fitted.
+    """
+
+    def __init__(self, xval, trainable=True, kernel_initializer='ones', **kwargs):
+        self.xval = xval
+        self.trainable = trainable
+        self.kernel_initializer = initializers.get(kernel_initializer)
+        super(preprocessing_fit, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        self.kernel = self.add_weight(name='kernel', shape=(2,),
+                initializer=self.kernel_initializer,
+                trainable=self.trainable)
+        super(preprocessing_fit, self).build(input_shape)
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
+    def call(self, pdf):
+        xres = self.xval**self.kernel[0] * (1-self.xval)**self.kernel[1]
         return pdf*xres
 
 
@@ -74,4 +101,3 @@ class xmetrics(object):
         val = np.sum(arr)
 
         return K.variable(val)
-
