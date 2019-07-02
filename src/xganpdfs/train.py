@@ -92,7 +92,7 @@ class xgan_train(object):
 
     def train(self, nb_training=20000, batch_size=1, verbose=False):
         f = open('%s/losses_info.csv' %self.params['save_output'],'w')
-        f.write('Iter., Disc_Loss, Gen_Loss, Disc_acc, Gen_acc\n')
+        f.write('Iter., Disc_Loss, Gen_Loss, Disc_acc, Gen_acc, KL_div\n')
         for k in range(1, nb_training+1):
             for _ in range(int(self.sampled_pdf.shape[0]/batch_size)):
 

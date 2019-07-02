@@ -1,5 +1,5 @@
 # Input data setup
-pdf: NNPDF31_nnlo_as_0118
+pdf: NNPDF31_nnlo_as_0118_1000
 
 # GAN setup
 g_nodes  : 1024

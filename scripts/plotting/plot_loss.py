@@ -7,7 +7,8 @@ sb.set_style("whitegrid")
 
 def read_csv(csv_reader):
     line_count = 0
-    iteration, DisLoss, GenLoss = [], [], []
+    iteration, DisLoss = [], []
+    GenLoss, KL_valu   = [], []
     for row in csv_reader:
         if line_count == 0:
             pass
@@ -16,11 +17,11 @@ def read_csv(csv_reader):
             iteration.append(float(row[0]))
             DisLoss.append(float(row[1]))
             GenLoss.append(float(row[2]))
-            KL_valu.append(float(row[3]))
+            KL_valu.append(float(row[5]))
             line_count += 1
-    return iteration, DisLoss, GenLoss
+    return iteration, DisLoss, GenLoss, KL_valu
 
-def plot_losses(iteration, DisLoss, GenLoss):
+def plot_losses(iteration, DisLoss, GenLoss, KL_valu):
 
     # plot the losses
     plt.figure()
@@ -36,6 +37,7 @@ def plot_losses(iteration, DisLoss, GenLoss):
     plt.figure()
     kl = plt.plot(iteration,KL_valu)
     plt.title('KL Divergence')
+    plt.ylim([-2,2])
     plt.tight_layout()
     plt.savefig('KL.png', dpi=150)
     plt.close()
@@ -47,10 +49,10 @@ def main(args):
     # Open the .csv file
     with open(args.losses) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
-        iteration, DisLoss, GenLoss = read_csv(csv_reader)
+        iteration, DisLoss, GenLoss, KL_valu = read_csv(csv_reader)
 
     # Plot the losses
-    plot_losses(iteration, DisLoss, GenLoss)
+    plot_losses(iteration, DisLoss, GenLoss, KL_valu)
 
 if __name__ == "__main__":
     """
