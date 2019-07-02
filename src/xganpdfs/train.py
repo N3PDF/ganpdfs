@@ -110,8 +110,8 @@ class xgan_train(object):
                     noise, y_gen = self.sample_output_noise(batch_size)
                     gloss = self.xgan_model.gan.train_on_batch(noise, y_gen)
 
-            # # Evaluate the performance
-            # smi = self.test_model(self.params['out_replicas'])
+            # Evaluate performance using KL divergence
+            KL = self.test_model(self.params['out_replicas'])
 
             # timeline save
             if self.xgan_model.options is not None:
@@ -122,9 +122,9 @@ class xgan_train(object):
             if verbose:
 
                 if k % 100 == 0:
-                    print ("Iterations: %d\t out of %d\t. Discriminator loss: %.4f\t Generator loss: %.4f"
-                            %(k, nb_training, dloss[0], gloss[0]))
-                    f.write("%d,\t%f,\t%f,\t%f,\t%f\n" % (k,dloss[0],gloss[0],dloss[1],gloss[1]))
+                    print ("Iter: {} out of {} . Disc loss: {:6f} Gen loss: {:6f} . KL: {:6f}"
+                            .format(k, nb_training, dloss[0], gloss[0], KL))
+                    f.write("{0}, \t{1}, \t{2}, \t{3}, \t{4}, \t{5}\n".format(k,dloss[0],gloss[0],dloss[1],gloss[1],KL))
 
                 if k % 1000 == 0:
                     self.plot_generated_pdf(k, self.params['out_replicas'], self.params['save_output'])
@@ -132,4 +132,4 @@ class xgan_train(object):
         self.run_timeline.save('test.json')
         f.close()
 
-        return gloss[0]
+        return KL

@@ -88,8 +88,9 @@ class xmetrics(object):
     """
 
     def __init__(self, y_true, y_pred):
-        self.y_true = y_true
-        self.y_pred = y_pred
+        epsilon = 1e-3
+        self.y_true = y_true + epsilon
+        self.y_pred = y_pred + epsilon
 
     def kullback(self):
         """
@@ -100,4 +101,4 @@ class xmetrics(object):
         arr = np.where(self.y_true!=0, self.y_true*np.log(self.y_true/self.y_pred), 0)
         val = np.sum(arr)
 
-        return K.variable(val)
+        return val

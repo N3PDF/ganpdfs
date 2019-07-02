@@ -16,10 +16,13 @@ def read_csv(csv_reader):
             iteration.append(float(row[0]))
             DisLoss.append(float(row[1]))
             GenLoss.append(float(row[2]))
+            KL_valu.append(float(row[3]))
             line_count += 1
     return iteration, DisLoss, GenLoss
 
 def plot_losses(iteration, DisLoss, GenLoss):
+
+    # plot the losses
     plt.figure()
     dis = plt.plot(iteration,DisLoss)
     gen = plt.plot(iteration,GenLoss)
@@ -27,6 +30,14 @@ def plot_losses(iteration, DisLoss, GenLoss):
     plt.title('GANs Loss')
     plt.tight_layout()
     plt.savefig('losses.png', dpi=150)
+    plt.close()
+
+    # plot the KL divergence
+    plt.figure()
+    kl = plt.plot(iteration,KL_valu)
+    plt.title('KL Divergence')
+    plt.tight_layout()
+    plt.savefig('KL.png', dpi=150)
     plt.close()
 
 def main(args):
