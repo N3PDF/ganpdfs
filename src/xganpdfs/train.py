@@ -44,7 +44,7 @@ class xgan_train(object):
         self.noise_size = noise_size
         self.params = params
         self.run_timeline = TimeLiner()
-        self.xgan_model = dc_xgan_model(noise_size, self.output_size, x_pdf, params, activ, optmz)
+        self.xgan_model = vanilla_xgan_model(noise_size, self.output_size, x_pdf, params, activ, optmz)
 
     def plot_generated_pdf(self, nth_training, nrep, folder):
         if not os.path.exists('%s/iterations' % folder):
