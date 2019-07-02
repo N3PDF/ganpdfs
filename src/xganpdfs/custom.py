@@ -98,7 +98,10 @@ class xmetrics(object):
         For each value of p and q:
         \sum_{i}^{n} p_i*\log(p_i/q_i)
         """
-        arr = np.where(self.y_true!=0, self.y_true*np.log(self.y_true/self.y_pred), 0)
-        val = np.sum(arr)
-
-        return val
+        val = []
+        for i in range(self.y_true.shape[0]):
+            arr = np.where(self.y_true[i]!=0,
+                    self.y_true[i]*np.log(self.y_true[i]/self.y_pred[i]), 0)
+            val.append(np.sum(arr))
+        res = np.array(val)
+        return res, np.mean(res)

@@ -111,7 +111,7 @@ class xgan_train(object):
                     gloss = self.xgan_model.gan.train_on_batch(noise, y_gen)
 
             # Evaluate performance using KL divergence
-            KL = self.test_model(self.params['out_replicas'])
+            _, KL = self.test_model(self.params['out_replicas'])
 
             # timeline save
             if self.xgan_model.options is not None:
