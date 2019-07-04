@@ -88,11 +88,11 @@ class xgan_train(object):
         noise = np.random.normal(0, 1, size=[nrep, self.noise_size])
         generated_pdf = self.xgan_model.generator.predict(noise)
         # First test for one input Replicas only
-        return xmetrics(self.sampled_pdf, generated_pdf).kullback()
+        return xmetrics(self.sampled_pdf, generated_pdf).euclidean()
 
     def train(self, nb_training=20000, batch_size=1, verbose=False):
         f = open('%s/losses_info.csv' %self.params['save_output'],'w')
-        f.write('Iter., Disc_Loss, Gen_Loss, Disc_acc, Gen_acc, KL_div\n')
+        f.write('Iter., Disc_Loss, Gen_Loss, Disc_acc, Gen_acc, metric\n')
         for k in range(1, nb_training+1):
             for _ in range(int(self.sampled_pdf.shape[0]/batch_size)):
 
@@ -111,7 +111,7 @@ class xgan_train(object):
                     gloss = self.xgan_model.gan.train_on_batch(noise, y_gen)
 
             # Evaluate performance using KL divergence
-            _, KL = self.test_model(self.params['out_replicas'])
+            metric = self.test_model(self.params['out_replicas'])
 
             # timeline save
             if self.xgan_model.options is not None:
@@ -122,9 +122,9 @@ class xgan_train(object):
             if verbose:
 
                 if k % 100 == 0:
-                    print ("Iter: {} out of {} . Disc loss: {:6f} Gen loss: {:6f} . KL: {:6f}"
-                            .format(k, nb_training, dloss[0], gloss[0], KL))
-                    f.write("{0}, \t{1}, \t{2}, \t{3}, \t{4}, \t{5}\n".format(k,dloss[0],gloss[0],dloss[1],gloss[1],KL))
+                    print ("Iter: {} out of {} . Disc loss: {:6f} . Gen loss: {:6f} . metric: {:6f}"
+                            .format(k, nb_training, dloss[0], gloss[0], metric))
+                    f.write("{0}, \t{1}, \t{2}, \t{3}, \t{4}, \t{5}\n".format(k,dloss[0],gloss[0],dloss[1],gloss[1],metric))
 
                 if k % 1000 == 0:
                     self.plot_generated_pdf(k, self.params['out_replicas'], self.params['save_output'])
@@ -132,4 +132,4 @@ class xgan_train(object):
         self.run_timeline.save('test.json')
         f.close()
 
-        return KL
+        return metric

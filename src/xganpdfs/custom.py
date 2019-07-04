@@ -105,3 +105,12 @@ class xmetrics(object):
             val.append(np.sum(arr))
         res = np.array(val)
         return res, np.mean(res)
+
+    def euclidean(self):
+        """
+        Compute the Euclidean distance between two lists A and B.
+        euc = \sum_{i}^{n} (A_i-B_i)^2.
+        If A and B are the same, euc=0.
+        """
+        res = np.linalg.norm(self.y_true - self.y_pred)
+        return res
