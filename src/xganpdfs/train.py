@@ -1,12 +1,13 @@
 import os, sys
-import json, tempfile
 import numpy as np
+import json, tempfile
+from scipy import stats
 import matplotlib.pyplot as plt
+from keras.models import Sequential
 from xganpdfs.custom import xmetrics
 from xganpdfs.pdformat import input_pdfs
 from xganpdfs.model import dc_xgan_model
 from xganpdfs.model import vanilla_xgan_model
-from keras.models import Sequential
 from tensorflow.python.client import timeline
 
 
@@ -54,15 +55,41 @@ class xgan_train(object):
         noise = np.random.normal(0, 1, size=[nrep, self.noise_size])
         generated_pdf = self.xgan_model.generator.predict(noise)
 
-        plt.figure()
+        grid_size = (4,4)
+        xv = [64, 69, 72, 75]
+
+        nfake_bins = 15
+        # ntrue_bins = (nfake_bins*self.sampled_pdf.shape[0])//generated_pdf.shape[0]
+        ntrue_bins = nfake_bins
+
+        fig = plt.figure(figsize=(11,14))
+        main  = plt.subplot2grid(grid_size, (0,0), colspan=2, rowspan=2)
+        hist1 = plt.subplot2grid(grid_size, (0,2))
+        hist2 = plt.subplot2grid(grid_size, (0,3))
+        hist3 = plt.subplot2grid(grid_size, (1,2))
+        hist4 = plt.subplot2grid(grid_size, (1,3))
+
+        l = [hist1, hist2, hist3, hist4]
+
         for i in range(self.sampled_pdf.shape[0]):
-            plt.plot(self.x_pdf, self.sampled_pdf[i], color='blue', alpha=0.45)
+            main.plot(self.x_pdf, self.sampled_pdf[i], color='deeppink', alpha=0.45)
         for j in range(generated_pdf.shape[0]):
-            plt.plot(self.x_pdf, generated_pdf[j], color='red', alpha=0.45)
-        plt.title('Samples at Iteration %d'%nth_training)
-        plt.tight_layout()
-        plt.savefig('%s/iterations/pdf_generated_at_training_%d.png' %(folder,nth_training), dpi=250)
-        plt.close()
+            main.plot(self.x_pdf, generated_pdf[j], color='dodgerblue', alpha=0.45)
+
+        for x, position in zip(xv, l):
+            true_hist = np.array([repl[x] for repl in self.sampled_pdf])
+            fake_hist = np.array([repl[x] for repl in generated_pdf])
+            position.hist(true_hist, histtype='stepfilled', bins=15,
+                            color="deeppink", alpha=0.65, label="true", density=True)
+            position.hist(fake_hist, histtype='stepfilled', bins=15,
+                            color="dodgerblue", alpha=0.65, label="fake", density=True)
+
+        fig.suptitle('Samples at Iteration %d'%nth_training, y=0.98)
+        fig.tight_layout()
+        fig.savefig('%s/iterations/pdf_generated_at_training_%d.png' %(folder,nth_training), dpi=250,
+                bbox_inches = 'tight', pad_inches = 0.2)
+        fig.legend()
+        # fig.close()
 
     def sample_input_and_gen(self, batch_size):
         pdf_index = np.random.choice(self.sampled_pdf.shape[0], batch_size, replace=False)
@@ -110,8 +137,9 @@ class xgan_train(object):
                     noise, y_gen = self.sample_output_noise(batch_size)
                     gloss = self.xgan_model.gan.train_on_batch(noise, y_gen)
 
-            # Evaluate performance using KL divergence
-            metric = self.test_model(self.params['out_replicas'])
+            # # Evaluate performance using KL divergence
+            # metric = self.test_model(self.params['out_replicas'])
+            metric = gloss[0]
 
             # timeline save
             if self.xgan_model.options is not None:
