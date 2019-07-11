@@ -83,6 +83,8 @@ class xgan_train(object):
                             color="deeppink", alpha=0.65, label="true", density=True)
             position.hist(fake_hist, histtype='stepfilled', bins=15,
                             color="dodgerblue", alpha=0.65, label="fake", density=True)
+        main.set_xscale('log')
+        # main.set_yscale('log')
 
         fig.suptitle('Samples at Iteration %d'%nth_training, y=0.98)
         fig.tight_layout()
