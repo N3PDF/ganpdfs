@@ -28,7 +28,7 @@ def plot_losses(iteration, DisLoss, GenLoss, KL_valu):
     plt.figure()
     dis = plt.plot(iteration,DisLoss)
     gen = plt.plot(iteration,GenLoss)
-    plt.legend([dis[0],gen[0]], ("Discriminator Loss","Generator Loss"))
+    plt.legend([dis[0],gen[0]], ("Generator Loss","Discriminator Loss"))
     plt.title('GANs Loss')
     plt.tight_layout()
     plt.savefig('losses.png', dpi=150)
