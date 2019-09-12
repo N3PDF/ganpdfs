@@ -5,7 +5,11 @@ from xganpdfs.hyperscan import run_hyperparameter_scan
 
 
 def main():
-    """Main controller"""
+    """
+    This is the Main controller.
+    It controlls the input parameters.
+    """
+
     # read command line arguments
     parser = argparse.ArgumentParser(description='Train a PDF GAN.')
     parser.add_argument('runcard', action='store', default=None,
@@ -23,10 +27,10 @@ def main():
                         help='Define the number of output replicas.')
     parser.add_argument('--flavors', default=None, type=int,
                         help='Choose the falvours.')
-    parser.add_argument('--timeline', action='store_true')
+    # parser.add_argument('--timeline', action='store_true')
     args = parser.parse_args()
 
-    # check input is coherent
+    # check the runcard
     if not os.path.isfile(args.runcard):
         raise ValueError('Invalid runcard: not a file.')
     if args.force:
@@ -68,14 +72,14 @@ def main():
 
     # Check the input flavor
     if args.flavors == None:
-        hps['fl'] = 2       # Take the u quark as a default
+        hps['fl'] = 1       # Take the u quark as a default
     elif args.flavors in [1,2,3,21]:
         hps['fl'] = args.flavors
     else:
         raise Exception(f'{args.falvors} not valid. Must be one of the particle IDs!!!')
 
-    # Save timeline
-    hps['timeline'] = args.timeline
+    # # Save timeline
+    # hps['timeline'] = args.timeline
 
     # If hyperscan is set true
     if args.hyperopt:
