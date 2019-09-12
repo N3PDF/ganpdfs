@@ -2,9 +2,9 @@ import hyperopt
 import numpy as np
 import keras.backend as K
 import yaml, time, pickle
-from xganpdfs.pdformat import xnodes
-from xganpdfs.train import xgan_train
-from xganpdfs.filetrials import FileTrials
+from wganpdfs.pdformat import xnodes
+from wganpdfs.train import xgan_train
+from wganpdfs.filetrials import FileTrials
 from hyperopt import fmin, tpe, hp, Trials, space_eval, STATUS_OK
 from hyperopt.mongoexp import MongoTrials
 from keras.layers.advanced_activations import LeakyReLU, ELU, ReLU
@@ -73,7 +73,7 @@ def hyper_train(params):
     # List of activation funtions
     activ = {'leakyrelu': LeakyReLU(alpha=0.2), 'elu': ELU(alpha=1.0), 'relu': ReLU()}
     # List of optimization functions
-    optmz = {'sgd': SGD(lr=0.0075), 'rms': RMSprop(lr=0.001), 'adadelta': Adadelta(lr=1.0)}
+    optmz = {'sgd': SGD(lr=0.0075), 'rms': RMSprop(lr=0.00005), 'adadelta': Adadelta(lr=1.0)}
     xgan_pdfs = xgan_train(X_PDF, params['pdf'], 100, params, activ, optmz, nb_replicas=NB_INPUT_REP, flavors=params['fl'])
 
     # In case one needs to pretrain the Discriminator

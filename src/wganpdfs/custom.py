@@ -4,6 +4,7 @@ import numpy as np
 import keras.backend as K
 from keras.layers import Layer
 from keras.layers import initializers
+from keras.constraints import Constraint
 
 
 class xlayer(Layer):
@@ -35,26 +36,6 @@ class xlayer(Layer):
         return (input_shape[0], self.output_dim)
 
 
-class preprocessing(Layer):
-
-    """
-    Custom array that does the preprocessing.
-    """
-
-    def __init__(self, xval, alpha, beta, **kwargs):
-        self.xval  = xval
-        self.alpha = alpha
-        self.beta  = beta
-        super().__init__(**kwargs)
-
-    def compute_output_shape(self, x):
-        return x
-
-    def call(self, pdf):
-        xres = self.xval**self.alpha * (1-self.xval)**self.beta
-        return pdf*xres
-
-
 class preprocessing_fit(Layer):
 
     """
@@ -82,7 +63,44 @@ class preprocessing_fit(Layer):
         return pdf*xres
 
 
+class custom_losses(object):
+
+    """
+    The following is the implementation of the
+    custom loss functions
+    """
+
+    def __init__(self, y_true, y_pred):
+        self.y_true = y_true
+        self.y_pred = y_pred
+
+    def wasserstein_loss(self):
+        return K.mean(y_true * y_pred)
+
+
+def wasserstein_loss(y_true, y_pred):
+    return K.mean(y_true * y_pred)
+
+
+class ClipConstraint(Constraint):
+
+    """
+    The following constrains the weights
+    of the critic model. This class is an
+    extension of the "Constraint" class.
+    """
+
+    def __init__(self, clip_value):
+        self.clip_value = clip_value
+
+    def __call__(self, weights):
+        return K.clip(weights, -self.clip_value, self.clip_value)
+
+    def get_config(self):
+        return {'clip_value': self.clip_value}
+
 class xmetrics(object):
+
     """
     Custom metrics in order to assess the performance of the model.
     """

@@ -7,29 +7,30 @@ sb.set_style("whitegrid")
 
 def read_csv(csv_reader):
     line_count = 0
-    iteration, DisLoss = [], []
     GenLoss, KL_valu   = [], []
+    iteration, DisLossReal, DisLossFake = [], [], []
     for row in csv_reader:
         if line_count == 0:
             pass
             line_count += 1
         else:
             iteration.append(float(row[0]))
-            DisLoss.append(float(row[1]))
-            GenLoss.append(float(row[2]))
-            KL_valu.append(float(row[5]))
+            DisLossReal.append(float(row[1]))
+            DisLossFake.append(float(row[2]))
+            GenLoss.append(float(row[3]))
             line_count += 1
-    return iteration, DisLoss, GenLoss, KL_valu
+    return iteration, DisLossReal, DisLossFake, GenLoss
 
 
-def plot_losses(iteration, DisLoss, GenLoss, KL_valu):
+def plot_losses(iteration, DisLossReal, DisLossFake, GenLoss):
 
     # plot the losses
     plt.figure()
-    dis = plt.plot(iteration,DisLoss)
-    gen = plt.plot(iteration,GenLoss)
-    plt.legend([dis[0],gen[0]], ("Generator Loss","Discriminator Loss"))
-    plt.title('GANs Loss')
+    r_dis = plt.plot(iteration, DisLossReal)
+    f_dis = plt.plot(iteration, DisLossFake)
+    gen   = plt.plot(iteration, GenLoss)
+    plt.legend([r_dis[0],f_dis[0],gen[0]], ("Dis_real", "Dis_fake", "Gen"))
+    plt.title('GANs Losses')
     plt.tight_layout()
     plt.savefig('losses.png', dpi=150)
     plt.close()
@@ -42,10 +43,10 @@ def main(args):
     # Open the .csv file
     with open(args.losses) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
-        iteration, DisLoss, GenLoss, KL_valu = read_csv(csv_reader)
+        iteration, DisLossReal, DisLossFake, GenLoss  = read_csv(csv_reader)
 
     # Plot the losses
-    plot_losses(iteration, DisLoss, GenLoss, KL_valu)
+    plot_losses(iteration, DisLossReal, DisLossFake, GenLoss)
 
 if __name__ == "__main__":
     """

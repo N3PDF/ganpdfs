@@ -71,5 +71,6 @@ class input_pdfs(object):
                     row.append(pdf.xfxQ2(self.flavors,x,self.Q_value))
                 else:
                     row.append(pdf.xfxQ2(self.flavors,x,self.Q_value))
+                    # row.append(pdf.xfxQ2(self.flavors,x,self.Q_value)-pdf.xfxQ2(-self.flavors,x,self.Q_value))
             data.append(row)
         return np.array(data)

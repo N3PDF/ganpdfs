@@ -11,15 +11,15 @@ if sys.version_info < (3,6):
 with open('README.md') as f:
     long_desc = f.read()
 
-setup(name= "xganpdfs",
+setup(name= "wganpdfs",
       version = '0.0.1',  
-      description = "GAN models for PDFs",
+      description = "WGAN models for PDFs",
       author = "",
       author_email = "",
-      url="https://gitlab.cern.ch/N3PDF/ganpdfs",
+      url="https://gitlab.cern.ch/N3PDF/wganpdfs",
       long_description = long_desc,
       entry_points = {'console_scripts':
-                      ['xganpdfs = xganpdfs.run:main',]},
+                      ['wganpdfs = wganpdfs.run:main',]},
       package_dir = {'': 'src'},
       packages = find_packages('src'),
       zip_safe = False,

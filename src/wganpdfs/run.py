@@ -1,7 +1,7 @@
 import os, pprint, argparse, shutil
-from xganpdfs.hyperscan import hyper_train
-from xganpdfs.hyperscan import load_yaml
-from xganpdfs.hyperscan import run_hyperparameter_scan
+from wganpdfs.hyperscan import hyper_train
+from wganpdfs.hyperscan import load_yaml
+from wganpdfs.hyperscan import run_hyperparameter_scan
 
 
 def main():
@@ -77,9 +77,6 @@ def main():
         hps['fl'] = args.flavors
     else:
         raise Exception(f'{args.falvors} not valid. Must be one of the particle IDs!!!')
-
-    # # Save timeline
-    # hps['timeline'] = args.timeline
 
     # If hyperscan is set true
     if args.hyperopt:
