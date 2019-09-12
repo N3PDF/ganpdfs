@@ -6,30 +6,9 @@ import matplotlib.pyplot as plt
 from keras.models import Sequential
 from xganpdfs.custom import xmetrics
 from xganpdfs.pdformat import input_pdfs
-from xganpdfs.model import dc_xgan_model
 from xganpdfs.model import vanilla_xgan_model
 from tensorflow.python.client import timeline
 
-
-class TimeLiner:
-        _timeline_dict = None
-
-        def update_timeline(self, chrome_trace):
-            # convert crome trace to python dict
-            chrome_trace_dict = json.loads(chrome_trace)
-            # for first run store full trace
-            if self._timeline_dict is None:
-                self._timeline_dict = chrome_trace_dict
-                # for other - update only time consumption, not definitions
-            else:
-                for event in chrome_trace_dict['traceEvents']:
-                    #events time consumption started with 'ts' prefix
-                    if 'ts' in event:
-                        self._timeline_dict['traceEvents'].append(event)
-
-        def save(self, f_name):
-            with open(f_name, 'w') as f:
-                json.dump(self._timeline_dict, f)
 
 class xgan_train(object):
 
@@ -37,63 +16,78 @@ class xgan_train(object):
     Train the model and plot the result.
     """
 
-    def __init__(self, x_pdf, pdf_name, noise_size, params, activ, optmz, nb_replicas=1, Q_value=1.7874388, flavors=2):
+    def __init__(self, x_pdf, pdf_name, noise_size, params, activ, optmz,
+                 nb_replicas=1, Q_value=1.7874388, flavors=2):
         self.sampled_pdf = input_pdfs(pdf_name, x_pdf, nb_replicas, Q_value, flavors).build_pdf()
         self.x_pdf = x_pdf
         self.nb_replicas = nb_replicas
         self.output_size = len(x_pdf)
         self.noise_size = noise_size
         self.params = params
-        self.run_timeline = TimeLiner()
         self.xgan_model = vanilla_xgan_model(noise_size, self.output_size, x_pdf, params, activ, optmz)
 
     def plot_generated_pdf(self, nth_training, nrep, folder):
+        """
+        This method plots the comparison of the true
+        and generated PDF replicas at each iterations.
+        In addition, it shows the histogram comparisons
+        of the two distributions for a given specific 
+        value of x.
+        """
+        # Check the targed folder
         if not os.path.exists('%s/iterations' % folder):
             os.mkdir('%s/iterations' % folder)
         else:
             pass
+        # Generate random vector and use it to make a prediction
+        # for the Generator
         noise = np.random.normal(0, 1, size=[nrep, self.noise_size])
         generated_pdf = self.xgan_model.generator.predict(noise)
+        # Save each generated replicas into a numpy file
+        np.save('%s/generated_at_%d_iteration.npy' % (folder, nth_training), generated_pdf)
 
+        # Define the x values
+        xv = [20, 21, 28, 29]
+
+        # Initialize the figure as a 4x4 grid
         grid_size = (4,4)
-        xv = [64, 69, 72, 75]
-
-        nfake_bins = 15
-        # ntrue_bins = (nfake_bins*self.sampled_pdf.shape[0])//generated_pdf.shape[0]
-        ntrue_bins = nfake_bins
-
-        fig = plt.figure(figsize=(11,14))
+        fig = plt.figure(figsize=(16,17))
         main  = plt.subplot2grid(grid_size, (0,0), colspan=2, rowspan=2)
         hist1 = plt.subplot2grid(grid_size, (0,2))
         hist2 = plt.subplot2grid(grid_size, (0,3))
         hist3 = plt.subplot2grid(grid_size, (1,2))
         hist4 = plt.subplot2grid(grid_size, (1,3))
 
-        l = [hist1, hist2, hist3, hist4]
+        lst_hist = [hist1, hist2, hist3, hist4]
 
         for i in range(self.sampled_pdf.shape[0]):
-            main.plot(self.x_pdf, self.sampled_pdf[i], color='deeppink', alpha=0.45)
+            main.plot(self.x_pdf, self.sampled_pdf[i], color='deeppink', alpha=0.35)
         for j in range(generated_pdf.shape[0]):
             main.plot(self.x_pdf, generated_pdf[j], color='dodgerblue', alpha=0.45)
 
-        for x, position in zip(xv, l):
+        for x, position in zip(xv, lst_hist):
             true_hist = np.array([repl[x] for repl in self.sampled_pdf])
             fake_hist = np.array([repl[x] for repl in generated_pdf])
-            position.hist(true_hist, histtype='stepfilled', bins=15,
+            position.hist(true_hist, histtype='stepfilled', bins=20,
                             color="deeppink", alpha=0.65, label="true", density=True)
-            position.hist(fake_hist, histtype='stepfilled', bins=15,
+            position.hist(fake_hist, histtype='stepfilled', bins=20,
                             color="dodgerblue", alpha=0.65, label="fake", density=True)
         main.set_xscale('log')
-        # main.set_yscale('log')
+        main.set_xlim([1e-4,1])
 
         fig.suptitle('Samples at Iteration %d'%nth_training, y=0.98)
         fig.tight_layout()
-        fig.savefig('%s/iterations/pdf_generated_at_training_%d.png' %(folder,nth_training), dpi=250,
+        fig.savefig('%s/iterations/pdf_generated_at_training_%d.png'
+                %(folder,nth_training), dpi=250,
                 bbox_inches = 'tight', pad_inches = 0.2)
         fig.legend()
-        # fig.close()
 
     def sample_input_and_gen(self, batch_size):
+        """
+        This meta-model is used to trian the 
+        Discriminator.
+        Check Talk in Varenna August 2019
+        """
         pdf_index = np.random.choice(self.sampled_pdf.shape[0], batch_size, replace=False)
         pdf_batch = self.sampled_pdf[pdf_index]
         noise = np.random.normal(0,1,size=[batch_size, self.noise_size])
@@ -104,6 +98,11 @@ class xgan_train(object):
         return xinput, y_disc
 
     def sample_output_noise(self, batch_size):
+        """
+        This meta-model is used to train the
+        Generator.
+        Check Talk in Varenna, August 2019.
+        """
         noise = np.random.normal(0,1,size=[batch_size,self.noise_size])
         y_gen = np.ones(batch_size)
         return noise, y_gen
@@ -112,12 +111,6 @@ class xgan_train(object):
         xinput, y_disc = self.sample_input_and_gen(batch_size)
         self.xgan_model.discriminator.trainable = True
         self.xgan_model.discriminator.fit(xinput, y_disc, epochs=epochs, batch_size=batch_size)
-
-    def test_model(self, nrep):
-        noise = np.random.normal(0, 1, size=[nrep, self.noise_size])
-        generated_pdf = self.xgan_model.generator.predict(noise)
-        # First test for one input Replicas only
-        return xmetrics(self.sampled_pdf, generated_pdf).euclidean()
 
     def train(self, nb_training=20000, batch_size=1, verbose=False):
         f = open('%s/losses_info.csv' %self.params['save_output'],'w')
@@ -139,27 +132,22 @@ class xgan_train(object):
                     noise, y_gen = self.sample_output_noise(batch_size)
                     gloss = self.xgan_model.gan.train_on_batch(noise, y_gen)
 
-            # # Evaluate performance using KL divergence
-            # metric = self.test_model(self.params['out_replicas'])
+            # Defines the SMM to be hyperoptimized
             metric = gloss[0]
 
-            # timeline save
-            if self.xgan_model.options is not None:
-                trace = timeline.Timeline(step_stats=self.xgan_model.metadata.step_stats)
-                fetch = trace.generate_chrome_trace_format()
-                self.run_timeline.update_timeline(fetch)
-
+            # Print log output
             if verbose:
 
                 if k % 100 == 0:
-                    print ("Iter: {} out of {} . Disc loss: {:6f} . Gen loss: {:6f} . metric: {:6f}"
+                    print ("Iter:{} out of {}. Disc loss: {:6f}. Gen loss: {:6f}. metric: {:6f}"
                             .format(k, nb_training, dloss[0], gloss[0], metric))
-                    f.write("{0}, \t{1}, \t{2}, \t{3}, \t{4}, \t{5}\n".format(k,dloss[0],gloss[0],dloss[1],gloss[1],metric))
+                    f.write("{0}, \t{1}, \t{2}, \t{3}, \t{4}, \t{5}\n"
+                            .format(k,dloss[0],gloss[0],dloss[1],gloss[1],metric))
 
                 if k % 1000 == 0:
                     self.plot_generated_pdf(k, self.params['out_replicas'], self.params['save_output'])
 
-        self.run_timeline.save('test.json')
+        # Close the loss file
         f.close()
 
         return metric
