@@ -25,7 +25,7 @@ def load_yaml(runcard_file):
 def run_hyperparameter_scan(search_space, max_evals, cluster, folder):
 
     """
-    Running hyperparameter scan using hyperopt.
+    Run the hyperparameter scan using hyperopt.
     """
 
     print('[+] Performing hyperparameter scan...')
@@ -63,10 +63,10 @@ def hyper_train(params):
     # Define the number of input replicas
     NB_INPUT_REP = params['input_replicas']
     # Define the number of batches
-    if NB_INPUT_REP < 5:
+    if NB_INPUT_REP < 10:
         BATCH_SIZE = 1
     else:
-        BATCH_SIZE = int(NB_INPUT_REP/5)
+        BATCH_SIZE = int(NB_INPUT_REP/10)
 
     # Clear Keras session
     K.clear_session()
