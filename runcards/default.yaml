@@ -1,8 +1,9 @@
 # Input data setup
-pdf: PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001
+pdf: NNPDF31_nnlo_as_0118_1000
 
 # GAN setup
-g_nodes  : 1024
+# g_nodes  : 1024
+g_nodes  : 3024
 d_nodes  : 512
 g_loss   : mean_squared_error
 d_loss   : mean_squared_error
