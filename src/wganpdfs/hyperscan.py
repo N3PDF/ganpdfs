@@ -2,14 +2,21 @@ import hyperopt
 import numpy as np
 import keras.backend as K
 import yaml, time, pickle
+from keras.optimizers import SGD
+from keras.optimizers import Adam
+from keras.optimizers import RMSprop
+from keras.optimizers import Adadelta
+from keras.layers.advanced_activations import ELU
+from keras.layers.advanced_activations import ReLU
+from keras.layers.advanced_activations import LeakyReLU
+
+from hyperopt import fmin, tpe, hp
+from hyperopt.mongoexp import MongoTrials
+from hyperopt import Trials, space_eval, STATUS_OK
+
 from wganpdfs.pdformat import xnodes
 from wganpdfs.train import xgan_train
 from wganpdfs.filetrials import FileTrials
-from hyperopt import fmin, tpe, hp, Trials, space_eval, STATUS_OK
-from hyperopt.mongoexp import MongoTrials
-from keras.layers.advanced_activations import LeakyReLU, ELU, ReLU
-from keras.optimizers import Adam, RMSprop, SGD, Adadelta
-
 
 #----------------------------------------------------------------------
 def load_yaml(runcard_file):
