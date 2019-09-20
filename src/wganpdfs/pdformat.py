@@ -52,6 +52,11 @@ class input_pdfs(object):
         self.flavors  = flavors
         self.nb_replicas = nb_replicas
 
+    def compute_central(self):
+        pdfx = lhapdf.mkPDF(self.pdf_name, 0)
+        pdf_output = [pdfx.xfxQ2(self.flavors, x, self.Q_value) for x in self.x_pdf]
+        return pdf_output
+
     def build_pdf(self):
 
         # Take n samples from the whole members
