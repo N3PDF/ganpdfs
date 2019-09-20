@@ -7,7 +7,7 @@ from keras.models import Sequential
 from wganpdfs.custom import xmetrics
 from wganpdfs.pdformat import input_pdfs
 from wganpdfs.model import wasserstein_xgan_model
-from tensorflow.python.client import timeline
+from wganpdfs.model import dcnn_wasserstein_xgan_model
 
 
 class xgan_train(object):
@@ -16,9 +16,9 @@ class xgan_train(object):
     Train the model and plot the result.
     """
 
-    def __init__(self, x_pdf, pdf_name, noise_size, params, activ, optmz,
-                 nb_replicas=1, Q_value=1.7874388, flavors=2):
+    def __init__(self, x_pdf, pdf_name, noise_size, params, activ, optmz, nb_replicas=1, Q_value=1.7874388, flavors=2):
         self.sampled_pdf = input_pdfs(pdf_name, x_pdf, nb_replicas, Q_value, flavors).build_pdf()
+        self.pdfcentral  = input_pdfs(pdf_name, x_pdf, nb_replicas, Q_value, flavors).compute_central()
         self.x_pdf = x_pdf
         self.nb_replicas = nb_replicas
         self.output_size = len(x_pdf)
@@ -113,6 +113,8 @@ class xgan_train(object):
                             ^_________________________________|
                                  TUNING / BACKPROPAGATION
         """
+        # Make sure the Critic is trainable
+        self.xgan_model.critic.trainable = True
         # pdf_index = np.random.choice(self.sampled_pdf.shape[0], half_batch_size, replace=False)
         pdf_index = np.random.randint(0, self.sampled_pdf.shape[0], half_batch_size)
         pdf_batch = self.sampled_pdf[pdf_index]
@@ -129,6 +131,8 @@ class xgan_train(object):
                             ^_________________________________|
                                  TUNING / BACKPROPAGATION
         """
+        # Make sure that the Critic is not trainable
+        self.xgan_model.critic.trainable = False
         noise    = self.sample_latent_space(half_batch_size, self.noise_size)
         pdf_fake = self.xgan_model.generator.predict(noise)
         # Use (1) as label for fake pdfs
@@ -143,6 +147,16 @@ class xgan_train(object):
         """
         xlatent = np.random.randn(batch_size * noise_size)
         return xlatent.reshape(batch_size, noise_size)
+
+    def latent_prior_noised(self, batch_size, noise_size):
+        """
+        This method construct the latent space (that gets fed into the Generator)
+        by adding noise to the true prior.
+        """
+        xlatent = []
+        for px in self.sampled_pdf[:batch_size]:
+            xlatent.append(px + np.random.random(self.output_size) * 0.02)
+        return np.array(xlatent)
 
     def sample_output_noise(self, batch_size):
         """
@@ -190,8 +204,6 @@ class xgan_train(object):
             #     dloss = self.xgan_model.critic.train_on_batch(xinput, y_disc)
 
             # Train the Critic
-            # Make sure to train the Critic
-            self.xgan_model.critic.trainable = True
             for _ in range(self.params['nd_steps']):
                 # Train with the real samples
                 r_xinput, r_ydisc = self.generate_real_samples(half_batch_size)
@@ -201,8 +213,6 @@ class xgan_train(object):
                 f_dloss = self.xgan_model.critic.train_on_batch(f_xinput, f_ydisc)
 
             # Train the GAN
-            # Make sure that the Critic is not trained
-            self.xgan_model.critic.trainable = False
             for _ in range(self.params['ng_steps']):
                 noise, y_gen = self.sample_output_noise(batch_size)
                 gloss = self.xgan_model.adversarial.train_on_batch(noise, y_gen)
