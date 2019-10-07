@@ -16,15 +16,17 @@ class xgan_train(object):
     Train the model and plot the result.
     """
 
-    def __init__(self, x_pdf, pdf_name, noise_size, params, activ, optmz, nb_replicas=1, Q_value=1.7874388, flavors=2):
-        self.sampled_pdf = input_pdfs(pdf_name, x_pdf, nb_replicas, Q_value, flavors).build_pdf()
-        self.pdfcentral  = input_pdfs(pdf_name, x_pdf, nb_replicas, Q_value, flavors).compute_central()
+    def __init__(self, x_pdf, pdf_name, noise_size, params, activ, optmz, nb_replicas=1,
+                 Q_value=1.7874388, flavors=2):
+        self.sampled_pdf = input_pdfs(pdf_name, x_pdf, nb_replicas,
+                                      Q_value, flavors).build_pdf()
         self.x_pdf = x_pdf
         self.nb_replicas = nb_replicas
         self.output_size = len(x_pdf)
         self.noise_size = noise_size
         self.params = params
-        self.xgan_model = wasserstein_xgan_model(noise_size, self.output_size, x_pdf, params, activ, optmz)
+        self.xgan_model = wasserstein_xgan_model(noise_size, self.output_size,
+                                                 x_pdf, params, activ, optmz)
 
     def plot_generated_pdf(self, nth_training, nrep, folder):
         """
@@ -78,8 +80,8 @@ class xgan_train(object):
         fig.suptitle('Samples at Iteration %d'%nth_training, y=0.98)
         fig.tight_layout()
         fig.savefig('%s/iterations/pdf_generated_at_training_%d.png'
-                    %(folder, nth_training), dpi=150,
-                    bbox_inches = 'tight', pad_inches = 0.2)
+                    %(folder, nth_training), dpi=100,
+                    bbox_inches='tight', pad_inches=0.2)
         fig.legend()
 
     # def sample_input_and_gen(self, batch_size):
@@ -113,8 +115,6 @@ class xgan_train(object):
                             ^_________________________________|
                                  TUNING / BACKPROPAGATION
         """
-        # Make sure the Critic is trainable
-        self.xgan_model.critic.trainable = True
         # pdf_index = np.random.choice(self.sampled_pdf.shape[0], half_batch_size, replace=False)
         pdf_index = np.random.randint(0, self.sampled_pdf.shape[0], half_batch_size)
         pdf_batch = self.sampled_pdf[pdf_index]
@@ -131,8 +131,6 @@ class xgan_train(object):
                             ^_________________________________|
                                  TUNING / BACKPROPAGATION
         """
-        # Make sure that the Critic is not trainable
-        self.xgan_model.critic.trainable = False
         noise    = self.sample_latent_space(half_batch_size, self.noise_size)
         pdf_fake = self.xgan_model.generator.predict(noise)
         # Use (1) as label for fake pdfs
@@ -178,9 +176,7 @@ class xgan_train(object):
         self.xgan_model.critic.trainable = True
         self.xgan_model.critic.fit(xinput, y_disc, epochs=epochs, batch_size=batch_size)
 
-    def train(self, nb_training=10000, batch_size=1, verbose=False):
-        # For the time being
-        nb_epochs = nb_training
+    def train(self, nb_epochs=1000, batch_size=1, verbose=False):
         # Calculate the number of bacthes per training epochs
         batch_per_epoch = int(self.sampled_pdf.shape[0]/batch_size)
         # Calculate the number of training iterations
@@ -204,6 +200,8 @@ class xgan_train(object):
             #     dloss = self.xgan_model.critic.train_on_batch(xinput, y_disc)
 
             # Train the Critic
+            # Make sure the Critic is trainable
+            self.xgan_model.critic.trainable = True
             for _ in range(self.params['nd_steps']):
                 # Train with the real samples
                 r_xinput, r_ydisc = self.generate_real_samples(half_batch_size)
@@ -211,8 +209,10 @@ class xgan_train(object):
                 # Train with the real samples
                 f_xinput, f_ydisc = self.generate_fake_samples(half_batch_size)
                 f_dloss = self.xgan_model.critic.train_on_batch(f_xinput, f_ydisc)
-
+    
             # Train the GAN
+            # Make sure that the Critic is not trainable
+            self.xgan_model.critic.trainable = False
             for _ in range(self.params['ng_steps']):
                 noise, y_gen = self.sample_output_noise(batch_size)
                 gloss = self.xgan_model.adversarial.train_on_batch(noise, y_gen)
@@ -224,7 +224,7 @@ class xgan_train(object):
             if verbose:
                 if k % 100 == 0:
                     print ("Iter:{} out of {}. dloss real: {:6f}. dloss fake: {:6f}. Adv loss: {:6f}"
-                            .format(k, nb_training, r_dloss, f_dloss, gloss))
+                            .format(k, nb_epochs, r_dloss, f_dloss, gloss))
                     f.write("{0}, \t{1}, \t{2}, \t{3} \n".format(k, r_dloss, f_dloss, gloss))
                 if k % 1000 == 0:
                     self.plot_generated_pdf(k, self.params['out_replicas'], self.params['save_output'])
