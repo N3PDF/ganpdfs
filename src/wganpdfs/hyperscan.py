@@ -78,13 +78,20 @@ def hyper_train(params):
     # Clear Keras session
     K.clear_session()
     # List of activation funtions
-    activ = {'leakyrelu': LeakyReLU(alpha=0.2), 'elu': ELU(alpha=1.0), 'relu': ReLU()}
+    activ = {'leakyrelu': LeakyReLU(alpha=0.2),
+            'elu': ELU(alpha=1.0),
+            'relu': ReLU()}
     # List of optimization functions
-    optmz = {'sgd': SGD(lr=0.0075), 'rms': RMSprop(lr=0.00005), 'adadelta': Adadelta(lr=1.0)}
-    xgan_pdfs = xgan_train(X_PDF, params['pdf'], 100, params, activ, optmz, nb_replicas=NB_INPUT_REP, flavors=params['fl'])
+    optmz = {'sgd': SGD(lr=0.0075),
+            'rms': RMSprop(lr=0.00005),
+            'adadelta': Adadelta(lr=1.0)}
+    xgan_pdfs = xgan_train(X_PDF, params['pdf'], 100, params, activ,
+                optmz, nb_replicas=NB_INPUT_REP, flavors=params['fl'])
 
     # In case one needs to pretrain the Discriminator
     # xgan_pdfs.pretrain_disc(BATCH_SIZE, epochs=4)
 
-    g_loss = xgan_pdfs.train(nb_training=params['epochs'], batch_size=BATCH_SIZE, verbose=params['verbose'])
+    g_loss = xgan_pdfs.train(nb_epochs=params['epochs'],
+            batch_size=BATCH_SIZE,
+            verbose=params['verbose'])
     return {'loss': g_loss, 'status': STATUS_OK}
