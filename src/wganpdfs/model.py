@@ -229,12 +229,12 @@ class dcnn_wasserstein_xgan_model(object):
         # Reshape the output
         G_1r = Reshape([8,8,2])(G_1a)
         # 2nd hidden custom layer with x-grid
-        G_2l = Conv2DTranspose(64, kernel_size=2, strides=1, padding="same")(G_1r)
+        G_2l = Conv2DTranspose(128, kernel_size=2, strides=1, padding="same")(G_1r)
         # G_2l = Dense(self.g_nodes//2, kernel_initializer=init)(G_1a)
         # G_2b = BatchNormalization(axis=-1, momentum=0.99, epsilon=0.001)(G_2l)
         G_2a = self.activ[self.params['g_act']](G_2l)
         # 3rd hidden dense layer
-        G_3l = Conv2DTranspose(32, kernel_size=3, strides=1, padding="same")(G_2a)
+        G_3l = Conv2DTranspose(256, kernel_size=3, strides=1, padding="same")(G_2a)
         # G_3b = BatchNormalization(axis=-1, momentum=0.99, epsilon=0.001)(G_3l)
         G_3f = Flatten()(G_3l)
         # 4th hidden dense layer
@@ -269,14 +269,14 @@ class dcnn_wasserstein_xgan_model(object):
         # Reshape
         D_1r = Reshape([8,8,2])(D_1a)
         # 2nd hidden dense layer
-        D_2l = Conv2D(64, kernel_size=3, strides=1, padding="same")(D_1r)
+        D_2l = Conv2D(256, kernel_size=3, strides=1, padding="same")(D_1r)
         # D_2b = BatchNormalization(axis=-1, momentum=0.99, epsilon=0.001)(D_2l)
         D_2a = self.activ[self.params['d_act']](D_2l)
         # 3rd hidden dense layer
-        D_3l = Conv2D(32, kernel_size=3, strides=1, padding="same")(D_2a)
+        D_3l = Conv2D(128, kernel_size=3, strides=1, padding="same")(D_2a)
         D_3a = self.activ[self.params['d_act']](D_3l)
         # 4rd hidden dense layer
-        D_4l = Conv2D(16, kernel_size=3, strides=1, padding="same")(D_3a)
+        D_4l = Conv2D(64, kernel_size=3, strides=1, padding="same")(D_3a)
         D_4a = self.activ[self.params['d_act']](D_4l)
         # Flatten the output
         D_5f = Flatten()(D_4a)
