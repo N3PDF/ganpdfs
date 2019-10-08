@@ -43,6 +43,10 @@ class input_pdfs(object):
     This formats the input replicas.
     It returns a multi-dimensional array with shape
     (nb_flavors, nb_pdf_members, xgrid_size)
+
+    The input replicas are not normalized whatsoever. In the 
+    original WGAN documentation, the input is normalized
+    between -1 and 1 to correspond to the predicted labels.
     """
 
     def __init__(self, pdf_name, x_pdf, nb_replicas, Q_value, flavors):
@@ -64,6 +68,8 @@ class input_pdfs(object):
             # Take the central replicas as the default
             pdf_central = [lhapdf.mkPDF(self.pdf_name, 0)]
         else:
+            # This does not necessarly include the central pdf
+            # (might need to fix this)
             pdf_init = lhapdf.mkPDFs(self.pdf_name)
             pdf_central = sample(pdf_init, self.nb_replicas)
 
@@ -72,10 +78,6 @@ class input_pdfs(object):
         for pdf in pdf_central:
             row = []
             for x in self.x_pdf:
-                if self.flavors == 3 or self.flavors == 21:
-                    row.append(pdf.xfxQ2(self.flavors,x,self.Q_value))
-                else:
-                    row.append(pdf.xfxQ2(self.flavors,x,self.Q_value))
-                    # row.append(pdf.xfxQ2(self.flavors,x,self.Q_value)-pdf.xfxQ2(-self.flavors,x,self.Q_value))
+                row.append(pdf.xfxQ2(self.flavors,x,self.Q_value))
             data.append(row)
         return np.array(data)

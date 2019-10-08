@@ -28,7 +28,7 @@ class xgan_train(object):
         self.xgan_model = wasserstein_xgan_model(noise_size, self.output_size,
                                                  x_pdf, params, activ, optmz)
 
-    def plot_generated_pdf(self, nth_training, nrep, folder):
+    def plot_generated_pdf(self, nth_epochs, nrep, folder):
         """
         This method plots the comparison of the true
         and generated PDF replicas at each iterations.
@@ -45,8 +45,6 @@ class xgan_train(object):
         # for the Generator after a given training
         noise = self.sample_latent_space(nrep, self.noise_size)
         generated_pdf = self.xgan_model.generator.predict(noise)
-        # # Save each generated replicas into a numpy file
-        # np.save('%s/generated_at_%d_iteration.npy' % (folder, nth_training), generated_pdf)
 
         # Define the x values
         xv = [20, 21, 28, 29]
@@ -62,25 +60,31 @@ class xgan_train(object):
 
         lst_hist = [hist1, hist2, hist3, hist4]
 
+        # Note that the input and the generated replicas
+        # might not have the same shape
         for i in range(self.sampled_pdf.shape[0]):
-            main.plot(self.x_pdf, self.sampled_pdf[i], color='deeppink', alpha=0.35)
+            main.plot(self.x_pdf, self.sampled_pdf[i],
+                        color='deeppink', alpha=0.35)
         for j in range(generated_pdf.shape[0]):
-            main.plot(self.x_pdf, generated_pdf[j], color='dodgerblue', alpha=0.45)
+            main.plot(self.x_pdf, generated_pdf[j],
+                        color='dodgerblue', alpha=0.45)
 
         for x, position in zip(xv, lst_hist):
             true_hist = np.array([repl[x] for repl in self.sampled_pdf])
             fake_hist = np.array([repl[x] for repl in generated_pdf])
-            position.hist(true_hist, histtype='stepfilled', bins=20,
-                            color="deeppink", alpha=0.65, label="true", density=True)
-            position.hist(fake_hist, histtype='stepfilled', bins=20,
-                            color="dodgerblue", alpha=0.65, label="fake", density=True)
+            position.hist(true_hist, histtype='stepfilled', 
+                          bins=20, color="deeppink", alpha=0.65,
+                          label="true", density=True)
+            position.hist(fake_hist, histtype='stepfilled',
+                          bins=20, color="dodgerblue", alpha=0.65,
+                          label="fake", density=True)
         main.set_xscale('log')
         main.set_xlim([1e-4,1])
 
-        fig.suptitle('Samples at Iteration %d'%nth_training, y=0.98)
+        fig.suptitle('Samples at Iteration %d'%nth_epochs, y=0.98)
         fig.tight_layout()
         fig.savefig('%s/iterations/pdf_generated_at_training_%d.png'
-                    %(folder, nth_training), dpi=100,
+                    %(folder, nth_epochs), dpi=100,
                     bbox_inches='tight', pad_inches=0.2)
         fig.legend()
 
