@@ -224,7 +224,7 @@ class xgan_train(object):
             if verbose:
                 if k % 100 == 0:
                     print ("Iter:{} out of {}. dloss real: {:6f}. dloss fake: {:6f}. Adv loss: {:6f}"
-                            .format(k, nb_epochs, r_dloss, f_dloss, gloss))
+                            .format(k, nb_steps+1, r_dloss, f_dloss, gloss))
                     f.write("{0}, \t{1}, \t{2}, \t{3} \n".format(k, r_dloss, f_dloss, gloss))
                 if k % 1000 == 0:
                     self.plot_generated_pdf(k, self.params['out_replicas'], self.params['save_output'])
