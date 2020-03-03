@@ -86,7 +86,7 @@ class wasserstein_xgan_model(object):
         G_1a = self.activ[self.params['g_act']](G_1l)
 
         # 2nd hidden custom layer with/without x-grid
-        if params['add_xlayer']:
+        if self.params['add_xlayer']:
             G_2l = xlayer(self.g_nodes//2, self.x_pdf, kernel_initializer=init)(G_1a)
         else:
             G_2l = Dense(self.g_nodes//2, kernel_initializer=init)(G_1a)
@@ -107,7 +107,7 @@ class wasserstein_xgan_model(object):
 
         # Output Layer (decide here to apply preprocessing or not)
         G_output = G_5l
-        if params['preprocessing']:
+        if self.params['preprocessing']:
             G_output = preprocessing_fit(self.x_pdf)(G_5l)
 
         return Model(G_input, G_output)
