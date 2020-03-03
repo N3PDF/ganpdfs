@@ -44,7 +44,7 @@ class wasserstein_xgan_model(object):
         self.d_nodes = params['d_nodes']
 
         #---------------------------#
-        #          CRITIC           #
+        #   CRITIC/DISCRIMINATOR    #
         #---------------------------#
         crit_optimizer = self.optmz[params['d_opt']]
         self.critic    = self.critic_model()
@@ -70,7 +70,7 @@ class wasserstein_xgan_model(object):
 
     def generator_model(self):
         """
-        This construct the architercture of the Generator. 
+        This constructs the architercture of the Generator.
         """
 
         # Weights initialization
@@ -84,11 +84,16 @@ class wasserstein_xgan_model(object):
         G_1l = Dense(self.g_nodes//4, kernel_initializer=init)(G_input)
         # G_1b = BatchNormalization(axis=-1, momentum=0.99, epsilon=0.001)(G_1l)
         G_1a = self.activ[self.params['g_act']](G_1l)
-        # 2nd hidden custom layer with x-grid
-        G_2l = xlayer(self.g_nodes//2, self.x_pdf, kernel_initializer=init)(G_1a)
+
+        # 2nd hidden custom layer with/without x-grid
+        if params['add_xlayer']:
+            G_2l = xlayer(self.g_nodes//2, self.x_pdf, kernel_initializer=init)(G_1a)
+        else:
+            G_2l = Dense(self.g_nodes//2, kernel_initializer=init)(G_1a)
         # G_2l = Dense(self.g_nodes//2, kernel_initializer=init)(G_1a)
         # G_2b = BatchNormalization(axis=-1, momentum=0.99, epsilon=0.001)(G_2l)
         G_2a = self.activ[self.params['g_act']](G_2l)
+
         # 3rd hidden dense layer
         G_3l = Dense(self.g_nodes, kernel_initializer=init)(G_2a)
         # G_3b = BatchNormalization(axis=-1, momentum=0.99, epsilon=0.001)(G_3l)
@@ -97,13 +102,15 @@ class wasserstein_xgan_model(object):
         G_4l = Dense(self.g_nodes*2, kernel_initializer=init)(G_3a)
         # G_4b = BatchNormalization(axis=-1, momentum=0.99, epsilon=0.001)(G_4l)
         G_4a = self.activ[self.params['g_act']](G_4l)
-        # Compute the actual PDF
-        # G_output = Dense(self.output_size, activation='tanh', kernel_initializer=init)(G_4a)
+        # Last Layer (before preprocessing)
         G_5l = Dense(self.output_size, activation='tanh', kernel_initializer=init)(G_4a)
-        # Output layer with preprocessing
-        # G_output = preprocessing_fit(self.x_pdf)(G_5l)
 
-        return Model(G_input, G_5l)
+        # Output Layer (decide here to apply preprocessing or not)
+        G_output = G_5l
+        if params['preprocessing']:
+            G_output = preprocessing_fit(self.x_pdf)(G_5l)
+
+        return Model(G_input, G_output)
 
     def critic_model(self):
         """
@@ -212,7 +219,7 @@ class dcnn_wasserstein_xgan_model(object):
 
     def generator_model(self):
         """
-        This construct the architercture of the Generator. 
+        This construct the architercture of the Generator.
         """
 
         # Weights initialization

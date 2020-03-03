@@ -19,3 +19,7 @@ epochs   : 10000
 # Intermediate steps to train D&GAN
 nd_steps : hp.choice('nd_steps', [2,3,4,6])
 ng_steps : hp.choice('ng_steps', [2,3,4,6])
+
+# Intrinsic features
+add_xlayer : True
+preprocessing: True

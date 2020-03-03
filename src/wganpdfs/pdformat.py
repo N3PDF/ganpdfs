@@ -41,8 +41,8 @@ class input_pdfs(object):
 
     """
     This formats the input replicas.
-    It returns a multi-dimensional array with shape
-    (nb_flavors, nb_pdf_members, xgrid_size)
+    It returns a multi-dimensional array which for a given flavor
+    has the following shape (nb_pdf_members, xgrid_size)
 
     The input replicas are not normalized whatsoever. In the 
     original WGAN documentation, the input is normalized

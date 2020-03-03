@@ -16,3 +16,7 @@ epochs   : 1000
 # Intermediate steps to train the Critic & Generator
 nd_steps : 5
 ng_steps : 2
+
+# Intrinsic features
+add_xlayer : True
+preprocessing: True

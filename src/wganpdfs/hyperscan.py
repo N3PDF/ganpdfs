@@ -77,14 +77,17 @@ def hyper_train(params):
 
     # Clear Keras session
     K.clear_session()
+
+    # Model Parameters
     # List of activation funtions
     activ = {'leakyrelu': LeakyReLU(alpha=0.2),
-            'elu': ELU(alpha=1.0),
-            'relu': ReLU()}
+             'elu': ELU(alpha=1.0),
+             'relu': ReLU()}
     # List of optimization functions
     optmz = {'sgd': SGD(lr=0.0075),
-            'rms': RMSprop(lr=0.00005),
-            'adadelta': Adadelta(lr=1.0)}
+             'rms': RMSprop(lr=0.00005),
+             'adadelta': Adadelta(lr=1.0)}
+
     xgan_pdfs = xgan_train(X_PDF, params['pdf'], 100, params, activ,
                 optmz, nb_replicas=NB_INPUT_REP, flavors=params['fl'])
 
