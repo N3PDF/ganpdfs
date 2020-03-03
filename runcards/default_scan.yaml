@@ -1,0 +1,25 @@
+# Input data setup
+pdf: NNPDF31_nnlo_as_0118
+
+# GAN setup
+g_nodes  : hp.choice('g_nodes', [128,256,512])
+d_nodes  : hp.choice('d_nodes', [128,256,512,1024])
+g_loss   : hp.choice('g_loss', ['mean_squared_error', 'binary_crossentropy'])
+d_loss   : hp.choice('d_loss', ['mean_squared_error', 'binary_crossentropy'])
+gan_loss : hp.choice('gan_loss', ['mean_squared_error', 'binary_crossentropy'])
+g_act    : hp.choice('g_activ', ['leakyrelu', 'elu', 'relu'])
+d_act    : hp.choice('d_activ', ['leakyrelu', 'elu', 'relu'])
+
+# Optimizer setup
+g_opt    : hp.choice('g_opt', ['adadelta', 'sgd', 'rms'])
+d_opt    : hp.choice('d_opt', ['adadelta', 'sgd', 'rms'])
+gan_opt  : hp.choice('gan_opt', ['adadelta', 'sgd', 'rms'])
+epochs   : 10000
+
+# Intermediate steps to train D&GAN
+nd_steps : hp.choice('nd_steps', [2,3,4,6])
+ng_steps : hp.choice('ng_steps', [2,3,4,6])
+
+# Intrinsic features
+add_xlayer : True
+preprocessing: True
