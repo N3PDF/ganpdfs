@@ -1,10 +1,9 @@
-from __future__ import division
-
 import numpy as np
-import keras.backend as K
-from keras.layers import Layer
-from keras.layers import initializers
-from keras.constraints import Constraint
+import tensorflow as tf
+from tensorflow.keras import initializers
+from tensorflow.keras import backend as K
+from tensorflow.keras.constraints import Constraint
+from tensorflow.keras.layers import Layer
 
 
 class xlayer(Layer):
@@ -27,9 +26,9 @@ class xlayer(Layer):
 
     def call(self, x):
         # xres outputs (None, input_shape[1], len(x_pdf))
-        xres = K.tf.tensordot(x, self.xval, axes=0)
+        xres = tf.tensordot(x, self.xval, axes=0)
         # xfin outputs (None, output_dim)
-        xfin = K.tf.tensordot(xres, self.kernel, axes=([1,2],[0,1]))
+        xfin = tf.tensordot(xres, self.kernel, axes=([1,2],[0,1]))
         return xfin
 
     def compute_output_shape(self, input_shape):

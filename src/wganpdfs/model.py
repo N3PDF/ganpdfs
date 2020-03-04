@@ -1,26 +1,10 @@
-import tensorflow as  tf
-from keras import Model
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Input
-from keras.layers import Reshape
-from keras.layers import Conv2D
-from keras.layers import Flatten
-from keras.layers import BatchNormalization
-from keras.layers import LSTM
-from keras.layers import Activation
-from keras.optimizers import SGD
-from keras.optimizers import Adam
-from keras.optimizers import RMSprop
-from keras.optimizers import Adadelta
-from keras.layers.advanced_activations import ELU
-from keras.layers.advanced_activations import ReLU
-from keras.layers.advanced_activations import LeakyReLU
-from keras.initializers import RandomNormal
+from tensorflow.keras import Model
+from tensorflow.keras.layers import Dense, Input, Reshape, Conv2D, Flatten, Conv2DTranspose
+from tensorflow.keras.initializers import RandomNormal
 
 from wganpdfs.custom import ClipConstraint
 from wganpdfs.custom import wasserstein_loss
 from wganpdfs.custom import xlayer
-from wganpdfs.custom import xmetrics
 from wganpdfs.custom import preprocessing_fit
 
 class wasserstein_xgan_model(object):
@@ -49,14 +33,12 @@ class wasserstein_xgan_model(object):
         crit_optimizer = self.optmz[params['d_opt']]
         self.critic    = self.critic_model()
         self.critic.compile(loss=wasserstein_loss, optimizer=crit_optimizer)
-        self.critic.name = 'Critic_Architecture'
         self.critic.summary()
 
         #---------------------------#
         #         GENERATOR         #
         #---------------------------#
         self.generator = self.generator_model()
-        self.generator.name = 'Generator_Architecture'
         self.generator.summary()
 
         #---------------------------#
@@ -65,7 +47,6 @@ class wasserstein_xgan_model(object):
         gan_optimizer = self.optmz[params['gan_opt']]
         self.adversarial = self.adversarial_model()
         self.adversarial.compile(loss=wasserstein_loss, optimizer=gan_optimizer)
-        self.adversarial.name = 'Adversarial_Architecture'
         self.adversarial.summary()
 
     def generator_model(self):
@@ -165,12 +146,6 @@ class wasserstein_xgan_model(object):
         return Model(G_input, validity)
 
 
-from keras.layers import Conv1D
-from keras.layers import Conv2D
-from keras.layers import UpSampling2D
-from keras.layers import MaxPooling2D
-from keras.layers import Conv2DTranspose
-from keras.layers import GlobalMaxPooling1D
 
 class dcnn_wasserstein_xgan_model(object):
 
@@ -198,14 +173,12 @@ class dcnn_wasserstein_xgan_model(object):
         crit_optimizer = self.optmz[params['d_opt']]
         self.critic    = self.critic_model()
         self.critic.compile(loss=wasserstein_loss, optimizer=crit_optimizer)
-        self.critic.name = 'Critic_Architecture'
         self.critic.summary()
 
         #---------------------------#
         #         GENERATOR         #
         #---------------------------#
         self.generator = self.generator_model()
-        self.generator.name = 'Generator_Architecture'
         self.generator.summary()
 
         #---------------------------#
@@ -214,7 +187,6 @@ class dcnn_wasserstein_xgan_model(object):
         gan_optimizer = self.optmz[params['gan_opt']]
         self.adversarial = self.adversarial_model()
         self.adversarial.compile(loss=wasserstein_loss, optimizer=gan_optimizer)
-        self.adversarial.name = 'Adversarial_Architecture'
         self.adversarial.summary()
 
     def generator_model(self):

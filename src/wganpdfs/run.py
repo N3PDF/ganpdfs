@@ -1,8 +1,5 @@
-import os, pprint, argparse, shutil
-from wganpdfs.hyperscan import hyper_train
-from wganpdfs.hyperscan import load_yaml
-from wganpdfs.hyperscan import run_hyperparameter_scan
-
+import os, argparse, shutil
+from wganpdfs.hyperscan import hyper_train, load_yaml, run_hyperparameter_scan
 
 def main():
     """

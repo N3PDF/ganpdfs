@@ -3,7 +3,6 @@ import numpy as np
 import json, tempfile
 from scipy import stats
 import matplotlib.pyplot as plt
-from keras.models import Sequential
 from wganpdfs.custom import xmetrics
 from wganpdfs.pdformat import input_pdfs
 from wganpdfs.model import wasserstein_xgan_model

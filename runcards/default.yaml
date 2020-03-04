@@ -1,6 +1,6 @@
 # Input data setup
-# pdf: NNPDF31_nnlo_as_0118_1000
-pdf: PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001
+pdf: NNPDF31_nnlo_as_0118_1000
+# pdf: PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001
 
 # GAN setup
 g_nodes  : 512
