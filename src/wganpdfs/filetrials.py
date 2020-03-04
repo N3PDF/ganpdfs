@@ -17,7 +17,9 @@ class FileTrials(Trials):
     Stores trial results on the fly.
     """
 
-    def __init__(self, replica_path, log=None, parameters=None, exp_key=None, refresh=True):
+    def __init__(
+        self, replica_path, log=None, parameters=None, exp_key=None, refresh=True
+    ):
         self._store_trial = False
         self._json_file = "{0}/tries.json".format(replica_path)
         self._parameters = parameters
@@ -36,7 +38,9 @@ class FileTrials(Trials):
             local_trials = []
             for idx, t in enumerate(self._dynamic_trials):
                 local_trials.append(t)
-                local_trials[idx]["misc"]["space_vals"] = space_eval_trial(self._parameters, t)
+                local_trials[idx]["misc"]["space_vals"] = space_eval_trial(
+                    self._parameters, t
+                )
 
             all_to_str = json.dumps(local_trials, default=str)
             with open(self._json_file, "w") as f:

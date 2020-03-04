@@ -1,10 +1,9 @@
-from __future__ import division
-
 import numpy as np
-import keras.backend as K
-from keras.layers import Layer
-from keras.layers import initializers
-from keras.constraints import Constraint
+import tensorflow as tf
+from tensorflow.keras import initializers
+from tensorflow.keras import backend as K
+from tensorflow.keras.constraints import Constraint
+from tensorflow.keras.layers import Layer
 
 
 class xlayer(Layer):
@@ -13,23 +12,26 @@ class xlayer(Layer):
     Custom array that inputs the information on the x-grid.
     """
 
-    def __init__(self, output_dim, xval, kernel_initializer='glorot_uniform', **kwargs):
+    def __init__(self, output_dim, xval, kernel_initializer="glorot_uniform", **kwargs):
         self.output_dim = output_dim
         self.xval = K.constant(xval)
         self.kernel_initializer = initializers.get(kernel_initializer)
         super(xlayer, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        self.kernel = self.add_weight(name='kernel', shape=(K.int_shape(self.xval)[0],
-                input_shape[1], self.output_dim), initializer=self.kernel_initializer,
-                trainable=True)
+        self.kernel = self.add_weight(
+            name="kernel",
+            shape=(K.int_shape(self.xval)[0], input_shape[1], self.output_dim),
+            initializer=self.kernel_initializer,
+            trainable=True,
+        )
         super(xlayer, self).build(input_shape)
 
     def call(self, x):
         # xres outputs (None, input_shape[1], len(x_pdf))
-        xres = K.tf.tensordot(x, self.xval, axes=0)
+        xres = tf.tensordot(x, self.xval, axes=0)
         # xfin outputs (None, output_dim)
-        xfin = K.tf.tensordot(xres, self.kernel, axes=([1,2],[0,1]))
+        xfin = tf.tensordot(xres, self.kernel, axes=([1, 2], [0, 1]))
         return xfin
 
     def compute_output_shape(self, input_shape):
@@ -43,24 +45,27 @@ class preprocessing_fit(Layer):
     Here, the parameters are fitted.
     """
 
-    def __init__(self, xval, trainable=True, kernel_initializer='ones', **kwargs):
+    def __init__(self, xval, trainable=True, kernel_initializer="ones", **kwargs):
         self.xval = xval
         self.trainable = trainable
         self.kernel_initializer = initializers.get(kernel_initializer)
         super(preprocessing_fit, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        self.kernel = self.add_weight(name='kernel', shape=(2,),
-                initializer=self.kernel_initializer,
-                trainable=self.trainable)
+        self.kernel = self.add_weight(
+            name="kernel",
+            shape=(2,),
+            initializer=self.kernel_initializer,
+            trainable=self.trainable,
+        )
         super(preprocessing_fit, self).build(input_shape)
 
     def compute_output_shape(self, input_shape):
         return input_shape
 
     def call(self, pdf):
-        xres = self.xval**self.kernel[0] * (1-self.xval)**self.kernel[1]
-        return pdf*xres
+        xres = self.xval ** self.kernel[0] * (1 - self.xval) ** self.kernel[1]
+        return pdf * xres
 
 
 class custom_losses(object):
@@ -97,7 +102,8 @@ class ClipConstraint(Constraint):
         return K.clip(weights, -self.clip_value, self.clip_value)
 
     def get_config(self):
-        return {'clip_value': self.clip_value}
+        return {"clip_value": self.clip_value}
+
 
 class xmetrics(object):
 
@@ -118,8 +124,11 @@ class xmetrics(object):
         """
         val = []
         for i in range(self.y_true.shape[0]):
-            arr = np.where(self.y_true[i]!=0,
-                    self.y_true[i]*np.log(self.y_true[i]/self.y_pred[i]), 0)
+            arr = np.where(
+                self.y_true[i] != 0,
+                self.y_true[i] * np.log(self.y_true[i] / self.y_pred[i]),
+                0,
+            )
             val.append(np.sum(arr))
         res = np.array(val)
         return res, np.mean(res)
