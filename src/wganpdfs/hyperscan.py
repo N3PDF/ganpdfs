@@ -24,7 +24,7 @@ def load_yaml(runcard_file):
     """Loads yaml runcard"""
     with open(runcard_file, "r") as stream:
         runcard = yaml.load(stream)
-    hyperdict = runcard.get("hyperopt", [])
+    hyperdict = runcard.get("hyperopt", {}) 
     for key, value in hyperdict.items():
         fname = re_function.search(value)
         if fname is None:
