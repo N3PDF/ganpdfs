@@ -1,3 +1,5 @@
+import re
+import ast
 import yaml
 import time
 import pickle
@@ -6,7 +8,7 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.optimizers import SGD, RMSprop, Adadelta
 from tensorflow.keras.layers import ELU, ReLU, LeakyReLU
 
-from hyperopt import fmin, tpe
+from hyperopt import fmin, tpe, hp
 from hyperopt.mongoexp import MongoTrials
 from hyperopt import space_eval, STATUS_OK
 
@@ -14,14 +16,25 @@ from wganpdfs.pdformat import xnodes
 from wganpdfs.train import xgan_train
 from wganpdfs.filetrials import FileTrials
 
+re_function = re.compile("(?<=hp\.)\w*(?=\()")
+re_args = re.compile("\(.*\)$")
+
 # ----------------------------------------------------------------------
 def load_yaml(runcard_file):
     """Loads yaml runcard"""
     with open(runcard_file, "r") as stream:
         runcard = yaml.load(stream)
-    for key, value in runcard.items():
-        if "hp." in str(value):
-            runcard[key] = eval(value)
+    hyperdict = runcard.get("hyperopt", [])
+    for key, value in hyperdict.items():
+        fname = re_function.search(value)
+        if fname is None:
+            raise ValueError(f"No hp.function found in ${key}:{value}")
+        fname = fname[0]
+        args = re_args.search(value)
+        if args is None:
+            raise ValueError(f"No arguments found in ${key}:{value}")
+        vals = ast.literal_eval(args[0])
+        runcard[key] = getattr(hp, fname)(*vals)
     return runcard
 
 
