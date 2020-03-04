@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 PACKAGE = "wganpdfs"
 
 # TODO: reduce the amount of requirements
-requirements = ["hyperopt", "numpy", "keras", "scipy", "matplotlib"]
+requirements = ["hyperopt", "numpy", "tensorflow", "scipy", "matplotlib"]
 
 if sys.version_info < (3,6):
     print("cyclejet requires Python 3.6 or later", file=sys.stderr)
