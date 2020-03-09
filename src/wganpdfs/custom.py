@@ -195,7 +195,7 @@ class smm(object):
                 # Evaluate obs for different estimator
                 es_true, es_fake = get_method(es_class, es)()
                 # Sum over the nb of grid
-                sum1 += ((es_true-es_fake)/es_fake)**2
+                sum1 += ((es_fake-es_true)/es_true)**2
             # Sum over the nb of estimators
             sum2 += Nk*sum1
         return sum2
