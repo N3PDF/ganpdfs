@@ -20,3 +20,6 @@ ng_steps : 2
 # Intrinsic features
 add_xlayer : True
 preprocessing: True
+
+# List of estimators
+estimators: ['mean', 'stdev']

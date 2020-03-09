@@ -6,6 +6,28 @@ from tensorflow.keras.constraints import Constraint
 from tensorflow.keras.layers import Layer
 
 
+"""
+Custom functions
+"""
+
+def wasserstein_loss(y_true, y_pred):
+    """
+    Function that computes Wasserstein loss
+    """
+    return K.mean(y_true * y_pred)
+
+
+def get_method(class_name, method):
+    """
+    Get the methods in a class
+    """
+    return getattr(class_name, method, None)
+
+
+"""
+Custom classes
+"""
+
 class xlayer(Layer):
 
     """
@@ -83,10 +105,6 @@ class custom_losses(object):
         return K.mean(y_true * y_pred)
 
 
-def wasserstein_loss(y_true, y_pred):
-    return K.mean(y_true * y_pred)
-
-
 class ClipConstraint(Constraint):
 
     """
@@ -105,16 +123,39 @@ class ClipConstraint(Constraint):
         return {"clip_value": self.clip_value}
 
 
-class xmetrics(object):
+class estimators(object):
+    """
+    Class that contains methods for the estimator computation
+    """
+    def __init__(self, true_distr, fake_distr):
+        self.true_distr = true_distr
+        self.fake_distr = fake_distr
+
+    def mean(self):
+        """
+        Compute mean
+        """
+        return np.mean(self.true_distr), np.mean(self.fake_distr)
+
+    def stdev(self):
+        """
+        Compute standard deviation
+        """
+        return np.std(self.true_distr), np.std(self.fake_distr)
+
+
+class smm(object):
 
     """
+    Similarity Metric Method (SMM)
     Custom metrics in order to assess the performance of the model.
     """
 
-    def __init__(self, y_true, y_pred):
-        epsilon = 1e-3
+    def __init__(self, y_true, y_pred, params):
+        epsilon = 1e-1
         self.y_true = y_true + epsilon
         self.y_pred = y_pred + epsilon
+        self.estmtr = params['estimators']
 
     def kullback(self):
         """
@@ -141,3 +182,20 @@ class xmetrics(object):
         """
         res = np.linalg.norm(self.y_true - self.y_pred)
         return res
+
+    def ERF(self):
+        # Normalization factor
+        Nk = 1
+        sum1, sum2 = 0, 0
+        # Loop over the list of estimators
+        for es in self.estmtr:
+            for xi in range(self.y_true.shape[1]):
+                # Initialize estimator class
+                es_class = estimators(self.y_true[:,xi], self.y_pred[:,xi])
+                # Evaluate obs for different estimator
+                es_true, es_fake = get_method(es_class, es)()
+                # Sum over the nb of grid
+                sum1 += ((es_true-es_fake)/es_fake)**2
+            # Sum over the nb of estimators
+            sum2 += Nk*sum1
+        return sum2

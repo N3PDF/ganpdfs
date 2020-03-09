@@ -3,7 +3,7 @@ import numpy as np
 import json, tempfile
 from scipy import stats
 import matplotlib.pyplot as plt
-from wganpdfs.custom import xmetrics
+from wganpdfs.custom import smm
 from wganpdfs.pdformat import input_pdfs
 from wganpdfs.model import wasserstein_xgan_model
 from wganpdfs.model import dcnn_wasserstein_xgan_model
@@ -73,10 +73,10 @@ class xgan_train(object):
 
         # Note that the input and the generated replicas
         # might not have the same shape
-        for i in range(self.sampled_pdf.shape[0]):
-            main.plot(self.x_pdf, self.sampled_pdf[i], color="deeppink", alpha=0.35)
-        for j in range(generated_pdf.shape[0]):
-            main.plot(self.x_pdf, generated_pdf[j], color="dodgerblue", alpha=0.45)
+        for true_rep in self.sampled_pdf:
+            main.plot(self.x_pdf, true_rep, color="deeppink", alpha=0.35)
+        for fake_rep in generated_pdf:
+            main.plot(self.x_pdf, fake_rep, color="dodgerblue", alpha=0.45)
 
         for x, position in zip(xv, lst_hist):
             true_hist = np.array([repl[x] for repl in self.sampled_pdf])
@@ -245,9 +245,6 @@ class xgan_train(object):
                 noise, y_gen = self.sample_output_noise(batch_size)
                 gloss = self.xgan_model.adversarial.train_on_batch(noise, y_gen)
 
-            # Defines the SMM to be hyperoptimized
-            metric = gloss
-
             # Print log output
             if verbose:
                 if k % 100 == 0:
@@ -263,6 +260,13 @@ class xgan_train(object):
                     self.plot_generated_pdf(
                         k, self.params["out_replicas"], self.params["save_output"]
                     )
+            else:
+                # Generate fake replicas with the trained model
+                rnd_noise = self.sample_latent_space(self.nb_replicas, self.noise_size)
+                fake_pdf  = self.xgan_model.generator.predict(rnd_noise)
+
+                # Compute SMM for hyperoptimization
+                metric = smm(self.sampled_pdf, fake_pdf, self.params).ERF()
 
         # Close the loss file
         f.close()
