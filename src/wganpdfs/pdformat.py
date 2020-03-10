@@ -29,7 +29,7 @@ class xnodes(object):
                         7.6891892e-01, 7.8108108e-01, 7.9324324e-01, 8.0540541e-01, 8.1756757e-01,
                         8.2972973e-01, 8.4189189e-01, 8.5405405e-01, 8.6621622e-01, 8.7837838e-01,
                         8.9054054e-01, 9.0270270e-01, 9.1486486e-01, 9.2702703e-01, 9.3918919e-01,
-                        9.5135135e-01, 9.6351351e-01, 9.7567568e-01, 9.8783784e-01, 1.0000000e+00]
+                        9.5135135e-01, 9.6351351e-01, 9.7567568e-01, 9.8783784e-01]
 
 
     def build_xgrid(self):
@@ -80,4 +80,4 @@ class input_pdfs(object):
             for x in self.x_pdf:
                 row.append(pdf.xfxQ2(self.flavors,x,self.Q_value))
             data.append(row)
-        return np.array(data)
+        return np.array(data, dtype=np.float64)

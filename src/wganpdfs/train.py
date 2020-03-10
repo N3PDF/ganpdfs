@@ -205,6 +205,8 @@ class xgan_train(object):
         self.xgan_model.critic.fit(xinput, y_disc, epochs=epochs, batch_size=batch_size)
 
     def train(self, nb_epochs=1000, batch_size=1, verbose=False):
+        # Initialize the value of metric
+        metric = 0
         # Calculate the number of bacthes per training epochs
         batch_per_epoch = int(self.sampled_pdf.shape[0] / batch_size)
         # Calculate the number of training iterations

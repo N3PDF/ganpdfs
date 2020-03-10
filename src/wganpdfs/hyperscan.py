@@ -113,7 +113,7 @@ def hyper_train(params):
     # In case one needs to pretrain the Discriminator
     # xgan_pdfs.pretrain_disc(BATCH_SIZE, epochs=4)
 
-    g_loss = xgan_pdfs.train(
+    smm_result = xgan_pdfs.train(
         nb_epochs=params["epochs"], batch_size=BATCH_SIZE, verbose=params["verbose"]
     )
-    return {"loss": g_loss, "status": STATUS_OK}
+    return {"loss": smm_result, "status": STATUS_OK}

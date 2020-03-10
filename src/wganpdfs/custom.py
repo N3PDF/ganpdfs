@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+from scipy import stats
 from tensorflow.keras import initializers
 from tensorflow.keras import backend as K
 from tensorflow.keras.constraints import Constraint
@@ -127,7 +128,8 @@ class estimators(object):
     """
     Class that contains methods for the estimator computation
     """
-    def __init__(self, true_distr, fake_distr):
+    def __init__(self, true_distr, fake_distr, Axs=None):
+        self.Axs = Axs
         self.true_distr = true_distr
         self.fake_distr = fake_distr
 
@@ -135,14 +137,90 @@ class estimators(object):
         """
         Compute mean
         """
-        return np.mean(self.true_distr), np.mean(self.fake_distr)
+        Tmean = np.mean(self.true_distr,axis=self.Axs)
+        Fmean = np.mean(self.fake_distr,axis=self.Axs)
+        return Tmean, Fmean
 
     def stdev(self):
         """
         Compute standard deviation
         """
-        return np.std(self.true_distr), np.std(self.fake_distr)
+        Tstd = np.std(self.true_distr,axis=self.Axs)
+        Fstd = np.std(self.fake_distr,axis=self.Axs)
+        return Tstd, Fstd
 
+
+class normalizationK(object):
+    """
+    Class that computes the normalization K for a given estimator
+    """
+    def __init__(self, true_distr, fake_distr, random_param):
+        self.true_distr = true_distr
+        self.fake_distr = fake_distr
+        self.random_param = random_param
+
+    def random_replicas(self, number):
+        # Non-redundant choice
+        index = np.random.choice(
+            self.fake_distr.shape[0],
+            number,
+            replace=False
+        )
+        return self.fake_distr[index]
+
+    def cfd68(self, tr_vec, rd_vec):
+        """
+        Return vectors satisfying cfd from
+        input vectors
+        """
+        estm = estimators(tr_vec, rd_vec)
+        tr_mean, rd_mean = estm.mean()
+        tr_stdv, rd_stdv = estm.stdev()
+        # Compute 68% level
+        tr_low, tr_high = stats.norm.interval(
+            0.6827,
+            loc=tr_mean,
+            scale=tr_stdv
+        )
+        rd_low, rd_high = stats.norm.interval(
+            0.6827,
+            loc=rd_mean,
+            scale=rd_stdv
+        )
+        # New vector lists
+        new_tr = [x for x in tr_vec if tr_low<=x<=tr_high]
+        new_rd = [z for z in rd_vec if rd_low<=z<=rd_high]
+
+        return new_tr, new_rd
+
+    def Nk_mean(self):
+        """
+        Normalization factor for mean estimator
+        """
+        sum2  = 0
+        Nrand = self.fake_distr.shape[0]
+        for r in range(2,Nrand):
+            sum1 = 0
+            rand_distr = self.random_replicas(r)
+            for x in range(self.true_distr.shape[1]):
+                # Check 68% level
+                trx, rdx = self.cfd68(
+                    self.true_distr[:,x],
+                    rand_distr[:,x]
+                )
+                # Compute Mean of reduced vec
+                estt = estimators(trx, rdx)
+                xtr, xrd = estt.mean()
+                sum1 += ((xrd - xtr) / xtr)**2
+            sum2 += sum1
+        return sum2/Nrand
+
+    def Nk_stdev(self):
+        """
+        Normalization factor for the std estimator.
+        Exactly the same as Nk_mean()
+        """
+        return self.Nk_mean()
 
 class smm(object):
 
@@ -184,18 +262,22 @@ class smm(object):
         return res
 
     def ERF(self):
-        # Normalization factor
-        Nk = 1
-        sum1, sum2 = 0, 0
+        sum2 = 0
         # Loop over the list of estimators
         for es in self.estmtr:
-            for xi in range(self.y_true.shape[1]):
-                # Initialize estimator class
-                es_class = estimators(self.y_true[:,xi], self.y_pred[:,xi])
-                # Evaluate obs for different estimator
-                es_true, es_fake = get_method(es_class, es)()
-                # Sum over the nb of grid
-                sum1 += ((es_fake-es_true)/es_true)**2
-            # Sum over the nb of estimators
-            sum2 += Nk*sum1
-        return sum2
+            # compute Normalization factor
+            nk_class = normalizationK(
+                self.y_true,
+                self.y_pred,
+                None
+            )
+            Nk = get_method(nk_class, 'Nk_'+es)()
+            es_class = estimators(
+                self.y_true,
+                self.y_pred,
+                Axs=0
+            )
+            es_true, es_fake = get_method(es_class, es)()
+            sum1 = ((es_fake - es_true) / es_true)**2
+            sum2 += Nk * np.sum(sum1)
+        return sum2/len(self.estmtr)
