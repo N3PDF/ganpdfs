@@ -59,7 +59,7 @@ class wasserstein_xgan_model(object):
         import numpy as np
         aa = np.random.rand(1,100)
         bb = np.random.rand(1,1)
-        print(self.adversarial.fit(x = aa, y = bb))
+        # print(self.adversarial.fit(x = aa, y = bb))
 
     def generator_model(self):
         """
