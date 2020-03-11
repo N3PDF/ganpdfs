@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import save
 import tensorflow as tf
 from scipy import stats
 from tensorflow.keras import initializers
@@ -166,6 +167,7 @@ class normalizationK(object):
             number,
             replace=False
         )
+        np.save('index.npy', index)
         return self.fake_distr[index]
 
     def cfd68(self, tr_vec, rd_vec):
@@ -230,10 +232,11 @@ class smm(object):
     """
 
     def __init__(self, y_true, y_pred, params):
-        epsilon = 1e-1
+        epsilon = 0                 # This has to be ZERO
         self.y_true = y_true + epsilon
         self.y_pred = y_pred + epsilon
         self.estmtr = params['estimators']
+        np.save('fake.npy', y_pred)
 
     def kullback(self):
         """
@@ -265,13 +268,14 @@ class smm(object):
         sum2 = 0
         # Loop over the list of estimators
         for es in self.estmtr:
-            # compute Normalization factor
+            # Call normalizations
             nk_class = normalizationK(
                 self.y_true,
                 self.y_pred,
                 None
             )
             Nk = get_method(nk_class, 'Nk_'+es)()
+            # Call estimators
             es_class = estimators(
                 self.y_true,
                 self.y_pred,
