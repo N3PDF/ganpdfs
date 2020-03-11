@@ -3,7 +3,6 @@ import numpy as np
 import json, tempfile
 from scipy import stats
 import matplotlib.pyplot as plt
-from wganpdfs.custom import xmetrics
 from wganpdfs.pdformat import input_pdfs
 from wganpdfs.model import wasserstein_xgan_model
 from wganpdfs.model import dcnn_wasserstein_xgan_model
@@ -244,6 +243,7 @@ class xgan_train(object):
             for _ in range(self.params["ng_steps"]):
                 noise, y_gen = self.sample_output_noise(batch_size)
                 gloss = self.xgan_model.adversarial.train_on_batch(noise, y_gen)
+
 
             # Defines the SMM to be hyperoptimized
             metric = gloss
