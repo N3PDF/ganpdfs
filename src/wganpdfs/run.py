@@ -1,6 +1,8 @@
 """
     This file contains the main driver of the wganpdfs code
 """
+import tensorflow as tf
+tf.compat.v1.disable_eager_execution()
 
 import os
 import shutil

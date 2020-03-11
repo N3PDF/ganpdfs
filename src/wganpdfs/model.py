@@ -56,6 +56,10 @@ class wasserstein_xgan_model(object):
         self.adversarial = self.adversarial_model()
         self.adversarial.compile(loss=wasserstein_loss, optimizer=gan_optimizer)
         self.adversarial.summary()
+        import numpy as np
+        aa = np.random.rand(1,100)
+        bb = np.random.rand(1,1)
+        print(self.adversarial.fit(x = aa, y = bb))
 
     def generator_model(self):
         """
@@ -155,7 +159,8 @@ class wasserstein_xgan_model(object):
         fake_pdf = self.generator(G_input)
         validity = self.critic(fake_pdf)
 
-        return Model(G_input, validity)
+        ad_model = Model(G_input, validity)
+        return ad_model
 
 
 class dcnn_wasserstein_xgan_model(object):

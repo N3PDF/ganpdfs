@@ -83,11 +83,10 @@ class custom_losses(object):
 
     @tf.function
     def wasserstein_loss(self):
-        return K.mean(y_true * y_pred)
+        return tf.reduce_mean(y_true*y_pred)
 
-@tf.function
 def wasserstein_loss(y_true, y_pred):
-    return K.mean(y_true * y_pred)
+    return tf.reduce_mean(y_true*y_pred)
 
 
 class ClipConstraint(Constraint):

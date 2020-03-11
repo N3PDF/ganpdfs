@@ -244,6 +244,7 @@ class xgan_train(object):
                 noise, y_gen = self.sample_output_noise(batch_size)
                 gloss = self.xgan_model.adversarial.train_on_batch(noise, y_gen)
 
+
             # Defines the SMM to be hyperoptimized
             metric = gloss
 
