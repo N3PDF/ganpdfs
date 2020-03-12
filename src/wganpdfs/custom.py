@@ -150,8 +150,9 @@ class estimators(object):
         """
         Compute standard deviation
         """
-        Tstd = np.std(self.true_distr,axis=self.Axs)
-        Fstd = np.std(self.fake_distr,axis=self.Axs)
+        eps = 1e-8
+        Tstd = np.std(self.true_distr,axis=self.Axs) + eps
+        Fstd = np.std(self.fake_distr,axis=self.Axs) + eps
         return Tstd, Fstd
 
 
@@ -174,34 +175,49 @@ class normalizationK(object):
         np.save('index.npy', index)
         return self.fake_distr[index]
 
-    def cfd68(self, tr_vec, rd_vec):
+    def cfd68(self, name_est):
         """
-        Return vectors satisfying cfd from
-        input vectors
+        Return arrays satisfying cfd from
+        input arrays
         """
         eps = 1e-8
-        estm = estimators(tr_vec, rd_vec)
+        estm = estimators(self.true_distr, self.fake_distr, Axs=0)
         tr_mean, rd_mean = estm.mean()
         tr_stdv, rd_stdv = estm.stdev()
         # Shift std to avoid std=0
         tr_stdv += eps
         rd_stdv += eps
-        # Compute 68% level
-        tr_low, tr_high = stats.norm.interval(
+        # Compute 68% level (this return tuples)
+        tr_cfd = stats.norm.interval(
             0.6827,
             loc=tr_mean,
             scale=tr_stdv
         )
-        rd_low, rd_high = stats.norm.interval(
+        rd_cfd = stats.norm.interval(
             0.6827,
             loc=rd_mean,
             scale=rd_stdv
         )
-        # New vector lists
-        new_tr = [x for x in tr_vec if tr_low<=x<=tr_high]
-        new_rd = [z for z in rd_vec if rd_low<=z<=rd_high]
+        res_tr = []
+        res_rd = []
+        for z in range(self.true_distr.shape[1]):
+            mask_tr = (tr_cfd[0][z]<=self.true_distr[:,z]) * (self.true_distr[:,z]<=tr_cfd[1][z])
+            mask_rd = (rd_cfd[0][z]<=self.fake_distr[:,z]) * (self.fake_distr[:,z]<=rd_cfd[1][z])
+            # Apply selection
+            new_tr = self.true_distr[:,z][mask_tr]
+            new_rd = self.fake_distr[:,z][mask_rd]
 
-        return new_tr, new_rd
+            cfd_class = estimators(
+                    new_tr,
+                    new_rd
+            )
+            tr_res, rd_res = get_method(cfd_class, name_est)()
+            res_tr.append(tr_res)
+            res_rd.append(rd_res)
+        fin_tr = np.array(res_tr, dtype='float64')
+        fin_rd = np.array(res_rd, dtype='float64')
+
+        return fin_tr, fin_rd
 
     def Nk_mean(self):
         """
@@ -210,19 +226,11 @@ class normalizationK(object):
         sum2  = 0
         Nrand = self.fake_distr.shape[0]
         for r in range(1,Nrand):
-            sum1 = 0
             rand_distr = self.random_replicas(r)
-            for x in range(self.true_distr.shape[1]):
-                # Check 68% level
-                trx, rdx = self.cfd68(
-                    self.true_distr[:,x],
-                    rand_distr[:,x]
-                )
-                # Compute Mean of reduced vec
-                estt = estimators(trx, rdx)
-                xtr, xrd = estt.mean()
-                sum1 += ((xrd - xtr) / xtr)**2
-            sum2 += sum1
+            print(type(rand_distr))
+            xtr, xrd = self.cfd68('mean')
+            sum1 = ((xrd - xtr) / xtr)**2
+            sum2 += np.sum(sum1)
         return sum2/Nrand
 
     def Nk_stdev(self):
