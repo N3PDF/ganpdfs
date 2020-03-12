@@ -179,9 +179,13 @@ class normalizationK(object):
         Return vectors satisfying cfd from
         input vectors
         """
+        eps = 1e-8
         estm = estimators(tr_vec, rd_vec)
         tr_mean, rd_mean = estm.mean()
         tr_stdv, rd_stdv = estm.stdev()
+        # Shift std to avoid std=0
+        tr_stdv += eps
+        rd_stdv += eps
         # Compute 68% level
         tr_low, tr_high = stats.norm.interval(
             0.6827,
@@ -205,7 +209,7 @@ class normalizationK(object):
         """
         sum2  = 0
         Nrand = self.fake_distr.shape[0]
-        for r in range(2,Nrand):
+        for r in range(1,Nrand):
             sum1 = 0
             rand_distr = self.random_replicas(r)
             for x in range(self.true_distr.shape[1]):
