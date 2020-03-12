@@ -16,7 +16,7 @@ def wasserstein_loss(y_true, y_pred):
     """
     Function that computes Wasserstein loss
     """
-    return K.mean(y_true * y_pred)
+    return tf.reduce_mean(y_true * y_pred)
 
 
 def get_method(class_name, method):
@@ -51,6 +51,7 @@ class xlayer(Layer):
         )
         super(xlayer, self).build(input_shape)
 
+    # @tf.function
     def call(self, x):
         # xres outputs (None, input_shape[1], len(x_pdf))
         xres = tf.tensordot(x, self.xval, axes=0)
@@ -87,6 +88,7 @@ class preprocessing_fit(Layer):
     def compute_output_shape(self, input_shape):
         return input_shape
 
+    # @tf.function
     def call(self, pdf):
         xres = self.xval ** self.kernel[0] * (1 - self.xval) ** self.kernel[1]
         return pdf * xres
@@ -103,8 +105,9 @@ class custom_losses(object):
         self.y_true = y_true
         self.y_pred = y_pred
 
+    # @tf.function
     def wasserstein_loss(self):
-        return K.mean(y_true * y_pred)
+        return tf.reduce_mean(y_true*y_pred)
 
 
 class ClipConstraint(Constraint):
@@ -118,6 +121,7 @@ class ClipConstraint(Constraint):
     def __init__(self, clip_value):
         self.clip_value = clip_value
 
+    # @tf.function
     def __call__(self, weights):
         return K.clip(weights, -self.clip_value, self.clip_value)
 
