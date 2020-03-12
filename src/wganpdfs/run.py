@@ -117,6 +117,8 @@ def main():
     # If hyperscan is set true
     if args.hyperopt:
         hps["scan"] = True
+        if args.nreplicas < 90:
+            raise Exception('Choose number of replicas to be greater than 90.')
         hps = run_hyperparameter_scan(hps, args.hyperopt, args.cluster, out)
 
     # Run the best Model and output log

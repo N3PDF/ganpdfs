@@ -91,7 +91,11 @@ def hyper_train(params):
 
     # Model Parameters
     # List of activation funtions
-    activ = {"leakyrelu": LeakyReLU(alpha=0.2), "elu": ELU(alpha=1.0), "relu": ReLU()}
+    activ = {
+            "leakyrelu": LeakyReLU(alpha=0.2),
+            "elu": ELU(alpha=1.0),
+            "relu": ReLU()
+    }
     # List of optimization functions
     optmz = {
         "sgd": SGD(lr=0.0075),
@@ -114,6 +118,8 @@ def hyper_train(params):
     # xgan_pdfs.pretrain_disc(BATCH_SIZE, epochs=4)
 
     smm_result = xgan_pdfs.train(
-        nb_epochs=params["epochs"], batch_size=BATCH_SIZE, verbose=params["verbose"]
+        nb_epochs=params["epochs"],
+        batch_size=BATCH_SIZE,
+        verbose=params["verbose"]
     )
     return {"loss": smm_result, "status": STATUS_OK}
