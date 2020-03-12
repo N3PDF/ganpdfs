@@ -3,10 +3,7 @@ import numpy as np
 import json, tempfile
 from scipy import stats
 import matplotlib.pyplot as plt
-<<<<<<< HEAD
 from wganpdfs.custom import smm
-=======
->>>>>>> master
 from wganpdfs.pdformat import input_pdfs
 from wganpdfs.model import wasserstein_xgan_model
 from wganpdfs.model import dcnn_wasserstein_xgan_model
