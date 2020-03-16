@@ -32,6 +32,7 @@ class wasserstein_xgan_model(object):
         self.params = params
         self.activ = activ
         self.optmz = optmz
+        self.scan = params["scan"]
         self.g_nodes = params["g_nodes"]
         self.d_nodes = params["d_nodes"]
 
@@ -41,13 +42,13 @@ class wasserstein_xgan_model(object):
         crit_optimizer = self.optmz[params["d_opt"]]
         self.critic = self.critic_model()
         self.critic.compile(loss=wasserstein_loss, optimizer=crit_optimizer)
-        self.critic.summary()
+        if not self.scan: self.critic.summary()
 
         # ---------------------------#
         #         GENERATOR         #
         # ---------------------------#
         self.generator = self.generator_model()
-        self.generator.summary()
+        if not self.scan: self.generator.summary()
 
         # ---------------------------#
         #     ADVERSARIAL MODEL     #
@@ -55,11 +56,7 @@ class wasserstein_xgan_model(object):
         gan_optimizer = self.optmz[params["gan_opt"]]
         self.adversarial = self.adversarial_model()
         self.adversarial.compile(loss=wasserstein_loss, optimizer=gan_optimizer)
-        self.adversarial.summary()
-        import numpy as np
-        aa = np.random.rand(1,100)
-        bb = np.random.rand(1,1)
-        # print(self.adversarial.fit(x = aa, y = bb))
+        if not self.scan: self.adversarial.summary()
 
     def generator_model(self):
         """

@@ -34,7 +34,7 @@ class FileTrials(Trials):
 
         # write json to disk
         if self._store_trial:
-            self.log_info(f"Storing scan in {self._json_file}")
+            # self.log_info(f"Storing scan in {self._json_file}")
             local_trials = []
             for idx, t in enumerate(self._dynamic_trials):
                 local_trials.append(t)

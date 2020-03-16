@@ -4,7 +4,6 @@ import json, tempfile
 from scipy import stats
 import matplotlib.pyplot as plt
 from wganpdfs.custom import smm
-from wganpdfs.pdformat import input_pdfs
 from wganpdfs.model import wasserstein_xgan_model
 from wganpdfs.model import dcnn_wasserstein_xgan_model
 
@@ -18,19 +17,15 @@ class xgan_train(object):
     def __init__(
         self,
         x_pdf,
-        pdf_name,
+        pdf,
         noise_size,
         params,
         activ,
         optmz,
-        nb_replicas=1,
-        Q_value=1.7874388,
-        flavors=2,
+        nb_replicas=1
     ):
-        self.sampled_pdf = input_pdfs(
-            pdf_name, x_pdf, nb_replicas, Q_value, flavors
-        ).build_pdf()
         self.x_pdf = x_pdf
+        self.sampled_pdf = pdf
         self.nb_replicas = nb_replicas
         self.output_size = len(x_pdf)
         self.noise_size = noise_size
@@ -262,15 +257,16 @@ class xgan_train(object):
                     self.plot_generated_pdf(
                         k, self.params["out_replicas"], self.params["save_output"]
                     )
-            else:
-                # Generate fake replicas with the trained model
-                rnd_noise = self.sample_latent_space(self.nb_replicas, self.noise_size)
-                fake_pdf  = self.xgan_model.generator.predict(rnd_noise)
-
-                # Compute SMM for hyperoptimization
-                metric = smm(self.sampled_pdf, fake_pdf, self.params).ERF()
 
         # Close the loss file
         f.close()
+
+        if self.params["scan"]:
+            # Generate fake replicas with the trained model
+            rnd_noise = self.sample_latent_space(self.nb_replicas, self.noise_size)
+            fake_pdf  = self.xgan_model.generator.predict(rnd_noise)
+
+            # Compute SMM for hyperoptimization
+            metric = smm(self.sampled_pdf, fake_pdf, self.params).ERF()
 
         return metric

@@ -168,20 +168,19 @@ class normalizationK(object):
     def random_replicas(self, number):
         # Non-redundant choice
         index = np.random.choice(
-            self.fake_distr.shape[0],
+            self.true_distr.shape[0],
             number,
             replace=False
         )
-        np.save('index.npy', index)
-        return self.fake_distr[index]
+        return self.true_distr[index]
 
-    def cfd68(self, name_est):
+    def cfd68(self, name_est, rand_true):
         """
         Return arrays satisfying cfd from
         input arrays
         """
         eps = 1e-8
-        estm = estimators(self.true_distr, self.fake_distr, Axs=0)
+        estm = estimators(self.true_distr, rand_true, Axs=0)
         tr_mean, rd_mean = estm.mean()
         tr_stdv, rd_stdv = estm.stdev()
         # Shift std to avoid std=0
@@ -201,11 +200,11 @@ class normalizationK(object):
         res_tr = []
         res_rd = []
         for z in range(self.true_distr.shape[1]):
+            mask_rd = (rd_cfd[0][z]<=rand_true[:,z]) * (rand_true[:,z]<=rd_cfd[1][z])
             mask_tr = (tr_cfd[0][z]<=self.true_distr[:,z]) * (self.true_distr[:,z]<=tr_cfd[1][z])
-            mask_rd = (rd_cfd[0][z]<=self.fake_distr[:,z]) * (self.fake_distr[:,z]<=rd_cfd[1][z])
             # Apply selection
+            new_rd = rand_true[:,z][mask_rd]
             new_tr = self.true_distr[:,z][mask_tr]
-            new_rd = self.fake_distr[:,z][mask_rd]
 
             cfd_class = estimators(
                     new_tr,
@@ -224,11 +223,12 @@ class normalizationK(object):
         Normalization factor for mean estimator
         """
         sum2  = 0
-        Nrand = self.fake_distr.shape[0]
+        # Select fixed-sized subset from true
+        Nsize = 50
+        Nrand = 1000
         for r in range(1,Nrand):
-            rand_distr = self.random_replicas(r)
-            print(type(rand_distr))
-            xtr, xrd = self.cfd68('mean')
+            rand_distr = self.random_replicas(Nsize)
+            xtr, xrd = self.cfd68('mean', rand_distr)
             sum1 = ((xrd - xtr) / xtr)**2
             sum2 += np.sum(sum1)
         return sum2/Nrand
@@ -299,5 +299,5 @@ class smm(object):
             )
             es_true, es_fake = get_method(es_class, es)()
             sum1 = ((es_fake - es_true) / es_true)**2
-            sum2 += Nk * np.sum(sum1)
+            sum2 += np.sum(sum1) / Nk
         return sum2/len(self.estmtr)

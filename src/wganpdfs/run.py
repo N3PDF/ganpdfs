@@ -8,7 +8,12 @@ import os
 import shutil
 import logging
 import argparse
-from wganpdfs.hyperscan import hyper_train, load_yaml, run_hyperparameter_scan
+
+from wganpdfs.pdformat import xnodes
+from wganpdfs.pdformat import input_pdfs
+from wganpdfs.hyperscan import hyper_train
+from wganpdfs.hyperscan import load_yaml
+from wganpdfs.hyperscan import run_hyperparameter_scan
 
 logger = logging.getLogger(__name__)
 
@@ -116,15 +121,39 @@ def main():
     else:
         hps["fl"] = args.flavors
 
+    ## One-time generation of input PDF ##
+    # Load the x_grid
+    x_pdf = xnodes().build_xgrid()
+    # Choose Q^2 value
+    Q_value = 1.7874388
+    # Generate PDF
+    pdf = input_pdfs(
+        hps["pdf"],
+        x_pdf,
+        hps["input_replicas"],
+        Q_value,
+        hps["fl"]
+    ).build_pdf()
+
+
     # If hyperscan is set true
     if args.hyperopt:
         hps["scan"] = True
         if args.nreplicas < 90:
             raise Exception('Choose number of replicas to be greater than 90.')
-        hps = run_hyperparameter_scan(hps, args.hyperopt, args.cluster, out)
+        def fn_hyper_train(params):
+            return hyper_train(params, x_pdf, pdf)
+        # Run hyper scan
+        hps = run_hyperparameter_scan(
+            fn_hyper_train,
+            hps,
+            args.hyperopt,
+            args.cluster,
+            out
+        )
 
     # Run the best Model and output log
     hps["scan"] = False
     hps["verbose"] = True
 
-    loss = hyper_train(hps)
+    loss = hyper_train(hps, x_pdf, pdf)

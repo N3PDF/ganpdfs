@@ -12,7 +12,6 @@ from hyperopt import fmin, tpe, hp
 from hyperopt.mongoexp import MongoTrials
 from hyperopt import space_eval, STATUS_OK
 
-from wganpdfs.pdformat import xnodes
 from wganpdfs.train import xgan_train
 from wganpdfs.filetrials import FileTrials
 
@@ -39,7 +38,7 @@ def load_yaml(runcard_file):
 
 
 # ----------------------------------------------------------------------
-def run_hyperparameter_scan(search_space, max_evals, cluster, folder):
+def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder):
 
     """
     Run the hyperparameter scan using hyperopt.
@@ -55,7 +54,11 @@ def run_hyperparameter_scan(search_space, max_evals, cluster, folder):
         """
         trials = FileTrials(folder, parameters=search_space)
     best = fmin(
-        hyper_train, search_space, algo=tpe.suggest, max_evals=max_evals, trials=trials
+        func_train,
+        search_space,
+        algo=tpe.suggest,
+        max_evals=max_evals,
+        trials=trials
     )
     # Save the overall best model
     best_setup = space_eval(search_space, best)
@@ -71,13 +74,11 @@ def run_hyperparameter_scan(search_space, max_evals, cluster, folder):
 
 
 # ----------------------------------------------------------------------
-def hyper_train(params):
+def hyper_train(params, xpdf, pdf):
 
     """
     Define the hyper parameters optimization function.
     """
-    # Load the x_grid
-    X_PDF = xnodes().build_xgrid()
     # Define the number of input replicas
     NB_INPUT_REP = params["input_replicas"]
     # Define the number of batches
@@ -103,15 +104,15 @@ def hyper_train(params):
         "adadelta": Adadelta(lr=1.0),
     }
 
+    # Train on Input/True pdf
     xgan_pdfs = xgan_train(
-        X_PDF,
-        params["pdf"],
+        xpdf,
+        pdf,
         100,
         params,
         activ,
         optmz,
         nb_replicas=NB_INPUT_REP,
-        flavors=params["fl"],
     )
 
     # In case one needs to pretrain the Discriminator
