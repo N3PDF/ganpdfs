@@ -301,3 +301,29 @@ class smm(object):
             sum1 = ((es_fake - es_true) / es_true)**2
             sum2 += np.sum(sum1) / Nk
         return sum2/len(self.estmtr)
+
+
+# TODO do something like
+# def ERF(y_true, y_pred, params):
+#     sum2 = 0
+#     estmtr = params['estimators']
+#     # Loop over the list of estimators
+#     for es in self.estmtr:
+#         # Call normalizations
+#         nk_class = normalizationK(
+#             self.y_true,
+#             self.y_pred,
+#             None
+#         )
+#         Nk = get_method(nk_class, 'Nk_'+es)()
+#         # Call estimators
+#         es_class = estimators(
+#             self.y_true,
+#             self.y_pred,
+#             Axs=0
+#         )
+#         es_true, es_fake = get_method(es_class, es)()
+#         sum1 = ((es_fake - es_true) / es_true)**2
+#         sum2 += np.sum(sum1) / Nk
+#     return sum2/len(self.estmtr)
+# 

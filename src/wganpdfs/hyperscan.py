@@ -63,7 +63,7 @@ def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder
     # Save the overall best model
     best_setup = space_eval(search_space, best)
     print("\n[+] Best scan setup:")
-    pprint.pprint(best_setup)
+#     pprint.pprint(best_setup)
     with open("%s/best-model.yaml" % folder, "w") as wfp:
         yaml.dump(best_setup, wfp, default_flow_style=False)
     log = "%s/hyperopt_log_{}.pickle".format(time.time()) % folder
@@ -87,10 +87,8 @@ def hyper_train(params, xpdf, pdf):
     else:
         BATCH_SIZE = int(NB_INPUT_REP / 10)
 
-    # Clear Keras session
-    K.clear_session()
-
     # Model Parameters
+    # TODO do this depending on the parameters instead of generating all of them
     # List of activation funtions
     activ = {
             "leakyrelu": LeakyReLU(alpha=0.2),

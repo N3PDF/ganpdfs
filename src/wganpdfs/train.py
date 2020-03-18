@@ -213,8 +213,9 @@ class xgan_train(object):
             half_batch_size = int(batch_size / 2)
 
         # Initialize the file for the losses
-        f = open("%s/losses_info.csv" % self.params["save_output"], "w")
-        f.write("Iter., Disc_Loss_Real, Disc_Loss_Fake, Adv_loss, metric\n")
+        if not self.params["scan"]:
+            f = open("%s/losses_info.csv" % self.params["save_output"], "w")
+            f.write("Iter., Disc_Loss_Real, Disc_Loss_Fake, Adv_loss, metric\n")
         for k in range(1, nb_steps + 1):
 
             # # Train the Critic
@@ -243,7 +244,7 @@ class xgan_train(object):
                 gloss = self.xgan_model.adversarial.train_on_batch(noise, y_gen)
 
             # Print log output
-            if verbose:
+            if verbose and not self.params["scan"]:
                 if k % 100 == 0:
                     print(
                         "Iter:{} out of {}. dloss real: {:6f}. dloss fake: {:6f}. Adv loss: {:6f}".format(
@@ -259,7 +260,8 @@ class xgan_train(object):
                     )
 
         # Close the loss file
-        f.close()
+        if not self.params["scan"]:
+            f.close()
 
         if self.params["scan"]:
             # Generate fake replicas with the trained model
@@ -267,6 +269,7 @@ class xgan_train(object):
             fake_pdf  = self.xgan_model.generator.predict(rnd_noise)
 
             # Compute SMM for hyperoptimization
+            # TODO use a function call here instead of creating class + calling method and then discarding
             metric = smm(self.sampled_pdf, fake_pdf, self.params).ERF()
 
         return metric

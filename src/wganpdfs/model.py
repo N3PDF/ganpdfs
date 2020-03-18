@@ -42,13 +42,15 @@ class wasserstein_xgan_model(object):
         crit_optimizer = self.optmz[params["d_opt"]]
         self.critic = self.critic_model()
         self.critic.compile(loss=wasserstein_loss, optimizer=crit_optimizer)
-        if not self.scan: self.critic.summary()
+        if not self.scan: 
+            self.critic.summary()
 
         # ---------------------------#
         #         GENERATOR         #
         # ---------------------------#
         self.generator = self.generator_model()
-        if not self.scan: self.generator.summary()
+        if not self.scan: 
+            self.generator.summary()
 
         # ---------------------------#
         #     ADVERSARIAL MODEL     #
@@ -56,7 +58,8 @@ class wasserstein_xgan_model(object):
         gan_optimizer = self.optmz[params["gan_opt"]]
         self.adversarial = self.adversarial_model()
         self.adversarial.compile(loss=wasserstein_loss, optimizer=gan_optimizer)
-        if not self.scan: self.adversarial.summary()
+        if not self.scan:
+            self.adversarial.summary()
 
     def generator_model(self):
         """
