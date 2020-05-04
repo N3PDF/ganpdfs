@@ -1,5 +1,7 @@
+import os
 import numpy as np
-from numpy import save
+# Silent tf for the time being
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf
 from scipy import stats
 from tensorflow.keras import initializers
@@ -135,6 +137,7 @@ class estimators(object):
     """
     def __init__(self, true_distr, fake_distr, Axs=None):
         self.Axs = Axs
+        self.eps = 1e-8
         self.true_distr = true_distr
         self.fake_distr = fake_distr
 
@@ -142,17 +145,16 @@ class estimators(object):
         """
         Compute mean
         """
-        Tmean = np.mean(self.true_distr,axis=self.Axs)
-        Fmean = np.mean(self.fake_distr,axis=self.Axs)
+        Tmean = np.mean(self.true_distr,axis=self.Axs) + self.eps
+        Fmean = np.mean(self.fake_distr,axis=self.Axs) + self.eps
         return Tmean, Fmean
 
     def stdev(self):
         """
         Compute standard deviation
         """
-        eps = 1e-8
-        Tstd = np.std(self.true_distr,axis=self.Axs) + eps
-        Fstd = np.std(self.fake_distr,axis=self.Axs) + eps
+        Tstd = np.std(self.true_distr,axis=self.Axs) + self.eps
+        Fstd = np.std(self.fake_distr,axis=self.Axs) + self.eps
         return Tstd, Fstd
 
 
@@ -213,8 +215,8 @@ class normalizationK(object):
             tr_res, rd_res = get_method(cfd_class, name_est)()
             res_tr.append(tr_res)
             res_rd.append(rd_res)
-        fin_tr = np.array(res_tr, dtype='float64')
-        fin_rd = np.array(res_rd, dtype='float64')
+        fin_tr = np.array(res_tr, dtype='float64') + eps
+        fin_rd = np.array(res_rd, dtype='float64') + eps
 
         return fin_tr, fin_rd
 
@@ -252,7 +254,6 @@ class smm(object):
         self.y_true = y_true + epsilon
         self.y_pred = y_pred + epsilon
         self.estmtr = params['estimators']
-        np.save('fake.npy', y_pred)
 
     def kullback(self):
         """
