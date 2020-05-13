@@ -8,6 +8,7 @@ from tensorflow.keras import initializers
 from tensorflow.keras import backend as K
 from tensorflow.keras.constraints import Constraint
 from tensorflow.keras.layers import Layer
+from numba import jit, njit
 
 
 """
@@ -199,8 +200,8 @@ class normalizationK(object):
             loc=rd_mean,
             scale=rd_stdv
         )
-        res_tr = []
-        res_rd = []
+        res_tr = np.zeros(self.true_distr.shape[1])
+        res_rd = np.zeros(self.true_distr.shape[1])
         for z in range(self.true_distr.shape[1]):
             mask_rd = (rd_cfd[0][z]<=rand_true[:,z]) * (rand_true[:,z]<=rd_cfd[1][z])
             mask_tr = (tr_cfd[0][z]<=self.true_distr[:,z]) * (self.true_distr[:,z]<=tr_cfd[1][z])
@@ -213,10 +214,10 @@ class normalizationK(object):
                     new_rd
             )
             tr_res, rd_res = get_method(cfd_class, name_est)()
-            res_tr.append(tr_res)
-            res_rd.append(rd_res)
-        fin_tr = np.array(res_tr, dtype='float64') + eps
-        fin_rd = np.array(res_rd, dtype='float64') + eps
+            res_tr[z] = tr_res
+            res_rd[z] = rd_res
+        fin_tr = res_tr + eps
+        fin_rd = res_rd + eps
 
         return fin_tr, fin_rd
 
@@ -247,6 +248,11 @@ class smm(object):
     """
     Similarity Metric Method (SMM)
     Custom metrics in order to assess the performance of the model.
+
+    Input arguments:
+        - y_true: multi-dimensional array of prior/true replicas
+        - y_pred: multi-dimensional array of generated replicas
+        - params: input runcard that contaains a list of estimators
     """
 
     def __init__(self, y_true, y_pred, params):
