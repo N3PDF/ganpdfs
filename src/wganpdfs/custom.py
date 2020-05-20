@@ -8,7 +8,6 @@ from tensorflow.keras import initializers
 from tensorflow.keras import backend as K
 from tensorflow.keras.constraints import Constraint
 from tensorflow.keras.layers import Layer
-from numba import jit, njit
 
 
 """

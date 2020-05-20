@@ -39,7 +39,7 @@ class xgan_train(object):
         This method plots the comparison of the true
         and generated PDF replicas at each iterations.
         In addition, it shows the histogram comparisons
-        of the two distributions for a given specific 
+        of the two distributions for a given specific
         value of x.
         """
         # Check the targed folder
@@ -133,7 +133,7 @@ class xgan_train(object):
         """
         This meta-model is used to train the Critic from the real
         samples. The output is then compared to the label (-1).
-        
+
         true_pdfs|==> Critic_Model ==>predicted_labels|-1|==>LOSS
                             ^_________________________________|
                                  TUNING / BACKPROPAGATION
@@ -148,8 +148,8 @@ class xgan_train(object):
     def generate_fake_samples(self, half_batch_size):
         """
         This meta-model is used to train the Critic from the fake samples.
-        The output is compared to the label (1).  
-        
+        The output is compared to the label (1).
+
         fake_pdfs|==> Critic_Model ==>predicted_labels|1|==>LOSS
                             ^_________________________________|
                                  TUNING / BACKPROPAGATION
@@ -181,8 +181,8 @@ class xgan_train(object):
 
     def sample_output_noise(self, batch_size):
         """
-        This meta-model is used to train the Generator. Only the Random Vector 
-        gets fed into the Generator and the generated pdfs will enter in the 
+        This meta-model is used to train the Generator. Only the Random Vector
+        gets fed into the Generator and the generated pdfs will enter in the
         Critic which in turn produces predicted labels that is used to tune and
         update the Generator Model during the training.
 
@@ -193,6 +193,19 @@ class xgan_train(object):
         noise = self.sample_latent_space(batch_size, self.noise_size)
         y_gen = -np.ones(batch_size)
         return noise, y_gen
+
+    # Summarizes performance
+    def summarize_performance(self, n_samples=75):
+        # prepare real samples
+        X_real, y_real = self.generate_real_samples(n_samples)
+        # evaluate discriminator on real examples
+        _, acc_real = self.xgan_model.critic.evaluate(X_real, y_real, verbose=0)
+        # prepare fake examples
+        x_fake, y_fake = self.generate_fake_samples(n_samples)
+        # evaluate discriminator on fake examples
+        _, acc_fake = self.xgan_model.critic.evaluate(x_fake, y_fake, verbose=0)
+        # summarize discriminator performance
+        print('>Accuracy real: %.0f%%, fake: %.0f%%' % (acc_real*100, acc_fake*100))
 
     def pretrain_disc(self, batch_size, epochs=4):
         xinput, y_disc = self.sample_input_and_gen(batch_size)
@@ -231,10 +244,10 @@ class xgan_train(object):
             for _ in range(self.params["nd_steps"]):
                 # Train with the real samples
                 r_xinput, r_ydisc = self.generate_real_samples(half_batch_size)
-                r_dloss = self.xgan_model.critic.train_on_batch(r_xinput, r_ydisc)
+                r_dloss, _  = self.xgan_model.critic.train_on_batch(r_xinput, r_ydisc)
                 # Train with the real samples
                 f_xinput, f_ydisc = self.generate_fake_samples(half_batch_size)
-                f_dloss = self.xgan_model.critic.train_on_batch(f_xinput, f_ydisc)
+                f_dloss, _  = self.xgan_model.critic.train_on_batch(f_xinput, f_ydisc)
 
             # Train the GAN
             # Make sure that the Critic is not trainable
@@ -254,6 +267,7 @@ class xgan_train(object):
                     f.write(
                         "{0}, \t{1}, \t{2}, \t{3} \n".format(k, r_dloss, f_dloss, gloss)
                     )
+                    self.summarize_performance(n_samples=80)
                 if k % 1000 == 0:
                     self.plot_generated_pdf(
                         k, self.params["out_replicas"], self.params["save_output"]

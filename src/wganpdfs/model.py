@@ -41,15 +41,19 @@ class wasserstein_xgan_model(object):
         # ---------------------------#
         crit_optimizer = self.optmz[params["d_opt"]]
         self.critic = self.critic_model()
-        self.critic.compile(loss=wasserstein_loss, optimizer=crit_optimizer)
-        if not self.scan: 
+        self.critic.compile(
+                loss=wasserstein_loss,
+                optimizer=crit_optimizer,
+                metrics=['accuracy']
+                )
+        if not self.scan:
             self.critic.summary()
 
         # ---------------------------#
         #         GENERATOR         #
         # ---------------------------#
         self.generator = self.generator_model()
-        if not self.scan: 
+        if not self.scan:
             self.generator.summary()
 
         # ---------------------------#
@@ -57,7 +61,10 @@ class wasserstein_xgan_model(object):
         # ---------------------------#
         gan_optimizer = self.optmz[params["gan_opt"]]
         self.adversarial = self.adversarial_model()
-        self.adversarial.compile(loss=wasserstein_loss, optimizer=gan_optimizer)
+        self.adversarial.compile(
+                loss=wasserstein_loss,
+                optimizer=gan_optimizer
+                )
         if not self.scan:
             self.adversarial.summary()
 
@@ -124,15 +131,11 @@ class wasserstein_xgan_model(object):
         D_input = Input(shape=(self.output_size,))
 
         # 1st hidden dense layer
-        D_1l = Dense(self.d_nodes, kernel_initializer=init, kernel_constraint=const)(
-            D_input
-        )
+        D_1l = Dense(self.d_nodes, kernel_initializer=init, kernel_constraint=const)(D_input)
         # D_1b = BatchNormalization(axis=-1, momentum=0.99, epsilon=0.001)(D_1l)
         D_1a = self.activ[self.params["d_act"]](D_1l)
         # 2nd hidden dense layer
-        D_2l = Dense(
-            self.d_nodes // 2, kernel_initializer=init, kernel_constraint=const
-        )(D_1a)
+        D_2l = Dense(self.d_nodes // 2, kernel_initializer=init, kernel_constraint=const)(D_1a)
         # D_2b = BatchNormalization(axis=-1, momentum=0.99, epsilon=0.001)(D_2l)
         D_2a = self.activ[self.params["d_act"]](D_2l)
         # # 3rd hidden dense layer

@@ -68,7 +68,7 @@ def argument_parser():
     if not os.path.isfile(args.runcard):
         raise ValueError("Invalid runcard: not a file.")
     if args.force:
-        logger.warning("Running with --force option will overwrite existing model.")
+        logger.warning("Running with --force option will overwrite existing model.\n\n")
 
     # prepare the output folder
     if not os.path.exists(args.output):
@@ -124,6 +124,7 @@ def main():
     # Choose Q^2 value
     Q_value = 1.7874388
     # Generate PDF
+    logger.info("[+] Loading input PDFs...")
     pdf = input_pdfs(
         hps["pdf"],
         x_pdf,
