@@ -7,7 +7,7 @@ sb.set_style("whitegrid")
 
 def read_csv(csv_reader):
     line_count = 0
-    GenLoss, KL_valu   = [], []
+    GenLoss = []
     iteration, DisLossReal, DisLossFake = [], [], []
     for row in csv_reader:
         if line_count == 0:
@@ -47,6 +47,7 @@ def main(args):
 
     # Plot the losses
     plot_losses(iteration, DisLossReal, DisLossFake, GenLoss)
+
 
 if __name__ == "__main__":
     """

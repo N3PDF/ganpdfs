@@ -9,9 +9,9 @@ g_act    : leakyrelu
 d_act    : leakyrelu
 
 # Optimizer setup
-d_opt    : rms
-gan_opt  : rms
-epochs   : 1000
+d_opt    : adam
+gan_opt  : adam
+epochs   : 100
 
 # Intermediate steps to train the Critic & Generator
 nd_steps : 5

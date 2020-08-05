@@ -1,0 +1,34 @@
+name: docs
+
+on: [push]
+
+jobs:
+  deploy-ghpages:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 2
+      matrix:
+        python-version: [3.7]
+      fail-fast: false
+    steps:
+    - name: Checkout 🛎️
+      uses: actions/checkout@v1
+    - name: Setup Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install package 📦
+      run: |
+        python -m pip install --upgrade pip
+        pip install .[docs]
+    - name: Build 🔨
+      run: |
+        cd doc/
+        make html
+        touch build/html/.nojekyll 
+    - name: Deploy 🚀
+      uses: JamesIves/github-pages-deploy-action@releases/v3
+      with:
+        ACCESS_TOKEN: ${{ secrets.GANPDFS_DOCS }}
+        BRANCH: gh-pages
+        FOLDER: "doc/build/html"

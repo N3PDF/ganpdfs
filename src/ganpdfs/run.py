@@ -6,15 +6,14 @@ import shutil
 import logging
 import argparse
 
-from wganpdfs.pdformat import xnodes
-from wganpdfs.pdformat import input_pdfs
-from wganpdfs.hyperscan import hyper_train
-from wganpdfs.hyperscan import load_yaml
-from wganpdfs.hyperscan import run_hyperparameter_scan
+from ganpdfs.pdformat import XNodes
+from ganpdfs.pdformat import InputPDFs
+from ganpdfs.hyperscan import load_yaml
+from ganpdfs.hyperscan import hyper_train
+from ganpdfs.hyperscan import run_hyperparameter_scan
 
+logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
-
-ALLOWED_FLAVORS = [1, 2, 3, 21]
 
 
 def positive_int(value):
@@ -23,16 +22,6 @@ def positive_int(value):
     if ivalue <= 0:
         raise argparse.ArgumentTypeError(
             f"Negative values are not allowed, received: {value}"
-        )
-    return ivalue
-
-
-def flavour_int(value):
-    """ Check whether the given flavour is among the allowed values """
-    ivalue = int(value)
-    if ivalue not in ALLOWED_FLAVORS:
-        raise argparse.ArgumentTypeError(
-            f"{ivalue} not allowed, allowed values: {ALLOWED_FLAVORS}"
         )
     return ivalue
 
@@ -57,18 +46,14 @@ def argument_parser():
     parser.add_argument(
         "--pplot", type=positive_int, help="Define the number of output replicas."
     )
-    parser.add_argument("--flavors", type=flavour_int, help="Choose the flavours.")
     # parser.add_argument('--timeline', action='store_true')
     args = parser.parse_args()
-
-    # Sanitize the arguments
-    # Check that the flavours are allowed
 
     # check the runcard
     if not os.path.isfile(args.runcard):
         raise ValueError("Invalid runcard: not a file.")
     if args.force:
-        logger.warning("Running with --force option will overwrite existing model.\n\n")
+        logger.warning("Running with --force option will overwrite existing model.")
 
     # prepare the output folder
     if not os.path.exists(args.output):
@@ -89,14 +74,14 @@ def main():
     """
 
     args = argument_parser()
-
     out = args.output.strip("/")
 
     # copy runcard to output folder
     shutil.copyfile(args.runcard, f"{out}/input-runcard.json")
 
-    logger.info("[+] Loading runcard")
+    logger.info("Loading runcard")
     hps = load_yaml(args.runcard)
+    # Turn off verbose during hyperopt
     hps["verbose"] = False
     hps["save_output"] = out
 
@@ -112,46 +97,39 @@ def main():
     else:
         hps["out_replicas"] = args.pplot
 
-    # Check the input flavor
-    if args.flavors is None:
-        hps["fl"] = 1  # Take the u quark as a default
-    else:
-        hps["fl"] = args.flavors
-
-    ## One-time generation of input PDF ##
-    # Load the x_grid
-    x_pdf = xnodes().build_xgrid()
+    # One-time generation of input PDF
+    # Choose number of flavours
+    nf = 3
     # Choose Q^2 value
-    Q_value = 1.7874388
+    q_value = 1.7874388
+    # Load the x_grid
+    x_grid = XNodes().build_xgrid()
     # Generate PDF
-    logger.info("[+] Loading input PDFs...")
-    pdf = input_pdfs(
-        hps["pdf"],
-        x_pdf,
-        hps["input_replicas"],
-        Q_value,
-        hps["fl"]
+    logger.info("Loading input PDFs...")
+    pdf = InputPDFs(
+        hps["pdf"], x_grid, q_value, nf
     ).build_pdf()
-
+    # Size flavours
+    hps["flsize"] = pdf.shape[1]
+    # Size x-grid
+    hps["ngsize"] = pdf.shape[1]
 
     # If hyperscan is set true
     if args.hyperopt:
         hps["scan"] = True
         if args.nreplicas < 90:
-            raise Exception('Choose number of replicas to be greater than 90.')
+            raise Exception("Choose number of replicas to be greater than 90.")
+
         def fn_hyper_train(params):
-            return hyper_train(params, x_pdf, pdf)
+            return hyper_train(params, x_grid, pdf)
+
         # Run hyper scan
         hps = run_hyperparameter_scan(
-            fn_hyper_train,
-            hps,
-            args.hyperopt,
-            args.cluster,
-            out
+            fn_hyper_train, hps, args.hyperopt, args.cluster, out
         )
 
     # Run the best Model and output log
     hps["scan"] = False
     hps["verbose"] = True
 
-    loss = hyper_train(hps, x_pdf, pdf)
+    loss = hyper_train(hps, x_grid, pdf)
