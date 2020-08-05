@@ -1,0 +1,70 @@
+ganpdfs package
+===============
+
+Submodules
+----------
+
+ganpdfs.custom module
+---------------------
+
+.. automodule:: ganpdfs.custom
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ganpdfs.filetrials module
+-------------------------
+
+.. automodule:: ganpdfs.filetrials
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ganpdfs.hyperscan module
+------------------------
+
+.. automodule:: ganpdfs.hyperscan
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ganpdfs.model module
+--------------------
+
+.. automodule:: ganpdfs.model
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ganpdfs.pdformat module
+-----------------------
+
+.. automodule:: ganpdfs.pdformat
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ganpdfs.run module
+------------------
+
+.. automodule:: ganpdfs.run
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ganpdfs.train module
+--------------------
+
+.. automodule:: ganpdfs.train
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: ganpdfs
+   :members:
+   :undoc-members:
+   :show-inheritance:
