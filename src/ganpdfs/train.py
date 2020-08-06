@@ -3,7 +3,9 @@ import sys
 import json
 import tempfile
 import numpy as np
+import tensorflow as tf
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
 from ganpdfs.model import WassersteinGanModel
 from ganpdfs.model import DCNNWassersteinGanModel
@@ -15,11 +17,11 @@ class GanTrain:
 
     def __init__(self, x_pdf, pdf, noise_size, params, activ, optmz, nb_replicas=1):
         self.x_pdf = x_pdf
+        self.params = params
         self.sampled_pdf = pdf
+        self.noise_size = noise_size
         self.nb_replicas = nb_replicas
         self.output_size = (pdf.shape[1], pdf.shape[2])
-        self.noise_size = noise_size
-        self.params = params
         self.xgan_model = DCNNWassersteinGanModel(
             noise_size, self.output_size, x_pdf, params, activ, optmz
         )
@@ -44,7 +46,7 @@ class GanTrain:
         pdf_index = np.random.randint(0, self.sampled_pdf.shape[0], half_batch_size)
         pdf_batch = self.sampled_pdf[pdf_index]
         # Use (-1) as label for true pdfs
-        y_disc = -np.ones(half_batch_size)
+        y_disc = -tf.ones([1, half_batch_size])
         return pdf_batch, y_disc
 
     def generate_fake_samples(self, half_batch_size):
@@ -64,7 +66,7 @@ class GanTrain:
         noise = self.sample_latent_space(half_batch_size, self.noise_size)
         pdf_fake = self.xgan_model.generator.predict(noise)
         # Use (1) as label for fake pdfs
-        y_disc = np.ones(half_batch_size)
+        y_disc = tf.ones([1, half_batch_size])
         return pdf_fake, y_disc
 
     # def sample_input_and_gen(self, batch_size):
@@ -104,8 +106,7 @@ class GanTrain:
         # This method construct the latent space (that gets fed into the
         # Generator) which is a random vector of noises. For instance,
         # it is a Guassian random generated variables
-        xlatent = np.random.randn(batch_size * noise_size)
-        return xlatent.reshape(batch_size, noise_size)
+        return tf.random.normal([batch_size, noise_size])
 
     def latent_prior_noised(self, batch_size, noise_size):
         """latent_prior_noised.
@@ -137,11 +138,11 @@ class GanTrain:
         # enter in the Critic which in turn produces predicted labels that
         # is used to tune and update the Generator Model during the training.
 
-        # random_noise|==> Generator ==> generated_pdfs|==>Critic==>Label==>LOSS
-        #                     ^______________________________________________|
-        #                               TUNING / BACKPROPAGATION
+        # noise|==> Generator ==> generated_pdfs|==>Critic==>Label==>LOSS
+        #              ^______________________________________________|
+        #                        TUNING / BACKPROPAGATION
         noise = self.sample_latent_space(batch_size, self.noise_size)
-        y_gen = -np.ones(batch_size)
+        y_gen = -tf.ones([1, batch_size])
         return noise, y_gen
 
     def plot_generated_pdf(self, nth_epochs, nrep, folder):
@@ -160,12 +161,12 @@ class GanTrain:
         generated_pdf = self.xgan_model.generator.predict(noise)
 
         # Initialize the figure as a 4x4 grid
-        grid_size = (4, 4)
-        fig = plt.figure(figsize=(16, 17))
-        pl1 = plt.subplot2grid(grid_size, (0, 0))
-        pl2 = plt.subplot2grid(grid_size, (0, 1))
-        pl3 = plt.subplot2grid(grid_size, (1, 0))
-        pl4 = plt.subplot2grid(grid_size, (1, 1))
+        fig = plt.figure(constrained_layout=True)
+        spec = gridspec.GridSpec(ncols=2, nrows=2, figure=fig)
+        pl1 = fig.add_subplot(spec[0, 0])
+        pl2 = fig.add_subplot(spec[0, 1])
+        pl3 = fig.add_subplot(spec[1, 0])
+        pl4 = fig.add_subplot(spec[1, 1])
 
         # Define list of flavours and grids
         fl = [0, 1, 3, 6]
@@ -190,19 +191,18 @@ class GanTrain:
                         label="fake",
                         alpha=0.35
                 )
+            # Plot in log scale
             pos.set_xscale("log")
 
-        fig.suptitle("Samples at Iteration %d" % nth_epochs, y=0.98)
-        fig.tight_layout()
+        fig.suptitle("Samples at Iteration %d" % nth_epochs)
         fig.savefig(
-            "{}/iterations/pdf_generated_training_{}.png".format(
+            "{}/iterations/pdf_generated_at_{}.png".format(
                 folder, nth_epochs
             ),
             dpi=100,
             bbox_inches="tight",
             pad_inches=0.2,
         )
-        fig.legend()
 
     def pretrain_disc(self, batch_size, epochs=4):
         """pretrain_disc.
@@ -284,7 +284,7 @@ class GanTrain:
                     f.write(
                         "{0}, \t{1}, \t{2}, \t{3} \n".format(k, r_dloss, f_dloss, gloss)
                     )
-                if k % 1000 == 0:
+                if k % 100 == 0:
                     self.plot_generated_pdf(
                         k, self.params["out_replicas"], self.params["save_output"]
                     )
