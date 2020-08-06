@@ -33,4 +33,4 @@ jobs:
       shell: bash --login {0}
       run: |
         pip install .[tests]
-        pytest
+        pytest -v --cov=./src/ganpdfs
