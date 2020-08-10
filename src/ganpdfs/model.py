@@ -24,9 +24,8 @@ class WassersteinGanModel:
     """WassersteinGanModel.
     """
 
-    def __init__(self, noise_size, output_size, x_grid, params, activ, optmz):
+    def __init__(self, noise_size, x_grid, params, activ, optmz):
         self.noise_size = noise_size
-        self.output_size = output_size
         self.x_grid = x_grid
         self.params = params
         self.activ = activ
@@ -35,34 +34,25 @@ class WassersteinGanModel:
         self.g_nodes = params["g_nodes"]
         self.d_nodes = params["d_nodes"]
 
-        # ---------------------------#
-        #   CRITIC/DISCRIMINATOR    #
-        # ---------------------------#
-        crit_optimizer = self.optmz[params["d_opt"]]
-        self.critic = self.critic_model()
-        self.critic.compile(
-            loss=wasserstein_loss,
-            optimizer=crit_optimizer,
-            metrics=["accuracy"]
-        )
-        if not self.scan:
-            self.critic.summary()
-
-        # ---------------------------#
-        #         GENERATOR         #
-        # ---------------------------#
+        # Generator
         self.generator = self.generator_model()
         if not self.scan:
             self.generator.summary()
 
-        # ---------------------------#
-        #     ADVERSARIAL MODEL     #
-        # ---------------------------#
-        gan_optimizer = self.optmz[params["gan_opt"]]
+        # Critic/Discriminator
+        self.critic = self.critic_model()
+        self.critic.compile(
+            loss=wasserstein_loss,
+            optimizer=self.optmz[params["d_opt"]]
+        )
+        if not self.scan:
+            self.critic.summary()
+
+        # Adversarial
         self.adversarial = self.adversarial_model()
         self.adversarial.compile(
                 loss=wasserstein_loss,
-                optimizer=gan_optimizer
+                optimizer=self.optmz[params["gan_opt"]]
         )
         if not self.scan:
             self.adversarial.summary()
@@ -109,42 +99,34 @@ class DCNNWassersteinGanModel:
     """DCNNWassersteinGanModel.
     """
 
-    def __init__(self, noise_size, output_size, x_grid, params, activ, optmz):
+    def __init__(self, noise_size, x_grid, params, activ, optmz):
         self.activ = activ
         self.optmz = optmz
         self.x_grid = x_grid
         self.params = params
         self.noise_size = noise_size
-        self.output_size = output_size
-        self.scan = params["scan"]
 
-        # ---------------------------#
-        #         GENERATOR         #
-        # ---------------------------#
+        # Generator
         self.generator = self.generator_model()
-        if not self.scan:
+        if not params["scan"]:
             self.generator.summary()
 
-        # ---------------------------#
-        #          CRITIC           #
-        # ---------------------------#
-        crit_optimizer = self.optmz[params["d_opt"]]
+        # Critic/Discriminator
         self.critic = self.critic_model()
         self.critic.compile(
-                loss=disc_loss, optimizer=crit_optimizer
+                loss=wasserstein_loss,
+                optimizer=self.optmz[params["d_opt"]]
         )
-        if not self.scan:
+        if not params["scan"]:
             self.critic.summary()
 
-        # ---------------------------#
-        #     ADVERSARIAL MODEL     #
-        # ---------------------------#
-        gan_optimizer = self.optmz[params["gan_opt"]]
+        # Adversarial
         self.adversarial = self.adversarial_model()
         self.adversarial.compile(
-                loss=disc_loss, optimizer=gan_optimizer
+                loss=wasserstein_loss,
+                optimizer=self.optmz[params["gan_opt"]]
         )
-        if not self.scan:
+        if not params["scan"]:
             self.adversarial.summary()
 
     def generator_model(self):

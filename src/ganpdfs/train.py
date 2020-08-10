@@ -21,9 +21,8 @@ class GanTrain:
         self.sampled_pdf = pdf
         self.noise_size = noise_size
         self.nb_replicas = nb_replicas
-        self.output_size = (pdf.shape[1], pdf.shape[2])
         self.xgan_model = DCNNWassersteinGanModel(
-            noise_size, self.output_size, x_pdf, params, activ, optmz
+            noise_size, x_pdf, params, activ, optmz
         )
 
     def generate_real_samples(self, half_batch_size):
@@ -148,7 +147,7 @@ class GanTrain:
     def plot_generated_pdf(self, nth_epochs, nrep, folder):
         """This method plots the comparison of the true
         and generated PDF replicas at each iterations for
-        a given flavour.
+        given flavours.
         """
         # Check the targed folder
         if not os.path.exists("%s/iterations" % folder):
@@ -216,7 +215,9 @@ class GanTrain:
         """
         xinput, y_disc = self.sample_input_and_gen(batch_size)
         self.xgan_model.critic.trainable = True
-        self.xgan_model.critic.fit(xinput, y_disc, epochs=epochs, batch_size=batch_size)
+        self.xgan_model.critic.fit(
+                xinput, y_disc, epochs=epochs, batch_size=batch_size
+        )
 
     def train(self, nb_epochs=1000, batch_size=1, verbose=False):
         """train.
@@ -246,6 +247,8 @@ class GanTrain:
         if not self.params["scan"]:
             f = open("%s/losses_info.csv" % self.params["save_output"], "w")
             f.write("Iter., Disc_Loss_Real, Disc_Loss_Fake, Adv_loss\n")
+
+        print("\nTraining:")
         for k in range(1, nb_steps + 1):
 
             # # Train the Critic
@@ -284,7 +287,7 @@ class GanTrain:
                     f.write(
                         "{0}, \t{1}, \t{2}, \t{3} \n".format(k, r_dloss, f_dloss, gloss)
                     )
-                if k % 100 == 0:
+                if k % 1000 == 0:
                     self.plot_generated_pdf(
                         k, self.params["out_replicas"], self.params["save_output"]
                     )

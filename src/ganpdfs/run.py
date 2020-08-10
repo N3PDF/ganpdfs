@@ -1,6 +1,5 @@
-"""
-    This file contains the main driver of the wganpdfs code
-"""
+# This file contains the main driver of the wganpdfs code
+
 import os
 import shutil
 import logging
