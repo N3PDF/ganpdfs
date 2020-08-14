@@ -1,6 +1,5 @@
-# Input data setup
-pdf: NNPDF31_nnlo_as_0118_1000
-# pdf: PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001
+# Input PDF
+pdf: PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001
 
 # GAN setup
 g_nodes  : 512
@@ -20,6 +19,3 @@ ng_steps : 1
 # Intrinsic features
 add_xlayer : True
 preprocessing: True
-
-# List of estimators
-estimators: ['mean', 'stdev']
