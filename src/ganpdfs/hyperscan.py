@@ -105,15 +105,15 @@ def hyper_train(params, xpdf, pdf):
     """
     # Define the number of input replicas
     NB_INPUT_REP = params["input_replicas"]
+    # TODO: CHANGE BELOW
     # Define the number of batches
-    if NB_INPUT_REP < 10:
-        BATCH_SIZE = 1
-    else:
-        BATCH_SIZE = int(NB_INPUT_REP / 100)
+    BATCH_SIZE = params["batch_size"]
+    # Noise Size
+    NOISE_SIZE = 100
 
     # Model Parameters
-    # TODO do this depending on the parameters instead of generating all of them
-    # List of activation funtions
+    # TODO: Do this depending on the parameters instead of generating
+    # all of them List of activation funtions
     activ = {"leakyrelu": LeakyReLU(alpha=0.2), "elu": ELU(alpha=1.0), "relu": ReLU()}
     # List of optimization functions
     optmz = {
@@ -125,7 +125,7 @@ def hyper_train(params, xpdf, pdf):
 
     # Train on Input/True pdf
     xgan_pdfs = GanTrain(
-        xpdf, pdf, 100, params, activ, optmz, nb_replicas=NB_INPUT_REP,
+        xpdf, pdf, NOISE_SIZE, params, activ, optmz, nb_replicas=NB_INPUT_REP,
     )
 
     # In case one needs to pretrain the Discriminator

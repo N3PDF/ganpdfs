@@ -7,92 +7,106 @@ from tensorflow.keras.layers import Conv2D
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.layers import Reshape
 from tensorflow.keras.layers import Dropout
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2DTranspose
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.initializers import RandomNormal
 from keras.layers.advanced_activations import LeakyReLU
 
-from ganpdfs.custom import xlayer
-from ganpdfs.custom import disc_loss
-from ganpdfs.custom import genr_loss
+from ganpdfs.custom import ConvPDF
+from ganpdfs.custom import ConvXgrid
+from ganpdfs.custom import PreprocessFit
 from ganpdfs.custom import ClipConstraint
 from ganpdfs.custom import wasserstein_loss
-from ganpdfs.custom import preprocessing_fit
 
 
 class WassersteinGanModel:
     """WassersteinGanModel.
     """
 
-    def __init__(self, noise_size, x_grid, params, activ, optmz):
-        self.noise_size = noise_size
-        self.x_grid = x_grid
-        self.params = params
+    def __init__(self, pdf, params, noise_size, activ, optmz):
+        self.pdf = pdf
         self.activ = activ
         self.optmz = optmz
-        self.scan = params["scan"]
-        self.g_nodes = params["g_nodes"]
-        self.d_nodes = params["d_nodes"]
-
-        # Generator
-        self.generator = self.generator_model()
-        if not self.scan:
-            self.generator.summary()
-
-        # Critic/Discriminator
-        self.critic = self.critic_model()
-        self.critic.compile(
-            loss=wasserstein_loss,
-            optimizer=self.optmz[params["d_opt"]]
-        )
-        if not self.scan:
-            self.critic.summary()
-
-        # Adversarial
-        self.adversarial = self.adversarial_model()
-        self.adversarial.compile(
-                loss=wasserstein_loss,
-                optimizer=self.optmz[params["gan_opt"]]
-        )
-        if not self.scan:
-            self.adversarial.summary()
+        self.params = params
+        self.noise_size = noise_size
 
     def generator_model(self):
+        """generator_model.
         """
-        This constructs the architercture of the Generator.
-        """
+
+        n_nodes = 7 * 7 * 256
+        fl_size = self.pdf.shape[1]
+        xg_size = self.pdf.shape[2]
+        dnn_dim = self.params["g_nodes"]
+        # Generator Input
+        g_input = Input(shape=self.noise_size)
+        # 1st Layer
+        g1l = Dense(n_nodes)(g_input)
+        g1a = LeakyReLU(alpha=0.2)(g1l)
+        # 2nd Layer
+        g2l = Dense(dnn_dim)(g1a)
+        g2b = BatchNormalization()(g2l)
+        g2a = LeakyReLU(alpha=0.2)(g2b)
+        # 3rd Layer
+        g3l = Dense(dnn_dim * 2)(g2a)
+        g3b = BatchNormalization()(g3l)
+        g3a = LeakyReLU(alpha=0.2)(g3b)
+        # 4th Layer
+        g4l = Dense(fl_size * xg_size)(g3a)
+        g4r = Reshape((fl_size, xg_size))(g4l)
+        # Output
+        g_output = ConvPDF(self.pdf)(g4r)
+        return Model(g_input, g_output, name="Generator")
         
-        return tf.keras.Sequential()
-
     def critic_model(self):
-        """
-        This construct the architecture of the Critic.
-        """
-
-        """
-        Input of D/Output of G. This is a 1 dim vector of the
-        size of the x-gird.
+        """critic_model.
         """
 
-        return tf.keras.Sequential()
+        fl_size = self.pdf.shape[1]
+        xg_size = self.pdf.shape[2]
+        dnn_dim = self.params["d_nodes"]
+        # Weight Constraints
+        const = ClipConstraint(1)
+        # Discriminator Input
+        d_input = Input(shape=(fl_size, xg_size))
+        # 1st Layer
+        d1l = Dense(dnn_dim, kernel_constraint=const)(d_input)
+        d1b = BatchNormalization()(d1l)
+        d1a = LeakyReLU(alpha=0.2)(d1b)
+        # 2nd Layer
+        d2l = Dense(dnn_dim // 2, kernel_constraint=const)(d1a)
+        d2b = BatchNormalization()(d2l)
+        d2a = LeakyReLU(alpha=0.2)(d2b)
+        # Flatten and Output Logit
+        d3l = Flatten()(d2a)
+        d_output = Dense(1)(d3l)
+        # Compile Critic Model
+        critic_opt = self.optmz[self.params["d_opt"]]
+        cr_model = Model(d_input, d_output, name="Critic")
+        cr_model.compile(loss=wasserstein_loss, optimizer=critic_opt)
+        return cr_model
 
-    def adversarial_model(self):
+    def adversarial_model(self, generator, critic):
+        """adversarial_model.
+
+        Parameters
+        ----------
+        generator :
+            generator
+        critic :
+            critic
         """
-        This method implements the Adversarial Training.
-        The Critic is Frozen by default and only will be
-        turned on when training the Critic.
-        """
 
-        # Set teh critic training to False
-        self.critic.trainable = False
-
-        # Adversarial Training Architecture ##
-        G_input = Input(shape=(self.noise_size,))
-        fake_pdf = self.generator(G_input)
-        validity = self.critic(fake_pdf)
-
-        ad_model = Model(G_input, validity)
-        return ad_model
+        model = Sequential(name="Adversarial")
+        # Add Generator Model
+        model.add(generator)
+        # Add Critic Model
+        model.add(critic)
+        # Compile Adversarial Model
+        adv_opt = self.optmz[self.params["gan_opt"]]
+        model.compile(loss=wasserstein_loss, optimizer=adv_opt)
+        return model
 
 
 class DCNNWassersteinGanModel:

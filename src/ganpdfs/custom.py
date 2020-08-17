@@ -13,24 +13,57 @@ from tensorflow.keras.losses import BinaryCrossentropy
 
 
 def wasserstein_loss(y_true, y_pred):
+    """wasserstein_loss.
+
+    Parameters
+    ----------
+    y_true :
+        y_true
+    y_pred :
+        y_pred
     """
-    Function that computes Wasserstein loss
+    return K.mean(y_true * y_pred)
+
+
+class ClipConstraint(Constraint):
+    """The following put constraints on the
+    weights of the critic model.
     """
-    return tf.reduce_mean(y_true * y_pred)
+
+    def __init__(self, clip_value):
+        self.clip_value = clip_value
+
+    def __call__(self, weights):
+        return K.clip(weights, -self.clip_value, self.clip_value)
+
+    def get_config(self):
+        return {"clip_value": self.clip_value}
 
 
-def disc_loss(real_output, fake_output):
-    real_loss = BinaryCrossentropy(from_logits=True)(tf.ones_like(real_output), real_output)
-    fake_loss = BinaryCrossentropy(from_logits=True)(tf.zeros_like(fake_output), fake_output)
-    total_loss = real_loss + fake_loss
-    return total_loss
+class ConvPDF(Layer):
+    """conv_pdf.
+
+    Parameters
+    ----------
+    pdf:
+        Input/Prior PDF set
+    """
+
+    def __init__(self, pdf, trainable=True, **kwargs):
+        index = np.random.randint(pdf.shape[0])
+        self.pdf = K.constant(pdf[index])
+        self.trainable = trainable
+        super(ConvPDF, self).__init__(**kwargs)
+
+    def compute_output_shape(self, input_shape):
+        return (None, self.pdf.shape[1], self.pdf.shape[2])
+
+    def call(self, previous_layer):
+        mult = previous_layer * self.pdf
+        return mult
 
 
-def genr_loss(fake_output):
-    return BinaryCrossentropy(from_logits=True)(tf.ones_like(fake_output), fake_output)
-
-
-class xlayer(Layer):
+class ConvXgrid(Layer):
 
     """
     Custom array that inputs the information on the x-grid.
@@ -40,7 +73,7 @@ class xlayer(Layer):
         self.output_dim = output_dim
         self.xval = K.constant(xval)
         self.kernel_initializer = initializers.get(kernel_initializer)
-        super(xlayer, self).__init__(**kwargs)
+        super(ConvXgrid, self).__init__(**kwargs)
 
     def build(self, input_shape):
         self.kernel = self.add_weight(
@@ -49,7 +82,7 @@ class xlayer(Layer):
             initializer=self.kernel_initializer,
             trainable=True,
         )
-        super(xlayer, self).build(input_shape)
+        super(ConvXgrid, self).build(input_shape)
 
     # @tf.function
     def call(self, x):
@@ -63,7 +96,7 @@ class xlayer(Layer):
         return (input_shape[0], self.output_dim)
 
 
-class preprocessing_fit(Layer):
+class PreprocessFit(Layer):
 
     """
     Custom array that does the preprocessing.
@@ -74,7 +107,7 @@ class preprocessing_fit(Layer):
         self.xval = xval
         self.trainable = trainable
         self.kernel_initializer = initializers.get(kernel_initializer)
-        super(preprocessing_fit, self).__init__(**kwargs)
+        super(PreprocessFit, self).__init__(**kwargs)
 
     def build(self, input_shape):
         self.kernel = self.add_weight(
@@ -83,7 +116,7 @@ class preprocessing_fit(Layer):
             initializer=self.kernel_initializer,
             trainable=self.trainable,
         )
-        super(preprocessing_fit, self).build(input_shape)
+        super(PreprocessFit, self).build(input_shape)
 
     def compute_output_shape(self, input_shape):
         return input_shape
@@ -92,37 +125,3 @@ class preprocessing_fit(Layer):
     def call(self, pdf):
         xres = self.xval ** self.kernel[0] * (1 - self.xval) ** self.kernel[1]
         return pdf * xres
-
-
-class custom_losses(object):
-
-    """
-    The following is the implementation of the
-    custom loss functions
-    """
-
-    def __init__(self, y_true, y_pred):
-        self.y_true = y_true
-        self.y_pred = y_pred
-
-    def wasserstein_loss(self):
-        return tf.reduce_mean(self.y_true * self.y_pred)
-
-
-class ClipConstraint(Constraint):
-
-    """
-    The following constrains the weights
-    of the critic model. This class is an
-    extension of the "Constraint" class.
-    """
-
-    def __init__(self, clip_value):
-        self.clip_value = clip_value
-
-    # @tf.function
-    def __call__(self, weights):
-        return K.clip(weights, -self.clip_value, self.clip_value)
-
-    def get_config(self):
-        return {"clip_value": self.clip_value}

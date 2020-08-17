@@ -4,6 +4,8 @@ import os
 import shutil
 import logging
 import argparse
+import numpy as np
+import tensorflow as tf
 
 from ganpdfs.pdformat import XNodes
 from ganpdfs.pdformat import InputPDFs
@@ -13,6 +15,10 @@ from ganpdfs.hyperscan import run_hyperparameter_scan
 
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
+
+# Random Seeds
+np.random.seed(0)
+tf.random.set_seed(0)
 
 
 def positive_int(value):
@@ -43,7 +49,10 @@ def argument_parser():
         help="Define the number of input replicas.",
     )
     parser.add_argument(
-        "--pplot", type=positive_int, help="Define the number of output replicas."
+        "-k",
+        "--fake",
+        type=positive_int,
+        help="Define the number of output replicas."
     )
     # parser.add_argument('--timeline', action='store_true')
     args = parser.parse_args()
@@ -75,49 +84,39 @@ def main():
     args = argument_parser()
     out = args.output.strip("/")
 
-    # copy runcard to output folder
+    # Copy runcard to output folder
     shutil.copyfile(args.runcard, f"{out}/input-runcard.json")
 
-    logger.info("Loading runcard")
+    logger.info("Loading runcard.")
     hps = load_yaml(args.runcard)
-    # Turn off verbose during hyperopt
-    hps["verbose"] = False
+    hps["verbose"] = False  # Turn off during HyperOpt
     hps["save_output"] = out
+
+    # Prepare Grids
+    # One-time Generation
+    nf = 3                  # Choose Number of flavours
+    q_value = 1.7874388     # Choose value of Initial
+    # Load the x-Grid
+    x_grid = XNodes().build_xgrid()
+    # Generate PDF
+    logger.info("Loading input PDFs.")
+    pdf = InputPDFs(hps["pdf"], x_grid, q_value, nf).build_pdf()
 
     # Define the number of input replicas
     if args.nreplicas is None:
-        hps["input_replicas"] = 1
+        hps["input_replicas"] = pdf.shape[0]
     else:
         hps["input_replicas"] = args.nreplicas
 
     # Define the number of output replicas
-    if args.pplot is None:
+    if args.fake is None:
         hps["out_replicas"] = hps["input_replicas"]
     else:
-        hps["out_replicas"] = args.pplot
-
-    # One-time generation of input PDF
-    # Choose number of flavours
-    nf = 3
-    # Choose Q^2 value
-    q_value = 1.7874388
-    # Load the x_grid
-    x_grid = XNodes().build_xgrid()
-    # Generate PDF
-    logger.info("Loading input PDFs...")
-    pdf = InputPDFs(
-        hps["pdf"], x_grid, q_value, nf
-    ).build_pdf()
-    # Size flavours
-    hps["flsize"] = pdf.shape[1]
-    # Size x-grid
-    hps["ngsize"] = pdf.shape[1]
+        hps["out_replicas"] = args.fake
 
     # If hyperscan is set true
     if args.hyperopt:
         hps["scan"] = True
-        if args.nreplicas < 90:
-            raise Exception("Choose number of replicas to be greater than 90.")
 
         def fn_hyper_train(params):
             return hyper_train(params, x_grid, pdf)

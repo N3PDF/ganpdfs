@@ -137,5 +137,5 @@ class InputPDFs:
                     inpdf[p][f + self.nf][x] = lhpdf[p + 1].xfxQ(
                         f, self.x_grid[x], self.q_value
                     )
-        reshinpdf = inpdf.reshape((pdf_size, 2 * self.nf + 1, xgrid_size, 1))
-        return reshinpdf.astype('float32')
+        # reshinpdf = inpdf.reshape((pdf_size, 2 * self.nf + 1, xgrid_size, 1))
+        return inpdf.astype('float32')
