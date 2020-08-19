@@ -61,7 +61,7 @@ def argument_parser():
     if not os.path.isfile(args.runcard):
         raise ValueError("Invalid runcard: not a file.")
     if args.force:
-        logger.warning("Running with --force option will overwrite existing model.")
+        logger.warning("Running with --force will overwrite existing model.")
 
     # prepare the output folder
     if not os.path.exists(args.output):
@@ -94,13 +94,21 @@ def main():
 
     # Prepare Grids
     # One-time Generation
-    nf = 3                  # Choose Number of flavours
+    nf = 5                  # Choose Number of flavours
     q_value = 1.7874388     # Choose value of Initial
-    # Load the x-Grid
-    x_grid = XNodes().build_xgrid()
-    # Generate PDF
+
+    # Generate PDF grids
     logger.info("Loading input PDFs.")
-    pdf = InputPDFs(hps["pdf"], x_grid, q_value, nf).build_pdf()
+    init_pdf = InputPDFs(hps["pdf"], q_value, nf)
+    # Load the x-Grid
+    # Choose the LHAPDF x-grid by default
+    if hps["x_grid"] == "custom":
+        x_grid = XNodes().build_xgrid()
+    elif hps["x_grid"] == "lhapdf":
+        x_grid = init_pdf.extract_xgrid()
+    else:
+        raise ValueError("{} is not a valid gird".format(hps["x_grid"]))
+    pdf = init_pdf.build_pdf(x_grid)
 
     # Define the number of input replicas
     if args.nreplicas is None:
