@@ -1,6 +1,10 @@
 # Input PDF
 pdf: PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001
 
+# Choose Grid
+# Options: custom or lhapdf
+x_grid   : custom
+
 # GAN setup
 architecture: dnn
 g_nodes  : 128
