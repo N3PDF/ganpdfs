@@ -5,6 +5,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
+from tqdm import trange
 from ganpdfs.model import WassersteinGanModel
 from ganpdfs.model import DCNNWassersteinGanModel
 
@@ -123,6 +124,19 @@ class GanTrain:
         return np.array(noised_input)
 
     def plot_generated_pdf(self, generator, nb_output, folder, niter):
+        """plot_generated_pdf.
+
+        Parameters
+        ----------
+        generator :
+            generator
+        nb_output :
+            nb_output
+        folder :
+            folder
+        niter :
+            niter
+        """
 
         # Check the targed folder
         output_path = f"{folder}/iterations"
@@ -231,35 +245,36 @@ class GanTrain:
         rdloss, fdloss, advloss = [], [], []
 
         print("\n[+] Training:")
-        for k in range(1, nb_steps + 1):
+        with trange(nb_steps) as iter_range:
+            for k in iter_range:
+                iter_range.set_description("Losses")
+                # Train the Critic
+                # Make sure the Critic is trainable
+                self.critic.trainable = True
+                for _ in range(self.params["nd_steps"]):
+                    # Train with the real samples
+                    r_xinput, r_ydisc = self.generate_real_samples(half_batch_size)
+                    # Update Critic Model Weights
+                    r_dloss = self.critic.train_on_batch(r_xinput, r_ydisc)
+                    # Train with the fake samples
+                    f_xinput, f_ydisc = self.generate_fake_samples(self.generator, half_batch_size)
+                    # Update Critic Model Weights
+                    f_dloss = self.critic.train_on_batch(f_xinput, f_ydisc)
 
-            # Train the Critic
-            # Make sure the Critic is trainable
-            self.critic.trainable = True
-            for _ in range(self.params["nd_steps"]):
-                # Train with the real samples
-                r_xinput, r_ydisc = self.generate_real_samples(half_batch_size)
-                # Update Critic Model Weights
-                r_dloss = self.critic.train_on_batch(r_xinput, r_ydisc)
-                # Train with the fake samples
-                f_xinput, f_ydisc = self.generate_fake_samples(self.generator, half_batch_size)
-                # Update Critic Model Weights
-                f_dloss = self.critic.train_on_batch(f_xinput, f_ydisc)
+                # Train the Generator
+                # Make sure that the Critic is not trainable
+                self.critic.trainable = False
+                for _ in range(self.params["ng_steps"]):
+                    noise, y_gen = self.sample_output_noise(batch_size)
+                    gloss = self.adversarial.train_on_batch(noise, y_gen)
 
-            # Train the Generator
-            # Make sure that the Critic is not trainable
-            self.critic.trainable = False
-            for _ in range(self.params["ng_steps"]):
-                noise, y_gen = self.sample_output_noise(batch_size)
-                gloss = self.adversarial.train_on_batch(noise, y_gen)
+                iter_range.set_postfix(Disc=r_dloss+f_dloss, Adv=gloss)
 
-            # Print log output
-            if verbose and not self.params["scan"]:
+                # Print log output
                 if k % 100 == 0:
                     advloss.append(gloss)
                     rdloss.append(r_dloss)
                     fdloss.append(f_dloss)
-                    self.summarize_training(nb_epochs, k, r_dloss, f_dloss, gloss)
                 if k % 1000 == 0:
                     # TODO: Fix arguments plot
                     self.plot_generated_pdf(
@@ -276,11 +291,14 @@ class GanTrain:
             with open(f"{output_losses}/losses_info.json", "w") as outfile:
                 json.dump(loss_info, outfile, indent=2)
 
-        if self.params["scan"]:
-            # Generate fake replicas with the trained model
-            rnd_noise = self.sample_latent_space(self.nb_replicas, self.noise_size)
-            fake_pdf = self.gan_model.generator.predict(rnd_noise)
+        # Generate fake replicas with the trained model
+        print("\n[+] Generating fake replicas with the trained model.")
+        fake_pdf, _ = self.generate_fake_samples(self.generator, self.params["out_replicas"])
 
+        if self.params["scan"]:
+            # Compute here the metric that is used to assess the efficiency of
+            # the generated replicas and use it for hyperopt
             # Compute Metric Here
+            pass
 
         return metric
