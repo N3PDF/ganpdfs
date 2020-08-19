@@ -21,7 +21,7 @@ TESTS_REQUIEREMENTS = ["pytest", "pytest-cov"]
 # Depending on the documents more dependencies can be added
 DOCS_REQUIEREMENTS = ["recommonmark", "sphinx_rtd_theme", "sphinxcontrib-bibtex"]
 # Dependencies for the packages
-PACKAGE_REQUIEREMENTS = ["hyperopt", "numpy", "tensorflow", "scipy", "matplotlib"]
+PACKAGE_REQUIEREMENTS = ["tensorflow", "numpy", "scipy", "tqdm", "hyperopt", "matplotlib"]
 
 
 # Check python version
