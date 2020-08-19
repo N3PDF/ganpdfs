@@ -60,6 +60,14 @@ ganpdfs.train module
    :undoc-members:
    :show-inheritance:
 
+ganpdfs.utils module
+--------------------
+
+.. automodule:: ganpdfs.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 
