@@ -2,6 +2,7 @@
 
 import numpy as np
 from math import gcd
+from scipy import interpolate
 
 
 def factorize_number(number):
@@ -64,3 +65,26 @@ def construct_cnn(number, nb_layer):
     else:
         pass
     return cnn_dim
+
+
+def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid):
+    """interpolate_grid.
+
+    Parameters
+    ----------
+    fake_pdf :
+        fake_pdf
+    gan_grid :
+        gan_grid
+    lhapdf_grid :
+        lhapdf_grid
+    """
+    final_grid = []
+    for replica in fake_pdf:
+        fl_space = []
+        for fl in replica:
+            f_interpol = interpolate.interp1d(fl, gan_grid, fill_value="extrapolate")
+            new_grid = f_interpol(lhapdf_grid)
+            fl_space.append(new_grid)
+        final_grid.append(fl_space)
+    return np.array(final_grid)
