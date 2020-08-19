@@ -2,20 +2,22 @@
 pdf: PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001
 
 # GAN setup
-g_nodes  : 128
-d_nodes  : 512
-g_act    : rms
-d_act    : rms
+architecture: dcnn
+g_nodes  : 256
+d_nodes  : 128
+g_act    : leakyrelu
+d_act    : leakyrelu
 
 # Optimizer setup
-d_opt    : adam
-gan_opt  : adam
+d_opt    : rms
+gan_opt  : rms
 epochs   : 5000
 
 # Batch size
-batch_size : 64
+batch_size : 32
 
-# Intermediate steps to train the Critic & Generator
+# Intermediate steps to train the
+# Critic & Generator
 nd_steps : 4
 ng_steps : 3
 

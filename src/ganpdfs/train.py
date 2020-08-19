@@ -14,12 +14,18 @@ class GanTrain:
     """
 
     def __init__(self, xgrid, pdf, noise_size, params, activ, optmz, nb_replicas=10):
-        self.pdf = pdf
         self.xgrid = xgrid
         self.params = params
         self.noise_size = noise_size
         self.nb_replicas = nb_replicas
-        self.gan_model = WassersteinGanModel(pdf, params, noise_size, activ, optmz)
+
+        # Choose architecture
+        if params["architecture"] == "dcnn":
+            self.pdf = pdf.reshape((pdf.shape[0], pdf.shape[1], pdf.shape[2], 1))
+            self.gan_model = DCNNWassersteinGanModel(self.pdf, params, noise_size, activ, optmz)
+        else:
+            self.pdf = pdf
+            self.gan_model = WassersteinGanModel(self.pdf, params, noise_size, activ, optmz)
 
         # Initialize Models
         self.critic = self.gan_model.critic_model()

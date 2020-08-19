@@ -1,5 +1,4 @@
 ## GANPDFs
-----------
 
 Enhance the statistics of a prior PDF set by generating fake PDF replicas using Generative
 Adversarial Neural Networks ([GANs](https://arxiv.org/abs/1406.2661)).

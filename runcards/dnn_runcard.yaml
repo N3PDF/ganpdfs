@@ -1,0 +1,26 @@
+# Input PDF
+pdf: PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001
+
+# GAN setup
+architecture: dnn
+g_nodes  : 128
+d_nodes  : 512
+g_act    : leakyrelu
+d_act    : leakyrelu
+
+# Optimizer setup
+d_opt    : rms
+gan_opt  : rms
+epochs   : 5000
+
+# Batch size
+batch_size : 64
+
+# Intermediate steps to train the
+# Critic & Generator
+nd_steps : 4
+ng_steps : 3
+
+# Intrinsic features
+add_xlayer : False
+preprocessing: False
