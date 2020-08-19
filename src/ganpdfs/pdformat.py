@@ -1,6 +1,9 @@
+import os
 import lhapdf
 import numpy as np
-from random import sample
+
+from subprocess import PIPE
+from subprocess import Popen
 
 
 class XNodes:
@@ -86,6 +89,7 @@ class XNodes:
     def build_xgrid(self):
         """build_xgrid.
         """
+
         x_grid = np.array(self.x_nodes)
         return x_grid
 
@@ -95,7 +99,7 @@ class InputPDFs:
     """Construct the Input PDFs.
     """
 
-    def __init__(self, pdf_name, x_grid, q_value, nf):
+    def __init__(self, pdf_name, q_value, nf):
         """__init__.
 
             Parameters
@@ -111,23 +115,45 @@ class InputPDFs:
             flavors :
                 flavors
         """
+
         self.nf = nf
-        self.x_grid = x_grid
         self.q_value = q_value
         self.pdf_name = pdf_name
 
-    def build_pdf(self):
+    def extract_xgrid(self):
+        """extract_xgrid.
+        """
+
+        lhapdf_dir = Popen(["lhapdf-config", "--datadir"], stdout=PIPE)
+        pdf_pathdir, _ = lhapdf_dir.communicate()
+        pdf_pathdir = pdf_pathdir.decode("utf-8")
+        pdf_pathdir = pdf_pathdir.replace("\n", "")
+        replica_zero = self.pdf_name + "_0000.dat"
+        file_path = os.path.join(pdf_pathdir, self.pdf_name, replica_zero)
+        w = open(file_path, "r")
+        # Skip the head
+        for _ in range(0, 10):
+            if "--" in w.readline():
+                break
+        # Fetch x-grid
+        lhapdf_info = w.readline()
+        lhapdf_grid = lhapdf_info.replace("\n", "")
+        lhapdf_grid = [float(i) for i in lhapdf_grid.split()]
+        return np.array(lhapdf_grid)
+
+    def build_pdf(self, xgrid):
         """Construct the input PDFs based on the number of input
         replicas and the number of flavors.
 
         The  following returns a multi-dimensional array that has
         the following shape (nb_replicas, nb_flavours, size_xgrid)
         """
+
         # Sample pdf with all the flavors
         # nb total flavors = 2 * nf + 1
         lhpdf = lhapdf.mkPDFs(self.pdf_name)
         pdf_size = len(lhpdf) - 1
-        xgrid_size = self.x_grid.shape[0]
+        xgrid_size = xgrid.shape[0]
         # Construct a grid of zeros to store the results
         inpdf = np.zeros((pdf_size, 2 * self.nf + 1, xgrid_size))
 
@@ -135,8 +161,6 @@ class InputPDFs:
             for f in range(-self.nf, self.nf + 1):
                 for x in range(xgrid_size):
                     inpdf[p][f + self.nf][x] = lhpdf[p + 1].xfxQ(
-                        f, self.x_grid[x], self.q_value
+                        f, xgrid[x], self.q_value
                     )
-        # reshinpdf = inpdf.reshape((pdf_size, 2 * self.nf + 1, xgrid_size, 1))
-        # return reshinpdf
         return inpdf
