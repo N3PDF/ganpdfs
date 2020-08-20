@@ -34,26 +34,31 @@ class WassersteinGanModel:
         # Get PDF grid info
         self.fl_size = pdf.shape[1]
         self.xg_size = pdf.shape[2]
+        # Define Activations & Optimizers
+        self.g_activ = params.get("g_act")
+        self.c_activ = params.get("d_act")
+        self.c_optmz = params.get("d_opt")
+        self.adv_opmtz = params.get("gan_opt")
 
     def generator_model(self):
         """generator_model.
         """
 
         n_nodes = 7 * 7 * 256
-        dnn_dim = self.params["g_nodes"]
+        dnn_dim = self.params.get("g_nodes")
         # Generator Input
         g_input = Input(shape=self.noise_size)
         # 1st Layer
         g1l = Dense(n_nodes)(g_input)
-        g1a = self.activ[self.params["g_act"]](g1l)
+        g1a = self.activ.get(self.g_activ)(g1l)
         # 2nd Layer
         g2l = Dense(dnn_dim)(g1a)
         g2b = BatchNormalization()(g2l)
-        g2a = self.activ[self.params["g_act"]](g2b)
+        g2a = self.activ.get(self.g_activ)(g2b)
         # 3rd Layer
         g3l = Dense(dnn_dim * 2)(g2a)
         g3b = BatchNormalization()(g3l)
-        g3a = self.activ[self.params["g_act"]](g3b)
+        g3a = self.activ.get(self.g_activ)(g3b)
         # 4th Layer
         g4l = Dense(self.fl_size * self.xg_size)(g3a)
         g4r = Reshape((self.fl_size, self.xg_size))(g4l)
@@ -73,16 +78,16 @@ class WassersteinGanModel:
         # 1st Layer
         d1l = Dense(dnn_dim, kernel_constraint=const)(d_input)
         d1b = BatchNormalization()(d1l)
-        d1a = self.activ[self.params["d_act"]](d1b)
+        d1a = self.activ.get(self.c_activ)(d1b)
         # 2nd Layer
         d2l = Dense(dnn_dim // 2, kernel_constraint=const)(d1a)
         d2b = BatchNormalization()(d2l)
-        d2a = self.activ[self.params["d_act"]](d2b)
+        d2a = self.activ.get(self.c_activ)(d2b)
         # Flatten and Output Logit
         d3l = Flatten()(d2a)
         d_output = Dense(1)(d3l)
         # Compile Critic Model
-        critic_opt = self.optmz[self.params["d_opt"]]
+        critic_opt = self.optmz.get(self.c_optmz)
         cr_model = Model(d_input, d_output, name="Critic")
         cr_model.compile(loss=wasserstein_loss, optimizer=critic_opt)
         return cr_model
@@ -104,7 +109,7 @@ class WassersteinGanModel:
         # Add Critic Model
         model.add(critic)
         # Compile Adversarial Model
-        adv_opt = self.optmz[self.params["gan_opt"]]
+        adv_opt = self.optmz.get(self.adv_opmtz)
         model.compile(loss=wasserstein_loss, optimizer=adv_opt)
         return model
 
@@ -122,6 +127,11 @@ class DCNNWassersteinGanModel:
         # Get PDF grid info
         self.fl_size = pdf.shape[1]
         self.xg_size = pdf.shape[2]
+        # Define Activations & Optimizers
+        self.g_activ = params.get("g_act")
+        self.c_activ = params.get("d_act")
+        self.c_optmz = params.get("d_opt")
+        self.adv_opmtz = params.get("gan_opt")
         # Compute DCNN structure
         self.cnnf = construct_cnn(pdf.shape[1], 3)
         self.cnnx = construct_cnn(pdf.shape[2], 3)
@@ -130,13 +140,13 @@ class DCNNWassersteinGanModel:
         """generator_model.
         """
 
-        gcnn = self.params["g_nodes"]
+        gcnn = self.params.get("g_nodes")
         n_nodes = self.cnnf[0] * self.cnnx[0] * gcnn
         g_input = Input(shape=(self.noise_size,))
         # 1st DCNN Layer
         G1l = Dense(n_nodes)(g_input)
         G1b = BatchNormalization()(G1l)
-        G1a = self.activ[self.params["g_act"]](G1b)
+        G1a = self.activ.get(self.g_activ)(G1b)
         G1r = Reshape((self.cnnf[0], self.cnnx[0], gcnn))(G1a)
         # 2nd Layer:
         # Upsample to (cnnf[0]*cnnf[1], cnnx[0]*cnnx[1])
@@ -147,7 +157,7 @@ class DCNNWassersteinGanModel:
                 padding="same",
         )(G1r)
         G2b = BatchNormalization()(G2l)
-        G2a = self.activ[self.params["g_act"]](G2b)
+        G2a = self.activ.get(self.g_activ)(G2b)
         # 3rd Layer:
         # Upsample to (cnnf[1]*cnnf[2], cnnx[1]*cnnx[2])
         G3l = Conv2DTranspose(
@@ -157,7 +167,7 @@ class DCNNWassersteinGanModel:
                 padding="same",
         )(G2a)
         G3b = BatchNormalization()(G3l)
-        G3a = self.activ[self.params["g_act"]](G3b)
+        G3a = self.activ.get(self.g_activ)(G3b)
         # 4th Layer:
         # Upsample to (cnnf[2]*cnnf[3], cnnx[2]*cnnx[3])
         # 4th output shape=(None, fl_size, xg_size, 1)
@@ -175,7 +185,7 @@ class DCNNWassersteinGanModel:
         """critic_model.
         """
 
-        dcnn = self.params["d_nodes"]
+        dcnn = self.params.get("d_nodes")
         const = ClipConstraint(1)
         d_input = Input(shape=(self.fl_size, self.xg_size, 1))
         # Downsample to (7, 35)
@@ -187,7 +197,7 @@ class DCNNWassersteinGanModel:
                 kernel_constraint=const,
         )(d_input)
         D1b = BatchNormalization()(D1l)
-        D1a = self.activ[self.params["d_act"]](D1b)
+        D1a = self.activ.get(self.c_activ)(D1b)
         # Downsample to (7, 7)
         D2l = Conv2D(
                 dcnn * 2,
@@ -197,12 +207,12 @@ class DCNNWassersteinGanModel:
                 kernel_constraint=const,
         )(D1a)
         D2b = BatchNormalization()(D2l)
-        D2a = self.activ[self.params["d_act"]](D2b)
+        D2a = self.activ.get(self.c_activ)(D2b)
         # Flatten and output logits
         D3r = Flatten()(D2a)
         d_output = Dense(1)(D3r)
         # Compile Model
-        critic_opt = self.optmz[self.params["d_opt"]]
+        critic_opt = self.optmz.get(self.c_optmz)
         cr_model = Model(d_input, d_output, name="Critic")
         cr_model.compile(loss=wasserstein_loss, optimizer=critic_opt)
         return cr_model
@@ -224,6 +234,6 @@ class DCNNWassersteinGanModel:
         # Add Critic
         adv_model.add(critic)
         # Compile Adversarial Model
-        adv_opt = self.optmz[self.params["gan_opt"]]
+        adv_opt = self.optmz.get(self.adv_opmtz)
         adv_model.compile(loss=wasserstein_loss, optimizer=adv_opt)
         return adv_model
