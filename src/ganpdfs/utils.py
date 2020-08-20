@@ -3,6 +3,28 @@
 import numpy as np
 from math import gcd
 from scipy import interpolate
+from tensorflow.train import Checkpoint
+
+
+def save_checkpoint(generator, critic, adversarial):
+    """save_checkpoint.
+
+    Parameters
+    ----------
+    generator :
+        generator
+    critic :
+        critic
+    adversarial :
+        adversarial
+    """
+
+    checkpoint = Checkpoint(
+            critic=critic,
+            generator=generator,
+            adversarial=adversarial
+            )
+    return checkpoint
 
 
 def factorize_number(number):
