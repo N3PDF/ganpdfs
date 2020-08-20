@@ -69,10 +69,8 @@ def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder
     if cluster:
         trials = MongoTrials(cluster, exp_key="exp1")
     else:
-        """
-        Use constum trials in order to save the model after each trials.
-        The following will generate a .json file containing the trials.
-        """
+        # Use constum trials in order to save the model after each trials.
+        # The following will generate a .json file containing the trials.
         trials = FileTrials(folder, parameters=search_space)
     best = fmin(
         func_train, search_space, algo=tpe.suggest, max_evals=max_evals, trials=trials
@@ -104,10 +102,10 @@ def hyper_train(params, xpdf, pdf):
             pdf
     """
     # Define the number of input replicas
-    NB_INPUT_REP = params["input_replicas"]
+    NB_INPUT_REP = params.get("input_replicas")
     # TODO: CHANGE BELOW
     # Define the number of batches
-    BATCH_SIZE = params["batch_size"]
+    BATCH_SIZE = params.get("batch_size")
     # Noise Size
     NOISE_SIZE = 100
 
@@ -132,6 +130,6 @@ def hyper_train(params, xpdf, pdf):
     # xgan_pdfs.pretrain_disc(BATCH_SIZE, epochs=4)
 
     smm_result = xgan_pdfs.train(
-        nb_epochs=params["epochs"], batch_size=BATCH_SIZE, verbose=params["verbose"]
+        nb_epochs=params.get("epochs"), batch_size=BATCH_SIZE, verbose=params.get("verbose")
     )
     return {"loss": smm_result, "status": STATUS_OK}
