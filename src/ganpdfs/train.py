@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 from tqdm import trange
+from ganpdfs.utils import save_checkpoint
 from ganpdfs.model import WassersteinGanModel
 from ganpdfs.model import DCNNWassersteinGanModel
 
@@ -19,9 +20,10 @@ class GanTrain:
         self.params = params
         self.noise_size = noise_size
         self.nb_replicas = nb_replicas
+        self.folder = params.get("save_output")
 
         # Choose architecture
-        if params["architecture"] == "dcnn":
+        if params.get("architecture") == "dcnn":
             self.pdf = pdf.reshape((pdf.shape[0], pdf.shape[1], pdf.shape[2], 1))
             self.gan_model = DCNNWassersteinGanModel(self.pdf, params, noise_size, activ, optmz)
         else:
@@ -34,10 +36,13 @@ class GanTrain:
         self.adversarial = self.gan_model.adversarial_model(self.generator, self.critic)
 
         # Print Summary when not in Hyperopt
-        if not self.params["scan"]:
+        if not params.get("scan"):
             self.generator.summary()
             self.critic.summary()
             self.adversarial.summary()
+
+        # Init. Checkpoint
+        self.checkpoint = save_checkpoint(self.generator, self.critic, self.adversarial)
 
     def generate_real_samples(self, half_batch_size):
         """generate_real_samples.
@@ -142,10 +147,6 @@ class GanTrain:
         output_path = f"{folder}/iterations"
         output_folder = pathlib.Path().absolute() / output_path
         output_folder.mkdir(exist_ok=True)
-        # if not os.path.exists("%s/iterations" % folder):
-        #     os.mkdir("%s/iterations" % folder)
-        # else:
-        #     pass
 
         # Generate Fake Samples
         generated_pdf, _ = self.generate_fake_samples(generator, nb_output)
@@ -193,30 +194,6 @@ class GanTrain:
             pad_inches=0.2,
         )
 
-    @staticmethod
-    def summarize_training(niter, nth, r_dloss, f_dloss, adv_loss):
-        """summarize_training.
-
-        Parameters
-        ----------
-        niter :
-            niter
-        nth :
-            nth
-        r_dloss :
-            r_dloss
-        f_dloss :
-            f_dloss
-        adv_loss :
-            adv_loss
-        """
-        disc_loss = r_dloss + f_dloss
-        print(
-            "Iter:{} out of {}. disc loss: {:.3e}. Adv loss: {:.3e}".format(
-                nth, niter, disc_loss, adv_loss
-            )
-        )
-
     def train(self, nb_epochs=5000, batch_size=64, verbose=False):
         """train.
 
@@ -251,7 +228,7 @@ class GanTrain:
                 # Train the Critic
                 # Make sure the Critic is trainable
                 self.critic.trainable = True
-                for _ in range(self.params["nd_steps"]):
+                for _ in range(self.params.get("nd_steps", 4)):
                     # Train with the real samples
                     r_xinput, r_ydisc = self.generate_real_samples(half_batch_size)
                     # Update Critic Model Weights
@@ -264,7 +241,7 @@ class GanTrain:
                 # Train the Generator
                 # Make sure that the Critic is not trainable
                 self.critic.trainable = False
-                for _ in range(self.params["ng_steps"]):
+                for _ in range(self.params.get("ng_steps", 3)):
                     noise, y_gen = self.sample_output_noise(batch_size)
                     gloss = self.adversarial.train_on_batch(noise, y_gen)
 
@@ -275,27 +252,29 @@ class GanTrain:
                     advloss.append(gloss)
                     rdloss.append(r_dloss)
                     fdloss.append(f_dloss)
+                    self.checkpoint.save(file_prefix = "./{}/checkpoint/ckpt".format(self.folder))
+
                 if k % 1000 == 0:
                     # TODO: Fix arguments plot
                     self.plot_generated_pdf(
                         self.generator,
-                        self.params["out_replicas"],
-                        self.params["save_output"],
+                        self.params.get("out_replicas"),
+                        self.folder,
                         k
                     )
 
         # Save Losses
         loss_info = [{"rdloss": rdloss, "fdloss": fdloss, "advloss": advloss}]
-        if not self.params["scan"]:
-            output_losses = self.params["save_output"]
+        if not self.params.get("scan"):
+            output_losses = self.params.get("save_output")
             with open(f"{output_losses}/losses_info.json", "w") as outfile:
                 json.dump(loss_info, outfile, indent=2)
 
         # Generate fake replicas with the trained model
         print("\n[+] Generating fake replicas with the trained model.")
-        fake_pdf, _ = self.generate_fake_samples(self.generator, self.params["out_replicas"])
+        fake_pdf, _ = self.generate_fake_samples(self.generator, self.params.get("out_replicas"))
 
-        if self.params["scan"]:
+        if self.params.get("scan"):
             # Compute here the metric that is used to assess the efficiency of
             # the generated replicas and use it for hyperopt
             # Compute Metric Here
