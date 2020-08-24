@@ -1,12 +1,13 @@
 import json
 import pathlib
 import numpy as np
-import tensorflow as tf
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 from tqdm import trange
+from ganpdfs.writer import WriterWrapper
 from ganpdfs.utils import save_checkpoint
+from ganpdfs.utils import interpolate_grid
 from ganpdfs.model import WassersteinGanModel
 from ganpdfs.model import DCNNWassersteinGanModel
 
@@ -53,10 +54,13 @@ class GanTrain:
             half_batch_size
         """
 
-        # Training Description:
-        # true_pdfs|==> Critic_Model ==>predicted_labels|-1|==>LOSS
-        #                     ^_________________________________|
-        #                          TUNING / BACKPROPAGATION
+        #############################################################
+        # Training Description:                                     #
+        # --------------------                                      #
+        # true_pdfs|==> Critic_Model ==>predicted_labels|-1|==>LOSS #
+        #                     ^_________________________________|   #
+        #                          TUNING / BACKPROPAGATION         #
+        #############################################################
         pdf_index = np.random.randint(0, self.pdf.shape[0], half_batch_size)
         pdf_batch = self.pdf[pdf_index]
         # Use (-1) as label for true pdfs
@@ -87,11 +91,14 @@ class GanTrain:
         half_batch_size :
             half_batch_size
         """
-
-        # Training Description:
-        # fake_pdfs|==> Critic_Model ==>predicted_labels|1|==>LOSS
-        #                     ^_________________________________|
-        #                          TUNING / BACKPROPAGATION
+        
+        #############################################################
+        # Training Description:                                     #
+        # --------------------                                      #
+        # fake_pdfs|==> Critic_Model ==>predicted_labels|1|==>LOSS  #
+        #                     ^_________________________________|   #
+        #                          TUNING / BACKPROPAGATION         #
+        #############################################################
         noise = self.sample_latent_space(half_batch_size)
         pdf_fake = generator.predict(noise)
         # Use (1) as label for fake pdfs
@@ -107,10 +114,13 @@ class GanTrain:
             batch_size
         """
 
-        # Training Description:
-        # noise|==> Generator ==> generated_pdfs|==>Critic==>Label==>LOSS
-        #              ^______________________________________________|
-        #                        TUNING / BACKPROPAGATION
+        #####################################################################
+        # Training Description:                                             #
+        # --------------------                                              #
+        # noise|==> Generator ==> generated_pdfs|==>Critic==>Label==>LOSS   #
+        #              ^______________________________________________|     #
+        #                        TUNING / BACKPROPAGATION                   #
+        #####################################################################
         noise = self.sample_latent_space(batch_size)
         y_gen = -np.ones((batch_size, 1))
         return noise, y_gen
@@ -231,11 +241,9 @@ class GanTrain:
                 for _ in range(self.params.get("nd_steps", 4)):
                     # Train with the real samples
                     r_xinput, r_ydisc = self.generate_real_samples(half_batch_size)
-                    # Update Critic Model Weights
                     r_dloss = self.critic.train_on_batch(r_xinput, r_ydisc)
                     # Train with the fake samples
                     f_xinput, f_ydisc = self.generate_fake_samples(self.generator, half_batch_size)
-                    # Update Critic Model Weights
                     f_dloss = self.critic.train_on_batch(f_xinput, f_ydisc)
 
                 # Train the Generator
@@ -272,9 +280,36 @@ class GanTrain:
 
         # Generate fake replicas with the trained model
         print("\n[+] Generating fake replicas with the trained model.")
-        fake_pdf, _ = self.generate_fake_samples(self.generator, self.params.get("out_replicas"))
+        fake_pdf, _ = self.generate_fake_samples(self.generator, self.pdf.shape[0])
 
-        if self.params.get("scan"):
+        if  not self.params.get("scan"):
+
+            #############################################################
+            # Interpolate the grids if the GANS-grids is not the same   #
+            # as the input PDF.                                         #
+            #############################################################
+            if self.params.get("architecture") == "dcnn":
+                fake_pdf = fake_pdf.reshape((self.pdf.shape[0], self.pdf.shape[1], self.pdf.shape[2]))
+            if self.xgrid.shape != self.params.get("pdfgrid").shape:
+                print("\n[+] Compute extrapolation.")
+                fake_pdf = interpolate_grid(fake_pdf, self.xgrid, self.params.get("pdfgrid"))
+
+            #############################################################
+            # Construct the output grids in the same structure as the   #
+            # N3FIT outputs. This allows for easy evolution.            #
+            #############################################################
+            print("\n[+] Write grids to file.")
+            for repindex, replica  in enumerate(fake_pdf, start=1):
+                grid_path = f"{self.folder}/replicas"
+                write_grid = WriterWrapper(
+                        self.params.get("pdf"),
+                        replica,
+                        self.xgrid,
+                        self.pdf.shape[0] + repindex,
+                        1.7874388
+                    )
+                write_grid.write_data(grid_path)
+        else:
             # Compute here the metric that is used to assess the efficiency of
             # the generated replicas and use it for hyperopt
             # Compute Metric Here
