@@ -68,6 +68,14 @@ ganpdfs.utils module
    :undoc-members:
    :show-inheritance:
 
+ganpdfs.writer module
+---------------------
+
+.. automodule:: ganpdfs.writer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 
