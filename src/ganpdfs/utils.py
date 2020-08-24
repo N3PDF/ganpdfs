@@ -105,7 +105,7 @@ def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid):
     for replica in fake_pdf:
         fl_space = []
         for fl in replica:
-            f_interpol = interpolate.interp1d(fl, gan_grid, fill_value="extrapolate")
+            f_interpol = interpolate.interp1d(gan_grid, fl, fill_value="extrapolate")
             new_grid = f_interpol(lhapdf_grid)
             fl_space.append(new_grid)
         final_grid.append(fl_space)
