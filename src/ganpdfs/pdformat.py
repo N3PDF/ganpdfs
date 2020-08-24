@@ -155,10 +155,10 @@ class InputPDFs:
         pdf_size = len(lhpdf) - 1
         xgrid_size = xgrid.shape[0]
         # Construct a grid of zeros to store the results
-        inpdf = np.zeros((pdf_size, 2 * self.nf + 1, xgrid_size))
+        inpdf = np.zeros((pdf_size, 2 * self.nf + 2, xgrid_size))
 
         for p in range(pdf_size):
-            for f in range(-self.nf, self.nf + 1):
+            for f in range(-self.nf, self.nf + 2):
                 for x in range(xgrid_size):
                     inpdf[p][f + self.nf][x] = lhpdf[p + 1].xfxQ(
                         f, xgrid[x], self.q_value
