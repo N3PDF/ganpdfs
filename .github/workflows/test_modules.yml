@@ -32,6 +32,5 @@ jobs:
     - name: Test code coverage
       shell: bash --login {0}
       run: |
-        echo "Testing coverage"
-        # pip install .[tests]
-        # pytest -v --cov=./src/ganpdfs
+        pip install .[tests]
+        pytest -v --cov=./src/ganpdfs
