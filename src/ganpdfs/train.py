@@ -1,5 +1,6 @@
 import json
 import pathlib
+import logging
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -10,6 +11,8 @@ from ganpdfs.utils import save_checkpoint
 from ganpdfs.utils import interpolate_grid
 from ganpdfs.model import WassersteinGanModel
 from ganpdfs.model import DCNNWassersteinGanModel
+
+logger = logging.getLogger(__name__)
 
 
 class GanTrain:
@@ -125,19 +128,6 @@ class GanTrain:
         y_gen = -np.ones((batch_size, 1))
         return noise, y_gen
 
-    def latent_prior_noised(self, batch_size):
-        """latent_prior_noised.
-
-        Parameters
-        ----------
-        batch_size :
-            batch_size
-        """
-        noised_input = []
-        for px in self.pdf[:batch_size]:
-            noised_input.append(px + np.random.random((7, 70)) * 2e-3)
-        return np.array(noised_input)
-
     def plot_generated_pdf(self, generator, nb_output, folder, niter):
         """plot_generated_pdf.
 
@@ -218,11 +208,8 @@ class GanTrain:
         """
         # Initialize the value of metric
         metric = 0
-        # Calculate the number of bacthes per training epochs
         batch_per_epoch = int(self.pdf.shape[0] / batch_size)
-        # Calculate the number of training iterations
         nb_steps = batch_per_epoch * nb_epochs
-        # Calculate the size of a half batch sample
         if batch_size < 2:
             half_batch_size = 1
         else:
@@ -231,10 +218,10 @@ class GanTrain:
         # Initialize Losses storing
         rdloss, fdloss, advloss = [], [], []
 
-        print("\n[+] Training:")
+        logger.info("[+] Training:")
         with trange(nb_steps) as iter_range:
             for k in iter_range:
-                iter_range.set_description("Losses")
+                iter_range.set_description("Training")
                 # Train the Critic
                 # Make sure the Critic is trainable
                 self.critic.trainable = True
@@ -279,7 +266,7 @@ class GanTrain:
                 json.dump(loss_info, outfile, indent=2)
 
         # Generate fake replicas with the trained model
-        print("\n[+] Generating fake replicas with the trained model.")
+        logger.info("[+] Generating fake replicas with the trained model.")
         fake_pdf, _ = self.generate_fake_samples(self.generator, self.pdf.shape[0])
 
         if  not self.params.get("scan"):
@@ -291,21 +278,22 @@ class GanTrain:
             if self.params.get("architecture") == "dcnn":
                 fake_pdf = fake_pdf.reshape((self.pdf.shape[0], self.pdf.shape[1], self.pdf.shape[2]))
             if self.xgrid.shape != self.params.get("pdfgrid").shape:
-                print("\n[+] Compute extrapolation.")
+                logger.info("[+] GANs x-grid is not the same as input PDF x-grid. Hence, computing extrapolation")
                 fake_pdf = interpolate_grid(fake_pdf, self.xgrid, self.params.get("pdfgrid"))
 
             #############################################################
             # Construct the output grids in the same structure as the   #
             # N3FIT outputs. This allows for easy evolution.            #
             #############################################################
-            print("\n[+] Write grids to file.")
+            logger.info("[+] Write grids to file.")
             for repindex, replica  in enumerate(fake_pdf, start=1):
-                grid_path = f"{self.folder}/replicas"
+                rpid = self.pdf.shape[0] + repindex
+                grid_path = f"{self.folder}/replicas/replica_{rpid}"
                 write_grid = WriterWrapper(
                         self.params.get("pdf"),
                         replica,
                         self.xgrid,
-                        self.pdf.shape[0] + repindex,
+                        rpid,
                         1.7874388
                     )
                 write_grid.write_data(grid_path)
