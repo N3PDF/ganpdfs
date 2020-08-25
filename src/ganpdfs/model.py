@@ -6,17 +6,13 @@ from tensorflow.keras.layers import Input
 from tensorflow.keras.layers import Conv2D
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.layers import Reshape
-from tensorflow.keras.layers import Dropout
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2DTranspose
 from tensorflow.keras.layers import BatchNormalization
-from tensorflow.keras.initializers import RandomNormal
-from keras.layers.advanced_activations import LeakyReLU
 
 from ganpdfs.custom import ConvPDF
 from ganpdfs.custom import ConvXgrid
 from ganpdfs.utils import construct_cnn
-from ganpdfs.custom import PreprocessFit
 from ganpdfs.custom import ClipConstraint
 from ganpdfs.custom import wasserstein_loss
 
