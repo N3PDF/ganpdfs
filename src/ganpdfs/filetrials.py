@@ -3,6 +3,16 @@ from hyperopt import Trials, space_eval
 
 
 def space_eval_trial(space, trial):
+    """space_eval_trial.
+
+    Parameters
+    ----------
+    space :
+        space
+    trial :
+        trial
+    """
+
     for_eval = {}
     for k, v in trial["misc"]["vals"].items():
         if len(v) == 0:
@@ -13,12 +23,16 @@ def space_eval_trial(space, trial):
 
 
 class FileTrials(Trials):
-    """
-    Stores trial results on the fly.
+    """FileTrials.
     """
 
     def __init__(
-        self, replica_path, log=None, parameters=None, exp_key=None, refresh=True
+        self,
+        replica_path,
+        log=None,
+        parameters=None,
+        exp_key=None,
+        refresh=True
     ):
         self._store_trial = False
         self._json_file = "{0}/tries.json".format(replica_path)
@@ -30,6 +44,8 @@ class FileTrials(Trials):
         super(FileTrials, self).__init__(exp_key=exp_key, refresh=refresh)
 
     def refresh(self):
+        """refresh.
+        """
         super(FileTrials, self).refresh()
 
         # write json to disk
@@ -47,9 +63,31 @@ class FileTrials(Trials):
                 f.write(all_to_str)
 
     def new_trial_ids(self, N):
+        """new_trial_ids.
+
+        Parameters
+        ----------
+        N :
+            N
+        """
+
         self._store_trial = False
         return super(FileTrials, self).new_trial_ids(N)
 
     def new_trial_docs(self, tids, specs, results, miscs):
+        """new_trial_docs.
+
+        Parameters
+        ----------
+        tids :
+            tids
+        specs :
+            specs
+        results :
+            results
+        miscs :
+            miscs
+        """
+
         self._store_trial = True
         return super(FileTrials, self).new_trial_docs(tids, specs, results, miscs)
