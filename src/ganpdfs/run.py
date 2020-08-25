@@ -13,7 +13,7 @@ from ganpdfs.hyperscan import load_yaml
 from ganpdfs.hyperscan import hyper_train
 from ganpdfs.hyperscan import run_hyperparameter_scan
 
-logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
+logging.basicConfig(level=logging.INFO, format="[%(levelname)s]\n%(message)s")
 logger = logging.getLogger(__name__)
 
 # Random Seeds
@@ -98,7 +98,7 @@ def main():
     q_value = 1.7874388     # Choose value of Initial
 
     # Generate PDF grids
-    logger.info("Loading input PDFs.")
+    logger.info("[+] Loading input PDFs.")
     init_pdf = InputPDFs(hps["pdf"], q_value, nf)
     # Load the x-Grid
     # Choose the LHAPDF x-grid by default
