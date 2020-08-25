@@ -3,6 +3,7 @@ import ast
 import yaml
 import time
 import pickle
+import logging
 
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import ELU
@@ -20,10 +21,12 @@ from hyperopt import space_eval, STATUS_OK
 from ganpdfs.train import GanTrain
 from ganpdfs.filetrials import FileTrials
 
+logger = logging.getLogger(__name__)
+
 RE_FUNCTION = re.compile("(?<=hp\.)\w*(?=\()")
 RE_ARGS = re.compile("\(.*\)$")
 
-# ----------------------------------------------------------------------
+
 def load_yaml(runcard_file):
     """load_yaml.
 
@@ -48,7 +51,6 @@ def load_yaml(runcard_file):
     return runcard
 
 
-# ----------------------------------------------------------------------
 def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder):
     """run_hyperparameter_scan.
 
@@ -65,7 +67,7 @@ def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder
     folder :
         folder
     """
-    print("[+] Performing hyperparameter scan...")
+    logger.info("[+] Performing hyperparameter scan.")
     if cluster:
         trials = MongoTrials(cluster, exp_key="exp1")
     else:
@@ -77,18 +79,17 @@ def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder
     )
     # Save the overall best model
     best_setup = space_eval(search_space, best)
-    print("\n[+] Best scan setup:")
+    logger.info("[+] Best scan setup:")
     #     pprint.pprint(best_setup)
     with open("%s/best-model.yaml" % folder, "w") as wfp:
         yaml.dump(best_setup, wfp, default_flow_style=False)
     log = "%s/hyperopt_log_{}.pickle".format(time.time()) % folder
     with open(log, "wb") as wfp:
-        print(f"[+] Saving trials in {log}")
+        logger.info(f"[+] Saving trials in {log}")
         pickle.dump(trials.trials, wfp)
     return best_setup
 
 
-# ----------------------------------------------------------------------
 def hyper_train(params, xpdf, pdf):
     """hyper_train.
 
@@ -130,6 +131,8 @@ def hyper_train(params, xpdf, pdf):
     # xgan_pdfs.pretrain_disc(BATCH_SIZE, epochs=4)
 
     smm_result = xgan_pdfs.train(
-        nb_epochs=params.get("epochs"), batch_size=BATCH_SIZE, verbose=params.get("verbose")
+        nb_epochs=params.get("epochs"),
+        batch_size=BATCH_SIZE,
+        verbose=params.get("verbose")
     )
     return {"loss": smm_result, "status": STATUS_OK}
