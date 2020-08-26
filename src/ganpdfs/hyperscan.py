@@ -132,7 +132,6 @@ def hyper_train(params, xpdf, pdf):
 
     smm_result = xgan_pdfs.train(
         nb_epochs=params.get("epochs"),
-        batch_size=BATCH_SIZE,
-        verbose=params.get("verbose")
+        batch_size=BATCH_SIZE
     )
     return {"loss": smm_result, "status": STATUS_OK}

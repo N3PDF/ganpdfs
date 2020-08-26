@@ -194,7 +194,7 @@ class GanTrain:
             pad_inches=0.2,
         )
 
-    def train(self, nb_epochs=5000, batch_size=64, verbose=False):
+    def train(self, nb_epochs=5000, batch_size=64):
         """train.
 
         Parameters
