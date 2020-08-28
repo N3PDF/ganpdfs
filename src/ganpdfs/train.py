@@ -215,8 +215,10 @@ class GanTrain:
         else:
             half_batch_size = int(batch_size / 2)
 
-        # Initialize Losses storing
+        # Initialize Losses storing and checkpoint
+        # folder path.
         rdloss, fdloss, advloss = [], [], []
+        check_dir = f"./{self.folder}/checkpoint/ckpt"
 
         logger.info("[+] Training:")
         with trange(nb_steps) as iter_range:
@@ -247,7 +249,7 @@ class GanTrain:
                     advloss.append(gloss)
                     rdloss.append(r_dloss)
                     fdloss.append(f_dloss)
-                    self.checkpoint.save(file_prefix = "./{}/checkpoint/ckpt".format(self.folder))
+                    self.checkpoint.save(file_prefix=check_dir)
 
                 if k % 1000 == 0:
                     # TODO: Fix arguments plot
@@ -278,7 +280,7 @@ class GanTrain:
             if self.params.get("architecture") == "dcnn":
                 fake_pdf = fake_pdf.reshape((self.pdf.shape[0], self.pdf.shape[1], self.pdf.shape[2]))
             if self.xgrid.shape != self.params.get("pdfgrid").shape:
-                logger.info("[+] GANs x-grid is not the same as input PDF x-grid. Hence, computing extrapolation")
+                logger.info("[+] Interpolate and/or Extrapolate GANs grid to PDF grid.")
                 fake_pdf = interpolate_grid(fake_pdf, self.xgrid, self.params.get("pdfgrid"))
 
             #############################################################
