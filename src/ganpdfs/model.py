@@ -1,8 +1,4 @@
-import tensorflow as tf
-
-from tensorflow.keras import Model
 from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Input
 from tensorflow.keras.layers import Conv2D
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.layers import Reshape
@@ -35,6 +31,9 @@ class WassersteinGanModel:
         self.c_activ = params.get("d_act")
         self.c_optmz = params.get("d_opt")
         self.adv_opmtz = params.get("gan_opt")
+        # Architecture
+        self.d_size = params.get("ddnn_size", 1)
+        self.g_size = params.get("gdnn_size", 2)
 
     def generator_model(self):
         """generator_model.
@@ -43,25 +42,22 @@ class WassersteinGanModel:
         n_nodes = 7 * 7 * 256
         dnn_dim = self.params.get("g_nodes")
         # Generator Input
-        g_input = Input(shape=self.noise_size)
+        g_model = Sequential()
         # 1st Layer
-        g1l = Dense(n_nodes)(g_input)
-        g1a = self.activ.get(self.g_activ)(g1l)
-        # 2nd Layer
-        g2l = Dense(dnn_dim)(g1a)
-        g2b = BatchNormalization()(g2l)
-        g2a = self.activ.get(self.g_activ)(g2b)
-        # 3rd Layer
-        g3l = Dense(dnn_dim * 2)(g2a)
-        g3b = BatchNormalization()(g3l)
-        g3a = self.activ.get(self.g_activ)(g3b)
-        # 4th Layer
-        g4l = Dense(self.fl_size * self.xg_size)(g3a)
-        # g4r = Reshape((self.fl_size, self.xg_size))(g4l)
-        g_output = Reshape((self.fl_size, self.xg_size))(g4l)
-        # Output
-        # g_output = ConvPDF(self.pdf)(g4r)
-        return Model(g_input, g_output, name="Generator")
+        g_model.add(Dense(n_nodes, input_dim=self.noise_size))
+        g_model.add(self.activ.get(self.g_activ))
+        # Loop over the number of layers
+        for it in range(self.g_size):
+            g_model.add(Dense(dnn_dim * (2 ** it)))
+            g_model.add(BatchNormalization())
+            g_model.add(self.activ.get(self.g_activ))
+        # Reshape to Input PDF set and/or Output
+        g_model.add(Dense(self.fl_size * self.xg_size))
+        g_model.add(Reshape((self.fl_size, self.xg_size)))
+        # Convolute input PDF
+        if self.params.get("ConvoluteOutput", True):
+            g_model.add(ConvPDF(self.pdf))
+        return g_model
         
     def critic_model(self):
         """critic_model.
@@ -71,23 +67,25 @@ class WassersteinGanModel:
         # Weight Constraints
         const = ClipConstraint(1)
         # Discriminator Input
-        d_input = Input(shape=(self.fl_size, self.xg_size))
+        d_input = (self.fl_size, self.xg_size)
+        d_model = Sequential(name="Critic")
         # 1st Layer
-        d1l = Dense(dnn_dim, kernel_constraint=const)(d_input)
-        d1b = BatchNormalization()(d1l)
-        d1a = self.activ.get(self.c_activ)(d1b)
-        # 2nd Layer
-        d2l = Dense(dnn_dim // 2, kernel_constraint=const)(d1a)
-        d2b = BatchNormalization()(d2l)
-        d2a = self.activ.get(self.c_activ)(d2b)
+        d_model.add(Dense(dnn_dim, kernel_constraint=const, input_shape=d_input))
+        d_model.add(BatchNormalization())
+        d_model.add(self.activ.get(self.c_activ))
+        # Loop over the number of Layers
+        # by decreasing the size at each iterations
+        for it in range(1, self.d_size + 1):
+            d_model.add(Dense(dnn_dim // (2 ** it), kernel_constraint=const))
+            d_model.add(BatchNormalization())
+            d_model.add(self.activ.get(self.c_activ))
         # Flatten and Output Logit
-        d3l = Flatten()(d2a)
-        d_output = Dense(1)(d3l)
+        d_model.add(Flatten())
+        d_model.add(Dense(1))
         # Compile Critic Model
         critic_opt = self.optmz.get(self.c_optmz)
-        cr_model = Model(d_input, d_output, name="Critic")
-        cr_model.compile(loss=wasserstein_loss, optimizer=critic_opt)
-        return cr_model
+        d_model.compile(loss=wasserstein_loss, optimizer=critic_opt)
+        return d_model
 
     def adversarial_model(self, generator, critic):
         """adversarial_model.
@@ -130,8 +128,10 @@ class DCNNWassersteinGanModel:
         self.c_optmz = params.get("d_opt")
         self.adv_opmtz = params.get("gan_opt")
         # Compute DCNN structure
-        self.cnnf = construct_cnn(pdf.shape[1], 3)
-        self.cnnx = construct_cnn(pdf.shape[2], 3)
+        self.d_size = params.get("dcnn_size", 1) + 1
+        self.g_size = params.get("gcnn_size", 2) + 1
+        self.cnnf = construct_cnn(pdf.shape[1], self.g_size)
+        self.cnnx = construct_cnn(pdf.shape[2], self.g_size)
 
     def generator_model(self):
         """generator_model.
@@ -139,44 +139,40 @@ class DCNNWassersteinGanModel:
 
         gcnn = self.params.get("g_nodes")
         n_nodes = self.cnnf[0] * self.cnnx[0] * gcnn
-        g_input = Input(shape=(self.noise_size,))
+        g_model = Sequential(name="Generator")
         # 1st DCNN Layer
-        G1l = Dense(n_nodes)(g_input)
-        G1b = BatchNormalization()(G1l)
-        G1a = self.activ.get(self.g_activ)(G1b)
-        G1r = Reshape((self.cnnf[0], self.cnnx[0], gcnn))(G1a)
-        # 2nd Layer:
-        # Upsample to (cnnf[0]*cnnf[1], cnnx[0]*cnnx[1])
-        G2l = Conv2DTranspose(
-                gcnn // 2,
-                kernel_size=(4, 4),
-                strides=(self.cnnf[1], self.cnnx[1]),
-                padding="same",
-        )(G1r)
-        G2b = BatchNormalization()(G2l)
-        G2a = self.activ.get(self.g_activ)(G2b)
-        # 3rd Layer:
-        # Upsample to (cnnf[1]*cnnf[2], cnnx[1]*cnnx[2])
-        G3l = Conv2DTranspose(
-                gcnn // 4,
-                kernel_size=(4, 4),
-                strides=(self.cnnf[2], self.cnnx[2]),
-                padding="same",
-        )(G2a)
-        G3b = BatchNormalization()(G3l)
-        G3a = self.activ.get(self.g_activ)(G3b)
+        g_model.add(Dense(n_nodes, input_dim=self.noise_size))
+        g_model.add(BatchNormalization())
+        g_model.add(self.activ.get(self.g_activ))
+        g_model.add(Reshape((self.cnnf[0], self.cnnx[0], gcnn)))
+        # Loop over the number of hidden layers and
+        # upSample at every iteration.
+        for it in range(1, self.g_size):
+            g_model.add(
+                Conv2DTranspose(
+                    gcnn // (2 ** it),
+                    kernel_size=(4, 4),
+                    strides=(self.cnnf[it], self.cnnx[it]),
+                    padding="same",
+                )
+            )
+            g_model.add(BatchNormalization())
+            g_model.add(self.activ.get(self.g_activ))
         # 4th Layer:
         # Upsample to (cnnf[2]*cnnf[3], cnnx[2]*cnnx[3])
         # 4th output shape=(None, fl_size, xg_size, 1)
-        G4l = Conv2DTranspose(
+        g_model.add(
+            Conv2DTranspose(
                 1,
                 kernel_size=(7, 7),
                 padding="same",
                 activation="tanh"
-        )(G3a)
-        # Output Layer
-        g_output = ConvPDF(self.pdf)(G4l)
-        return Model(g_input, g_output, name="Generator")
+            )
+        )
+        # Convolute input PDF
+        if self.params.get("ConvoluteOutput", True):
+            g_model.add(ConvPDF(self.pdf))
+        return g_model
 
     def critic_model(self):
         """critic_model.
@@ -184,35 +180,42 @@ class DCNNWassersteinGanModel:
 
         dcnn = self.params.get("d_nodes")
         const = ClipConstraint(1)
-        d_input = Input(shape=(self.fl_size, self.xg_size, 1))
+        d_input = (self.fl_size, self.xg_size, 1)
+        d_model = Sequential(name="Discriminator/Critic")
         # Downsample to (7, 35)
-        D1l = Conv2D(
+        d_model.add(
+            Conv2D(
                 dcnn,
                 kernel_size=(4, 4),
                 strides=(1, 2),
                 padding="same",
                 kernel_constraint=const,
-        )(d_input)
-        D1b = BatchNormalization()(D1l)
-        D1a = self.activ.get(self.c_activ)(D1b)
-        # Downsample to (7, 7)
-        D2l = Conv2D(
-                dcnn * 2,
-                kernel_size=(4, 4),
-                strides=(1, 5),
-                padding="same",
-                kernel_constraint=const,
-        )(D1a)
-        D2b = BatchNormalization()(D2l)
-        D2a = self.activ.get(self.c_activ)(D2b)
+                input_shape=d_input
+            )
+        )
+        d_model.add(BatchNormalization())
+        d_model.add(self.activ.get(self.c_activ))
+        # Loop over the number of Layers
+        # by Downsampling at each iteration
+        for it in range(1, self.d_size):
+            d_model.add(
+                Conv2D(
+                    dcnn * (2 ** it),
+                    kernel_size=(4, 4),
+                    strides=(1, 1),
+                    padding="same",
+                    kernel_constraint=const,
+                )
+            )
+            d_model.add(BatchNormalization())
+            d_model.add(self.activ.get(self.c_activ))
         # Flatten and output logits
-        D3r = Flatten()(D2a)
-        d_output = Dense(1)(D3r)
+        d_model.add(Flatten())
+        d_model.add(Dense(1))
         # Compile Model
         critic_opt = self.optmz.get(self.c_optmz)
-        cr_model = Model(d_input, d_output, name="Critic")
-        cr_model.compile(loss=wasserstein_loss, optimizer=critic_opt)
-        return cr_model
+        d_model.compile(loss=wasserstein_loss, optimizer=critic_opt)
+        return d_model
 
     def adversarial_model(self, generator, critic):
         """adversarial_model.
