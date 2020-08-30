@@ -37,6 +37,11 @@ g_act    : leakyrelu
 d_act    : leakyrelu
 
 # [Optimizer]
+# Architecture
+ddnn_size   : 1
+gdnn_size   : 2
+
+# Optimizer setup
 d_opt    : rms
 gan_opt  : rms
 epochs   : 5000
@@ -48,3 +53,6 @@ batch_size : 32
 # Critic & Generator
 nd_steps : 4
 ng_steps : 3
+
+# Intrinsic features
+ConvoluteOutput : True

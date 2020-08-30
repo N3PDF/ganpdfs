@@ -36,7 +36,15 @@ d_nodes  : 128
 g_act    : leakyrelu
 d_act    : leakyrelu
 
+<<<<<<< HEAD
 # [Optimizer]
+=======
+# Architecture
+dcnn_size   : 1
+gcnn_size   : 2
+
+# Optimizer setup
+>>>>>>> 0c03933... Added new input parameters accordingly
 d_opt    : rms
 gan_opt  : rms
 epochs   : 5000
@@ -48,3 +56,9 @@ batch_size : 32
 # Critic & Generator
 nd_steps : 4
 ng_steps : 3
+<<<<<<< HEAD
+=======
+
+# Intrinsic features
+ConvoluteOutput : True
+>>>>>>> 0c03933... Added new input parameters accordingly
