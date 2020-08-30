@@ -12,6 +12,10 @@ d_nodes  : 512
 g_act    : leakyrelu
 d_act    : leakyrelu
 
+# Architecture
+ddnn_size   : 1
+gdnn_size   : 2
+
 # Optimizer setup
 d_opt    : rms
 gan_opt  : rms
@@ -26,5 +30,4 @@ nd_steps : 4
 ng_steps : 3
 
 # Intrinsic features
-add_xlayer : False
-preprocessing: False
+ConvoluteOutput : True
