@@ -11,7 +11,7 @@ pdf: PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001
 
 # [Initiale scale]
 # TODO: Change to q^2
-q        : 1.7874
+q        : 1.65
 
 # [Grids]
 # Options: 
@@ -39,7 +39,7 @@ d_act    : leakyrelu
 # [Optimizer]
 d_opt    : rms
 gan_opt  : rms
-epochs   : 5000
+epochs   : 20
 
 # [Batch size]
 batch_size : 32
