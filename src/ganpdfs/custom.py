@@ -1,8 +1,6 @@
 import os
 import numpy as np
 
-# Silent tf for the time being
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf
 from scipy import stats
 from tensorflow.keras import initializers
