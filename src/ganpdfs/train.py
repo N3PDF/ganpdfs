@@ -220,7 +220,7 @@ class GanTrain:
         rdloss, fdloss, advloss = [], [], []
         check_dir = f"./{self.folder}/checkpoint/ckpt"
 
-        logger.info("[+] Training:")
+        logger.info("Training:")
         with trange(nb_steps) as iter_range:
             for k in iter_range:
                 iter_range.set_description("Training")
@@ -268,11 +268,12 @@ class GanTrain:
                 json.dump(loss_info, outfile, indent=2)
 
         # Generate fake replicas with the trained model
-        logger.info("[+] Generating fake replicas with the trained model.")
+        logger.info("Generating fake replicas with the trained model.")
         fake_pdf, _ = self.generate_fake_samples(self.generator, self.pdf.shape[0])
 
         if  not self.params.get("scan"):
 
+            xgrid = self.xgrid
             #############################################################
             # Interpolate the grids if the GANS-grids is not the same   #
             # as the input PDF.                                         #
@@ -280,23 +281,24 @@ class GanTrain:
             if self.params.get("architecture") == "dcnn":
                 fake_pdf = fake_pdf.reshape((self.pdf.shape[0], self.pdf.shape[1], self.pdf.shape[2]))
             if self.xgrid.shape != self.params.get("pdfgrid").shape:
-                logger.info("[+] Interpolate and/or Extrapolate GANs grid to PDF grid.")
-                fake_pdf = interpolate_grid(fake_pdf, self.xgrid, self.params.get("pdfgrid"))
+                xgrid = self.params.get("pdfgrid")
+                logger.info("Interpolate and/or Extrapolate GANs grid to PDF grid.")
+                fake_pdf = interpolate_grid(fake_pdf, self.xgrid, xgrid)
 
             #############################################################
             # Construct the output grids in the same structure as the   #
             # N3FIT outputs. This allows for easy evolution.            #
             #############################################################
-            logger.info("[+] Write grids to file.")
+            logger.info("Write grids to file.")
             for repindex, replica  in enumerate(fake_pdf, start=1):
                 rpid = self.pdf.shape[0] + repindex
-                grid_path = f"{self.folder}/replicas/replica_{rpid}"
+                grid_path = f"{self.folder}/nnfit/replica_{rpid}"
                 write_grid = WriterWrapper(
-                        self.params.get("pdf"),
+                        self.folder,
                         replica,
-                        self.xgrid,
+                        xgrid,
                         rpid,
-                        1.7874388
+                        self.params.get("q") ** 2
                     )
                 write_grid.write_data(grid_path)
         else:
