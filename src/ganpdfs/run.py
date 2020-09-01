@@ -13,7 +13,7 @@ from ganpdfs.hyperscan import load_yaml
 from ganpdfs.hyperscan import hyper_train
 from ganpdfs.hyperscan import run_hyperparameter_scan
 
-logging.basicConfig(level=logging.INFO, format="[%(levelname)s]\n%(message)s")
+logging.basicConfig(level=logging.INFO, format="[%(levelname)s]%(message)s")
 logger = logging.getLogger(__name__)
 
 # Random Seeds
@@ -89,17 +89,16 @@ def main():
 
     logger.info("Loading runcard.")
     hps = load_yaml(args.runcard)
-    hps["verbose"] = False  # Turn off during HyperOpt
     hps["save_output"] = out
 
     # Prepare Grids
     # One-time Generation
-    nf = 6                  # Choose Number of flavours
-    q_value = 1.7874388     # Choose value of Initial
+    nf = hps.get("nf", 6)              # Choose Number of flavours
+    qvalue = hps.get("q", 1.7874)      # Choose value of Initial
 
     # Generate PDF grids
-    logger.info("[+] Loading input PDFs.")
-    init_pdf = InputPDFs(hps["pdf"], q_value, nf)
+    logger.info("Loading input PDFs.")
+    init_pdf = InputPDFs(hps["pdf"], qvalue, nf)
     # Load the x-Grid
     # Choose the LHAPDF x-grid by default
     hps["pdfgrid"] = init_pdf.extract_xgrid()

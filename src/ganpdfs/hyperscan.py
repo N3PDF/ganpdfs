@@ -79,7 +79,7 @@ def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder
     )
     # Save the overall best model
     best_setup = space_eval(search_space, best)
-    logger.info("[+] Best scan setup:")
+    logger.info("Best scan setup:")
     #     pprint.pprint(best_setup)
     with open("%s/best-model.yaml" % folder, "w") as wfp:
         yaml.dump(best_setup, wfp, default_flow_style=False)
