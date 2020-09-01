@@ -5,20 +5,39 @@ import shutil
 import logging
 import argparse
 import numpy as np
-import tensorflow as tf
 
+# Silent tf for the time being
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+
+import tensorflow as tf
 from ganpdfs.pdformat import XNodes
 from ganpdfs.pdformat import InputPDFs
 from ganpdfs.hyperscan import load_yaml
 from ganpdfs.hyperscan import hyper_train
 from ganpdfs.hyperscan import run_hyperparameter_scan
 
-logging.basicConfig(level=logging.INFO, format="[%(levelname)s]%(message)s")
+logging.basicConfig(
+        level=logging.INFO,
+        format="\033[0;32m[%(levelname)s]\033[97m %(message)s"
+    )
 logger = logging.getLogger(__name__)
 
 # Random Seeds
 np.random.seed(0)
 tf.random.set_seed(0)
+
+
+def splash():
+    info = """\033[34m
++-------------------------------------------------------------------------+
+|𝖌𝖆𝖓𝖕𝖉𝖋𝖘:                                                                 |
+|-------                                                                  |
+|Generative Adversarial Neural Networks (GANs) for PDF replicas.          |
+|https://n3pdf.github.io/ganpdfs/                                         |
+|© N3PDF                                                                  |
++-------------------------------------------------------------------------+ 
+           """
+    print(info + '\033[0m \033[97m')
 
 
 def positive_int(value):
@@ -80,7 +99,7 @@ def main():
     This is the Main controller.
     It controlls the input parameters.
     """
-
+    splash()
     args = argument_parser()
     out = args.output.strip("/")
 
