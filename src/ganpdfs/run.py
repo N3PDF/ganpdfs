@@ -94,7 +94,7 @@ def main():
     # Prepare Grids
     # One-time Generation
     nf = hps.get("nf", 6)              # Choose Number of flavours
-    qvalue = hps.get("q", 1.7874)      # Choose value of Initial
+    qvalue = hps.get("q", 1.65)      # Choose value of Initial
 
     # Generate PDF grids
     logger.info("Loading input PDFs.")
@@ -120,7 +120,8 @@ def main():
     if args.fake is None:
         hps["out_replicas"] = hps["input_replicas"]
     else:
-        hps["out_replicas"] = args.fake
+        # Generate the missing replicas
+        hps["out_replicas"] = args.fake - hps["input_replicas"]
 
     # If hyperscan is set true
     if args.hyperopt:
