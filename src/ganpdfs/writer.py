@@ -12,7 +12,7 @@ from reportengine.compat import yaml
 
 
 class WriterWrapper:
-    def __init__(self, pdfname, fake_pdf, xgrid, replica_ind, qscale):
+    def __init__(self, outputname, fake_pdf, xgrid, replica_ind, qscale):
         """__init__.
 
         Parameters
@@ -25,8 +25,8 @@ class WriterWrapper:
 
         self.xgrid = xgrid
         self.qscale = qscale
-        self.pdfname = pdfname
         self.fake_pdf = fake_pdf
+        self.outputname = outputname
         self.replica_index = replica_ind
 
     def write_data(self, replica_path):
@@ -36,8 +36,8 @@ class WriterWrapper:
         ----------
         replica_path_set :
             replica_path_set
-        pdfname :
-            pdfname
+        outputname :
+            outputname
         """
 
         os.makedirs(replica_path, exist_ok=True)
@@ -47,7 +47,7 @@ class WriterWrapper:
             self.fake_pdf,
             self.xgrid,
             self.qscale,
-            self.pdfname,
+            self.outputname,
             self.replica_index,
             replica_path
         )
@@ -207,7 +207,7 @@ def evln2lha(evln):
     return lha
 
 
-def storegrid(fake_replica, xgrid, qscale, pdfname, replica_ind, replica_path):
+def storegrid(fake_replica, xgrid, qscale, outputname, replica_ind, replica_path):
     """storegrid.
 
     Parameters
@@ -218,8 +218,8 @@ def storegrid(fake_replica, xgrid, qscale, pdfname, replica_ind, replica_path):
         xgrid
     qscale :
         qscale
-    pdfname :
-        pdfname
+    outputname :
+        outputname
     replica_ind :
         replica_ind
     replica_path :
@@ -232,7 +232,7 @@ def storegrid(fake_replica, xgrid, qscale, pdfname, replica_ind, replica_path):
     data = {
         "replica": replica_ind,
         "q20": qscale,
-        "xgrid": xgrid.T.tolist()[0],
+        "xgrid": xgrid.T.tolist(),
         "labels": [
             "TBAR",
             "BBAR",
@@ -252,5 +252,5 @@ def storegrid(fake_replica, xgrid, qscale, pdfname, replica_ind, replica_path):
         "pdfgrid": lha.tolist(),
     }
 
-    with open(f"{replica_path}/{pdfname}.exportgrid", "w") as fs:
+    with open(f"{replica_path}/{outputname}.exportgrid", "w") as fs:
         yaml.dump(data, fs)
