@@ -269,7 +269,7 @@ class GanTrain:
 
         # Generate fake replicas with the trained model
         logger.info("Generating fake replicas with the trained model.")
-        fake_pdf, _ = self.generate_fake_samples(self.generator, self.pdf.shape[0])
+        fake_pdf, _ = self.generate_fake_samples(self.generator, self.params.get("out_replicas"))
 
         if  not self.params.get("scan"):
 
@@ -279,7 +279,7 @@ class GanTrain:
             # as the input PDF.                                         #
             #############################################################
             if self.params.get("architecture") == "dcnn":
-                fake_pdf = fake_pdf.reshape((self.pdf.shape[0], self.pdf.shape[1], self.pdf.shape[2]))
+                fake_pdf = fake_pdf.reshape((fake_pdf.shape[0], fake_pdf.shape[1], fake_pdf.shape[2]))
             if self.xgrid.shape != self.params.get("pdfgrid").shape:
                 xgrid = self.params.get("pdfgrid")
                 logger.info("Interpolate and/or Extrapolate GANs grid to PDF grid.")
