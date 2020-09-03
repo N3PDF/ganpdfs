@@ -11,21 +11,26 @@ from tensorflow.keras.losses import BinaryCrossentropy
 
 
 def wasserstein_loss(y_true, y_pred):
-    """wasserstein_loss.
+    """Compute the wasserstein loss from the true and predictions. The loss function 
+    is implemented by multiplying the expected label for each sample by the predicted 
+    score (element wise), then calculating the mean. For more details, see
+    https://arxiv.org/abs/1506.05439
 
     Parameters
     ----------
-    y_true :
-        y_true
-    y_pred :
-        y_pred
+    y_true : tf.tensor(float)
+        list of estimated probabilities for the true
+        samples
+    y_pred : tf.tensor(float)
+        list of estimated probabilities for the fake
+        samples
     """
     return K.mean(y_true * y_pred)
 
 
 class ClipConstraint(Constraint):
-    """The following put constraints on the
-    weights of the critic model.
+    """Put constraints on the weights of a given
+    Layer.
     """
 
     def __init__(self, clip_value):
@@ -39,12 +44,13 @@ class ClipConstraint(Constraint):
 
 
 class ConvPDF(Layer):
-    """conv_pdf.
+    """Convolute the output of the previous layer with
+    a subsample of the input/prior replica.
 
     Parameters
     ----------
-    pdf:
-        Input/Prior PDF set
+    pdf: np.array
+        Array of PDF grids
     """
 
     def __init__(self, pdf, trainable=True, **kwargs):
@@ -62,10 +68,8 @@ class ConvPDF(Layer):
 
 
 class ConvXgrid(Layer):
-
-    """
-    Custom array that inputs the information on the x-grid.
-    """
+    """Convolute the output of the prvious layer with the 
+    input x-grid."""
 
     def __init__(self, output_dim, xval, kernel_initializer="glorot_uniform", **kwargs):
         self.output_dim = output_dim
@@ -82,7 +86,6 @@ class ConvXgrid(Layer):
         )
         super(ConvXgrid, self).build(input_shape)
 
-    # @tf.function
     def call(self, x):
         # xres outputs (None, input_shape[1], len(x_pdf))
         xres = tf.tensordot(x, self.xval, axes=0)
@@ -96,9 +99,13 @@ class ConvXgrid(Layer):
 
 class PreprocessFit(Layer):
 
-    """
-    Custom array that does the preprocessing.
-    Here, the parameters are fitted.
+    """Add preprocessing to output of the previous layer. This probably assures
+    the PDF-like behavior of the generated samples.
+
+    Parameters
+    ----------
+    xval: np.array
+        Array of x-grid
     """
 
     def __init__(self, xval, trainable=True, kernel_initializer="ones", **kwargs):

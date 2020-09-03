@@ -28,12 +28,12 @@ RE_ARGS = re.compile("\(.*\)$")
 
 
 def load_yaml(runcard_file):
-    """load_yaml.
+    """Load YAML file.
 
     Parameters
     ----------
-    runcard_file :
-        runcard_file
+    runcard_file : str
+        input runcard file
     """
     with open(runcard_file, "r") as stream:
         runcard = yaml.load(stream, Loader=yaml.FullLoader)
@@ -52,20 +52,21 @@ def load_yaml(runcard_file):
 
 
 def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder):
-    """run_hyperparameter_scan.
+    """Take care of fetching all the necessary information from a runcard file
+    in order to perfrom the hyperparameter scan.
 
     Parameters
     ----------
-    func_train :
-        func_train
+    func_train : ganpdfs.train.GanTrain
+        GANs function that takes care of the training
     search_space :
         search_space
-    max_evals :
-        max_evals
-    cluster :
-        cluster
-    folder :
-        folder
+    max_evals : int
+        otal number of evalutions
+    cluster : str
+        cluster adresses
+    folder : str
+        folder to store the results
     """
     logger.info("[+] Performing hyperparameter scan.")
     if cluster:
@@ -91,16 +92,19 @@ def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder
 
 
 def hyper_train(params, xpdf, pdf):
-    """hyper_train.
+    """Take care of running the hyperparameter scan by designing a search space
+    through which the model tries to find the best architecture that maximizes
+    the figure of merit.
 
-        Parameters
-        ----------
-        params :
-            params
-        xpdf :
-            xpdf
-        pdf :
-            pdf
+    Parameters
+    ----------
+    params : dict
+        dictionary that contains all the input parameters on which the
+        search space is based
+    xpdf : np.array(float)
+        array of x-grid
+    pdf : np.array(float)
+        input/prior pdf
     """
     # Define the number of input replicas
     NB_INPUT_REP = params.get("input_replicas")

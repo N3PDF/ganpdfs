@@ -16,7 +16,24 @@ logger = logging.getLogger(__name__)
 
 
 class GanTrain:
-    """GanTrain.
+    """Training class that controls the training of the GANs. It sets the interplay
+    between the two different networks, namely the critic/discriminator and the
+    generator.
+
+    Parameters
+    ----------
+    xgrid : np.array(float)
+        array of x-grid
+    pdf : np.array(float)
+        grid of PDF replicas of shape (nb_rep, nb_flv, xgrid_size)
+    noise_size : int
+        dimension of the noise input
+    params : dict
+        dictionary that contains all the specific parameters
+    optmz : list
+        list of optimizers
+    nb_replicas: int, optional
+        number of replicas
     """
 
     def __init__(self, xgrid, pdf, noise_size, params, activ, optmz, nb_replicas=10):
@@ -49,12 +66,19 @@ class GanTrain:
         self.checkpoint = save_checkpoint(self.generator, self.critic, self.adversarial)
 
     def generate_real_samples(self, half_batch_size):
-        """generate_real_samples.
+        """Prepare the real samples. This samples a half-batch of real dataset and
+        assign to them target labels (-1) indicating that the samples are reals.
 
         Parameters
         ----------
-        half_batch_size :
-            half_batch_size
+        half_batch_size : int
+            dimension of the half batch
+
+        Returns
+        -------
+        tuple(np.array, np.array) 
+            containing the random real samples and the target
+        labels
         """
 
         #############################################################
@@ -71,12 +95,17 @@ class GanTrain:
         return pdf_batch, y_disc
 
     def sample_latent_space(self, half_batch_size):
-        """sample_latent_space.
+        """Construct the random input noise that gets fed into the generator.
 
         Parameters
         ----------
-        half_batch_size :
-            half_batch_size
+        half_batch_size : int
+            dimension of the half batch
+
+        Returns
+        -------
+        np.array(float) 
+            array of random numbers
         """
         # Generate points in the latent space
         latent = np.random.randn(self.noise_size * half_batch_size)
@@ -84,15 +113,24 @@ class GanTrain:
 
     def generate_fake_samples(self, generator, half_batch_size):
         """Generate fake samples from the Generator. `generate_fake_samples`
-        takes input from the latent space and generate synthetic PDF replicas.
-        This is then gets fed to the Critic and used to train the later.
+        takes input from the latent space and generate synthetic dataset.
+        The synthetic dataset are assigned with target labels (1). The
+        output of this is then gets fed to the Critic/Discriminator and used 
+        to train the later.
 
         Parameters
         ----------
-        generator :
-            generator
-        half_batch_size :
-            half_batch_size
+        generator : ganpdfs.model.WassersteinGanModel.generator
+            generator neural networks
+        half_batch_size : int
+            dimension of the half batch
+
+
+        Reuturns
+        --------
+        tuple(np.array, np.array)
+            containing samples from the generated data and the target
+            labels
         """
         
         #############################################################
@@ -109,12 +147,17 @@ class GanTrain:
         return pdf_fake, y_disc
 
     def sample_output_noise(self, batch_size):
-        """sample_output_noise.
+        """Samples output noises.
 
         Parameters
         ----------
-        batch_size :
-            batch_size
+        batch_size : int
+            dimension of the batch
+
+        Returns
+        -------
+        tuple(np.array, np.array)
+            noises and the corresponding target labels
         """
 
         #####################################################################
@@ -129,18 +172,20 @@ class GanTrain:
         return noise, y_gen
 
     def plot_generated_pdf(self, generator, nb_output, folder, niter):
-        """plot_generated_pdf.
+        """Generate grid-plots at a given iteration throughout the training. In each
+        grid is compared the generated dataset against the real one for a specific
+        flavor. The plots are then saved into a folder.
 
         Parameters
         ----------
-        generator :
-            generator
-        nb_output :
-            nb_output
-        folder :
-            folder
-        niter :
-            niter
+        generator : ganpdfs.model.WassersteinGanModel.generator
+            generator neural networks
+        nb_output : int
+            number of fake PDFs to be generated in the plot
+        folder : str
+            name of the folder in which the plots will be saved
+        niter : int
+            iteration at which the plots should be generated
         """
 
         # Check the targed folder
@@ -195,16 +240,31 @@ class GanTrain:
         )
 
     def train(self, nb_epochs=5000, batch_size=64):
-        """train.
+        """Train the GANs networks for a given batch size. The training is done in
+        such a way that the training of the generator and the critic/discriminator
+        is well balanced (more details to be added).
+
+        In order to to be able to evolve the generated grids, the format of the x-grid
+        has to be the same as the default x-grid in the central replicas file. If this
+        is no the case, then this function also performs the interpolation.
+
+        The grids are then written into a file using the `WriterWrapper` module.
+
+        In case `hyperopt` is on, the similarity metric--that is used as a sort of 
+        figrue of merit to assess the performance of the model--is computed. This
+        is afterwards used by the 'hyperscan' module.
 
         Parameters
         ----------
-        nb_epochs :
-            nb_epochs
-        batch_size :
-            batch_size
-        verbose :
-            verbose
+        nb_epochs : int
+            total number of epochs
+        batch_size : int
+            dimension of the batch size
+
+        Returns
+        -------
+        float:
+            similarity metric value
         """
         # Initialize the value of metric
         metric = 0

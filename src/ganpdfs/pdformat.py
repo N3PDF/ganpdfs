@@ -8,9 +8,9 @@ from subprocess import Popen
 
 class XNodes:
 
-    """
-    Construct the x-grid as in NNPDF
-    """
+    """Custom x-grid. This might be useful in case there are some
+    x-grid format that maximizes the training of the GANs and get
+    better performances."""
 
     def __init__(self):
         self.x_nodes = [
@@ -96,32 +96,34 @@ class XNodes:
 
 class InputPDFs:
 
-    """Construct the Input PDFs.
+    """Instantiate the computation of the input/prior PDF grid.
+
+    Parameters
+    ---------
+    pdf: str
+        name of the input/prior PDF set
+    q_value : float
+        initiale value of the scale at which the PDF grid is
+        constructed
+    nf: int
+        total number of flavors
     """
 
     def __init__(self, pdf_name, q_value, nf):
-        """__init__.
-
-            Parameters
-            ----------
-            pdf_name :
-                pdf_name
-            x_grid :
-                x_grid
-            nb_replicas :
-                nb_replicas
-            q_value :
-                q_value
-            flavors :
-                flavors
-        """
 
         self.nf = nf
         self.q_value = q_value
         self.pdf_name = pdf_name
 
     def extract_xgrid(self):
-        """extract_xgrid.
+        """Extract the x-grid format from the input PDF file. The nice
+        thing about this that there will not be a need for interpolation 
+        later on.
+
+        Returns
+        ------
+        np.array of shape (size,)
+            containing x-grid points
         """
 
         lhapdf_dir = Popen(["lhapdf-config", "--datadir"], stdout=PIPE)
@@ -147,6 +149,15 @@ class InputPDFs:
 
         The  following returns a multi-dimensional array that has
         the following shape (nb_replicas, nb_flavours, size_xgrid)
+
+        Parameters
+        ----------
+        xgrid : np.array
+            array of x-grid
+
+        Returns
+        -------
+        np.array(float) of shape (nb_replicas, nb_flavours, size_xgrid)
         """
 
         # Sample pdf with all the flavors

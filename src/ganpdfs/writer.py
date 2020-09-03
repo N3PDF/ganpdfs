@@ -12,16 +12,25 @@ from reportengine.compat import yaml
 
 
 class WriterWrapper:
-    def __init__(self, outputname, fake_pdf, xgrid, replica_ind, qscale):
-        """__init__.
+    """Class that writes the generated grid into a file. This has exactly the same
+    format as the N3FIT output ins such a way that the results can be evolved using 
+    evolven3fit.
 
-        Parameters
-        ----------
-        replica_number :
-            replica_number
-        qscale :
-            qscale
-        """
+    Parameters
+    ----------
+    outputname : str
+        name of the output folder
+    fake_pdf : np.array(float)
+        array of fake datased
+    xgrid : np.array(float)
+        array of x-grid
+    replica_ind : int
+        index of the given replica
+    qscale : float
+        value of the initial scale
+    """
+
+    def __init__(self, outputname, fake_pdf, xgrid, replica_ind, qscale):
 
         self.xgrid = xgrid
         self.qscale = qscale
@@ -30,14 +39,14 @@ class WriterWrapper:
         self.replica_index = replica_ind
 
     def write_data(self, replica_path):
-        """write_data.
+        """Write the data into grids using the `storegrid` method.
 
         Parameters
         ----------
-        replica_path_set :
-            replica_path_set
-        outputname :
-            outputname
+        replica_path_set : str
+            path where the replicas are stored
+        outputname : str
+            name of the output folder
         """
 
         os.makedirs(replica_path, exist_ok=True)
@@ -54,22 +63,22 @@ class WriterWrapper:
 
 
 def storegrid(fake_replica, xgrid, qscale, outputname, replica_ind, replica_path):
-    """storegrid.
+    """Store the results into a grid in the same format as the output of N3FIT.
 
     Parameters
     ----------
-    fake_replica :
-        fake_replica
-    xgrid :
-        xgrid
-    qscale :
-        qscale
-    outputname :
-        outputname
-    replica_ind :
-        replica_ind
-    replica_path :
-        replica_path
+    fake_replica : np.array
+        array of fake dataset
+    xgrid : np.array(float)
+        array of points defining the x-grid
+    qscale : float
+        initial scale at which the computation was done
+    outputname : str
+        name of the output folder
+    replica_ind : int
+        index of the given replica
+    replica_path : str
+        path where the replicas are stored
     """
 
     # TODO: Check why q^2

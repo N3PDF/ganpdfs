@@ -96,8 +96,7 @@ def argument_parser():
 
 def main():
     """
-    This is the Main controller.
-    It controlls the input parameters.
+    Main controller from which the main parameters are set and defined.
     """
     splash()
     args = argument_parser()
