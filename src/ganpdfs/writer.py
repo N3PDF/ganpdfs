@@ -39,7 +39,7 @@ class WriterWrapper:
         self.replica_index = replica_ind
 
     def write_data(self, replica_path):
-        """Write the data into grids using the `storegrid` method.
+        """Write the data into an `.exportgrid` file using the `storegrid` method.
 
         Parameters
         ----------

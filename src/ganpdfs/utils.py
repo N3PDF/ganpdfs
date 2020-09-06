@@ -7,16 +7,29 @@ from tensorflow.train import Checkpoint
 
 
 def save_checkpoint(generator, critic, adversarial):
-    """save_checkpoint.
+    """Save the training information into a file. This includes but
+    not limited to the information on the wieghts and the biases of
+    the given network. The GANs model is a combination of three
+    different neural networks (generator, critic/discriminator,
+    adversarial) and the information on each one of them are saved.
+
+    For more information on the constructor `Checkpoint` from 
+    the module `tensorflow.train`, refer to
+    https://www.tensorflow.org/api_docs/python/tf/train/Checkpoint
 
     Parameters
     ----------
-    generator :
-        generator
-    critic :
-        critic
-    adversarial :
-        adversarial
+    generator : ganpdfs.model.WassersteinGanModel.generator
+        generator neural network
+    critic : ganpdfs.model.WassersteinGanModel.critic
+        critic/discriminator neural network
+    adversarial : ganpdfs.model.WassersteinGanModel.adversarial
+        adversarial neural network
+
+    Returns
+    -------
+    A load status object, which can be used to make assertions about 
+    the status of a checkpoint restoration
     """
 
     checkpoint = Checkpoint(
@@ -28,13 +41,24 @@ def save_checkpoint(generator, critic, adversarial):
 
 
 def factorize_number(number):
-    """factorize_number using Pollard's rho
-    algorithm.
+    """Factorize_number using Pollard's rho algorithm. This takes
+    a number a return a list of the factors.
+
+    Example:
+        Given an integer 70, this can be factorized a produc of the
+        following integers [7,5,2].
+
+    Notice that by definition, 1 is not included.
 
     Parameters
     ----------
-    number :
-        number
+    number : int 
+        number to be factorized
+
+    Returns
+    -------
+    list(int)
+        list of the factors
     """
 
     factors = []
@@ -64,14 +88,37 @@ def factorize_number(number):
 
 
 def construct_cnn(number, nb_layer):
-    """construct_cnn.
+    """Factorize_number using Pollard's rho algorithm that is defined by the
+    `factorize_number` method. This is used in order to define the dimension 
+    of the `strides` for performing the convolution in the model class 
+    `DCNNWassersteinGanModel`. 
+
+    The issue is the following: given a pair of two integers (m, n) such that 
+    n < m, how can we decompose m into n factors. 
+
+    Example:
+        Given a pair (70, 3), we have [7,5,2]
+
+    If m cannot be decomposed further, then the remaining cases are
+    naturally set to 1.
+
+    Example:
+        Given a pair (58, 4) we have [29, 2, 1, 1]
+
+    Noe that the final result is sorted.
 
     Parameters
     ----------
-    factorized :
-        factorized
-    nb_layer :
-        nb_layer
+    number : int
+        numbker to be factorized
+    nb_layer : int
+        dimension of the list that contains the factors
+
+
+    Returns
+    -------
+    list(int)
+        list of the factors with length `nb_layer`
     """
 
     factorized = factorize_number(number)
@@ -90,22 +137,34 @@ def construct_cnn(number, nb_layer):
 
 
 def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid):
-    """interpolate_grid.
+    """Interpolate the generated output according to the x-grid in order to 
+    match with the LHAPDF grid-format. It uses the `interpolate` module from
+    `scipy`. For more details, refere to
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html
 
     Parameters
     ----------
-    fake_pdf :
-        fake_pdf
-    gan_grid :
-        gan_grid
+    fake_pdf : np.array
+        generated PDF replicas of shape (nb_repl, nb_flv, gan_grid)
+    gan_grid : np.array
+        custom x-grid of shape (gan_grid,)
     lhapdf_grid :
-        lhapdf_grid
+        lhapdf-like grid of shape (lhapdf_grid,)
+
+    Returns
+    -------
+    np.array(float)
+        fake PDF replica of shape (nb_repl, nb_flv, gan_grid)
     """
     final_grid = []
     for replica in fake_pdf:
         fl_space = []
         for fl in replica:
-            f_interpol = interpolate.interp1d(gan_grid, fl, fill_value="extrapolate")
+            f_interpol = interpolate.interp1d(
+                    gan_grid,
+                    fl,
+                    fill_value="extrapolate"
+            )
             new_grid = f_interpol(lhapdf_grid)
             fl_space.append(new_grid)
         final_grid.append(fl_space)

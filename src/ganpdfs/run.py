@@ -41,7 +41,9 @@ def splash():
 
 
 def positive_int(value):
-    """ Checks that a given number is positive """
+    """Checks that a given number is positive.
+    """
+
     ivalue = int(value)
     if ivalue <= 0:
         raise argparse.ArgumentTypeError(
@@ -51,8 +53,7 @@ def positive_int(value):
 
 
 def argument_parser():
-    """
-        Parse the input arguments for wganpdfs
+    """Parse the input arguments for wganpdfs.
     """
     # read command line arguments
     parser = argparse.ArgumentParser(description="Train a PDF GAN.")
@@ -95,8 +96,7 @@ def argument_parser():
 
 
 def main():
-    """
-    Main controller from which the main parameters are set and defined.
+    """Main controller from which the main parameters are set and defined.
     """
     splash()
     args = argument_parser()

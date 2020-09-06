@@ -6,6 +6,16 @@ This documentation begins here...
 
 .. toctree::
    :maxdepth: 2
+   :caption: What are Generative Adversarial Neural Networks (GANs)?
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Why the need for GANs for PDFs?
+
+
+.. toctree::
+   :maxdepth: 2
    :caption: HowTo
 
 

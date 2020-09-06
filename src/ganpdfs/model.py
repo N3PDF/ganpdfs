@@ -57,9 +57,10 @@ class WassersteinGanModel:
         g3a = self.activ.get(self.g_activ)(g3b)
         # 4th Layer
         g4l = Dense(self.fl_size * self.xg_size)(g3a)
-        g4r = Reshape((self.fl_size, self.xg_size))(g4l)
+        # g4r = Reshape((self.fl_size, self.xg_size))(g4l)
+        g_output = Reshape((self.fl_size, self.xg_size))(g4l)
         # Output
-        g_output = ConvPDF(self.pdf)(g4r)
+        # g_output = ConvPDF(self.pdf)(g4r)
         return Model(g_input, g_output, name="Generator")
         
     def critic_model(self):
