@@ -29,8 +29,8 @@ x_grid   : custom
 architecture: dnn
 
 # [NUmber of Nodes in 1st Layer]
-g_nodes  : 128
-d_nodes  : 512
+g_nodes  : 512
+d_nodes  : 256
 
 # [Activations]
 g_act    : leakyrelu
