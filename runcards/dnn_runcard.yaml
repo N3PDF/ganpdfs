@@ -1,34 +1,30 @@
-#####################################################
-# Input PDF                                         #
-#####################################################
-
+#############################################################
+# Input PDF                                                 #       
+#############################################################
 pdf: PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001
 
 
-#####################################################
-# PDF Grids                                         #
-#####################################################
-
-# [Initiale scale]
-# TODO: Change to q^2
+#############################################################
+# PDF Grids:                                                #
+# ---------                                                 #
+# * Inittial scale q (TODO: change to q^2)                  #
+# * Options for x-grid:                                     #
+#   - custom: Custom GANs xgrid as defined in the Module    #
+#   - lhapdf: Use the same xgrid as in the input PDF        #
+#############################################################
 q        : 1.65
+x_grid   : lhapdf
 
-# [Grids]
-# Options: 
-# - custom: Custom GANs xgrid as defined in the Module
-# - lhapdf: Use the same xgrid as in the input PDF
-x_grid   : custom
-
-#####################################################
-# GAN setup
-#####################################################
-# [Architecture]
-# Options: 
-#   - dnn : Deep Neural Network
-#   - dcnn: Deep Convolutional Neural Network
+#############################################################
+# GAN setup:                                                #
+# ---------                                                 #
+# * Options for architecture:                               #
+#   - dnn : Deep Neural Network                             #
+#   - dcnn: Deep Convolutional Neural Network               #
+#############################################################
 architecture: dnn
 
-# [NUmber of Nodes in 1st Layer]
+# Number of Nodes in 1st Layer
 g_nodes  : 512
 d_nodes  : 256
 
@@ -36,26 +32,26 @@ d_nodes  : 256
 g_act    : leakyrelu
 d_act    : leakyrelu
 
-<<<<<<< HEAD
-# [Optimizer]
-=======
->>>>>>> 0c0393385d42ccfab64d58114b0ec850e855028b
 # Architecture
-ddnn_size   : 1
-gdnn_size   : 2
+dcnn_size   : 1
+gcnn_size   : 2
 
-# Optimizer setup
+# Optimizers
 d_opt    : rms
 gan_opt  : rms
 epochs   : 5000
 
-# [Batch size]
-batch_size : 32
-
-# Intermediate steps to train the
-# Critic & Generator
-nd_steps : 4
-ng_steps : 3
-
 # Intrinsic features
 ConvoluteOutput : True
+
+#############################################################
+# Training Setup:                                           #
+# --------------                                            #
+# * batch size                                              #
+# * {i}_steps: number of steps to train a {i}={generator,   #
+#              discriminator/critic} at each iteration.     #
+#############################################################
+batch_size : 32
+
+nd_steps : 4
+ng_steps : 3
