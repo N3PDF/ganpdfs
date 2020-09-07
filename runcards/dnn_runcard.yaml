@@ -36,7 +36,10 @@ d_nodes  : 256
 g_act    : leakyrelu
 d_act    : leakyrelu
 
+<<<<<<< HEAD
 # [Optimizer]
+=======
+>>>>>>> 0c0393385d42ccfab64d58114b0ec850e855028b
 # Architecture
 ddnn_size   : 1
 gdnn_size   : 2
