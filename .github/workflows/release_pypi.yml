@@ -1,8 +1,9 @@
 name: Deploy PyPI Package
 
 on:
-  release:
-    types: [released, created, published, edited]
+  - never
+#  release:
+#    types: [released, created, published, edited]
 
 jobs:
   release:
