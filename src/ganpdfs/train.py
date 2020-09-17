@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 from tqdm import trange
+from ganpdfs.utils import smm
 from ganpdfs.writer import WriterWrapper
 from ganpdfs.utils import save_checkpoint
 from ganpdfs.utils import interpolate_grid
@@ -362,9 +363,7 @@ class GanTrain:
                     )
                 write_grid.write_data(grid_path)
         else:
-            # Compute here the metric that is used to assess the efficiency of
-            # the generated replicas and use it for hyperopt
-            # Compute Metric Here
-            pass
+            # Compute FID inception score
+            metric = smm(self.pdf, fake_pdf)
 
         return metric
