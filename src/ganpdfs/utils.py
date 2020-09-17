@@ -3,6 +3,7 @@
 import numpy as np
 from math import gcd
 from scipy import interpolate
+from scipy.linalg import sqrtm
 from tensorflow.train import Checkpoint
 
 
@@ -169,3 +170,82 @@ def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid):
             fl_space.append(new_grid)
         final_grid.append(fl_space)
     return np.array(final_grid)
+
+
+def smm(prior, generated):
+    """Similarity Metric Measure that measures the quality of the generated PDF replicas
+    using the `Fréchet Inception Distance` (FID).
+
+    TODO: Check how the total/final FIDs is computed.
+
+    Parameters
+    ----------
+    prior : np.array(float)
+        Prior MC PDF replicas of shape (N, Nf, X)
+    generated : np.array(float)
+        Generated MC PDF replicas of shape (\tilde{N}, Nf, X)
+
+    Returns
+    -------
+    float:
+        FID
+    """
+
+    dim = prior.shape
+    # Reshape if the architecture is a DCNN
+    if len(dim) > 2:
+        prior = prior.reshape(dim[0], dim[1], dim[2])
+        generated = generated.reshape(dim[0], dim[1], dim[2])
+
+    # Transpose results w.r.t. the flavors
+    prior = np.transpose(prior, axes=[1, 0, 2])
+    generated = np.transpose(generated, axes=[1, 0, 2])
+    # Prepare FID array
+    fid_arr = np.zeros(dim[1])
+
+    def compute_fid(fl_prior, fl_generated):
+        """Measure the quality of the generated PDF using the `Fréchet Inception Distance`
+        (FID). The Frechet distance between two multivariate Gaussians X_1 ~ N(mu_1, C_1)
+        and X_2 ~ N(mu_2, C_2) is:
+            d^2 = ||mu_1 - mu_2||^2 + Tr(C_1 + C_2 - 2*sqrt(C_1*C_2)).
+
+        If the generated PDF replica is exactly the same as the prior, the value of the FID 
+        is zero; that means that the smaller the value of the FID is, the similar the generated 
+        replica is to the prior.
+
+        For details about the FID's Inception Score measure, refer to the following:
+        https://arxiv.org/abs/1706.08500
+
+        Parameters
+        ----------
+        fl_prior : np.array(float)
+            Array of prior PDF replica for a given flavor
+        fl_generated : np.array(float)
+            Array of generated PDF replica for a given flavor
+
+        Returns
+        -------
+        float:
+            FID value
+        """
+
+        # calculate mean and covariance statistics
+        mu1, sigma1 = fl_prior.mean(axis=0), np.cov(fl_prior, rowvar=False)
+        mu2, sigma2 = fl_generated.mean(axis=0), np.cov(fl_generated, rowvar=False)
+        # calculate sum squared difference between means
+        ssdiff = np.sum((mu1 - mu2) ** 2.0)
+        # calculate sqrt of product between cov
+        covmean = sqrtm(sigma1.dot(sigma2))
+        # check and correct imaginary numbers from sqrt
+        if np.iscomplexobj(covmean):
+            covmean = covmean.real
+        # calculate score
+        fid = ssdiff + np.trace(sigma1 + sigma2 - 2.0 * covmean)
+        return fid
+
+    for fl in range(dim[1]):
+        fid_arr[fl] = compute_fid(prior[fl], generated[fl])
+    fids_stdv = np.std(fid_arr)
+    fids_mean = np.mean(fid_arr)
+
+    return fids_stdv * fids_mean
