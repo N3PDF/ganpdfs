@@ -13,7 +13,7 @@ pdf: PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001
 #   - lhapdf: Use the same xgrid as in the input PDF        #
 #############################################################
 q        : 1.65
-x_grid   : lhapdf
+x_grid   : custom
 
 #############################################################
 # GAN setup:                                                #
@@ -25,16 +25,16 @@ x_grid   : lhapdf
 architecture: dnn
 
 # Number of Nodes in 1st Layer
-g_nodes  : 512
-d_nodes  : 256
+g_nodes  : 128
+d_nodes  : 450
 
 # [Activations]
 g_act    : leakyrelu
 d_act    : leakyrelu
 
 # Architecture
-dcnn_size   : 1
-gcnn_size   : 2
+ddnn_size   : 1
+gdnn_size   : 1
 
 # Optimizers
 d_opt    : rms
@@ -51,7 +51,7 @@ ConvoluteOutput : True
 # * {i}_steps: number of steps to train a {i}={generator,   #
 #              discriminator/critic} at each iteration.     #
 #############################################################
-batch_size : 32
+batch_size : 64
 
 nd_steps : 4
 ng_steps : 3
