@@ -39,16 +39,15 @@ class WassersteinGanModel:
         """generator_model.
         """
 
-        n_nodes = 7 * 7 * 256
         dnn_dim = self.params.get("g_nodes")
         # Generator Input
         g_model = Sequential()
         # 1st Layer
-        g_model.add(Dense(n_nodes, input_dim=self.noise_size))
+        g_model.add(Dense(dnn_dim, input_dim=self.noise_size))
         g_model.add(self.activ.get(self.g_activ))
         # Loop over the number of layers
         for it in range(self.g_size):
-            g_model.add(Dense(dnn_dim * (2 ** it)))
+            g_model.add(Dense(dnn_dim * (2 ** (it + 1))))
             g_model.add(BatchNormalization())
             g_model.add(self.activ.get(self.g_activ))
         # Reshape to Input PDF set and/or Output
