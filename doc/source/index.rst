@@ -1,25 +1,30 @@
 GANPDFs documentation
 =====================
 
-This documentation begins here...
+**ganpdfs** is a python package for Monte Carlo (MC) replicas generation based on Generative
+Adversarial Networks (GANs).
 
 
 .. toctree::
    :maxdepth: 2
-   :caption: What are Generative Adversarial Neural Networks (GANs)?
+   :caption: Introduction to GANs
+
+   introduction/intro.rst
+   ref-bibs
 
 
 .. toctree::
    :maxdepth: 2
-   :caption: Why the need for GANs for PDFs?
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: HowTo
-
+   :caption: How To
 
    howto/howto
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Modules
+
+   modules/ganpdfs/modules
 
 
 .. automodule:: ganpdfs
