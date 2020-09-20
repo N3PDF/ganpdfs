@@ -30,6 +30,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -80,9 +81,23 @@
               
             
             
-              <p class="caption"><span class="caption-text">HowTo</span></p>
+              <p class="caption"><span class="caption-text">Introduction to GANs</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="howto/howto.html">How to run the code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction/intro.html">What are GANs?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction/intro.html#why-the-need-of-gans-for-pdf">Why the need of GANs for PDF</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction/intro.html#discriminator-training">Discriminator Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction/intro.html#generator-training">Generator Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction/intro.html#hyperoptimization">Hyperoptimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ref-bibs.html">References</a></li>
+</ul>
+<p class="caption"><span class="caption-text">How To</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="howto/howto.html">How to use the code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="howto/howto.html#post-analysis">Post-Analysis</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules/ganpdfs/modules.html">ganpdfs</a></li>
 </ul>
 
             
@@ -150,10 +165,103 @@
 <h1 id="index">Index</h1>
 
 <div class="genindex-jumpbox">
- <a href="#G"><strong>G</strong></a>
+ <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#I"><strong>I</strong></a>
  | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#W"><strong>W</strong></a>
  
 </div>
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.model.DCNNWassersteinGanModel.adversarial_model">adversarial_model() (ganpdfs.model.DCNNWassersteinGanModel method)</a>
+
+      <ul>
+        <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.model.WassersteinGanModel.adversarial_model">(ganpdfs.model.WassersteinGanModel method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.custom.ConvXgrid.build">build() (ganpdfs.custom.ConvXgrid method)</a>
+
+      <ul>
+        <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.custom.PreprocessFit.build">(ganpdfs.custom.PreprocessFit method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.custom.ConvPDF.call">call() (ganpdfs.custom.ConvPDF method)</a>
+
+      <ul>
+        <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.custom.ConvXgrid.call">(ganpdfs.custom.ConvXgrid method)</a>
+</li>
+        <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.custom.PreprocessFit.call">(ganpdfs.custom.PreprocessFit method)</a>
+</li>
+      </ul></li>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.custom.ClipConstraint">ClipConstraint (class in ganpdfs.custom)</a>
+</li>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.custom.ConvPDF.compute_output_shape">compute_output_shape() (ganpdfs.custom.ConvPDF method)</a>
+
+      <ul>
+        <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.custom.ConvXgrid.compute_output_shape">(ganpdfs.custom.ConvXgrid method)</a>
+</li>
+        <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.custom.PreprocessFit.compute_output_shape">(ganpdfs.custom.PreprocessFit method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.utils.construct_cnn">construct_cnn() (in module ganpdfs.utils)</a>
+</li>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.custom.ConvPDF">ConvPDF (class in ganpdfs.custom)</a>
+</li>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.custom.ConvXgrid">ConvXgrid (class in ganpdfs.custom)</a>
+</li>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.model.DCNNWassersteinGanModel.critic_model">critic_model() (ganpdfs.model.DCNNWassersteinGanModel method)</a>
+
+      <ul>
+        <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.model.WassersteinGanModel.critic_model">(ganpdfs.model.WassersteinGanModel method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.model.DCNNWassersteinGanModel">DCNNWassersteinGanModel (class in ganpdfs.model)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.utils.factorize_number">factorize_number() (in module ganpdfs.utils)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.filetrials.FileTrials">FileTrials (class in ganpdfs.filetrials)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -164,6 +272,52 @@
         <li><a href="modules/ganpdfs/ganpdfs.html#module-ganpdfs">module</a>
 </li>
       </ul></li>
+      <li>
+    ganpdfs.custom
+
+      <ul>
+        <li><a href="modules/ganpdfs/ganpdfs.html#module-ganpdfs.custom">module</a>
+</li>
+      </ul></li>
+      <li>
+    ganpdfs.filetrials
+
+      <ul>
+        <li><a href="modules/ganpdfs/ganpdfs.html#module-ganpdfs.filetrials">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    ganpdfs.model
+
+      <ul>
+        <li><a href="modules/ganpdfs/ganpdfs.html#module-ganpdfs.model">module</a>
+</li>
+      </ul></li>
+      <li>
+    ganpdfs.utils
+
+      <ul>
+        <li><a href="modules/ganpdfs/ganpdfs.html#module-ganpdfs.utils">module</a>
+</li>
+      </ul></li>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.model.DCNNWassersteinGanModel.generator_model">generator_model() (ganpdfs.model.DCNNWassersteinGanModel method)</a>
+
+      <ul>
+        <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.model.WassersteinGanModel.generator_model">(ganpdfs.model.WassersteinGanModel method)</a>
+</li>
+      </ul></li>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.custom.ClipConstraint.get_config">get_config() (ganpdfs.custom.ClipConstraint method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.utils.interpolate_grid">interpolate_grid() (in module ganpdfs.utils)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -176,7 +330,69 @@
       <ul>
         <li><a href="modules/ganpdfs/ganpdfs.html#module-ganpdfs">ganpdfs</a>
 </li>
+        <li><a href="modules/ganpdfs/ganpdfs.html#module-ganpdfs.custom">ganpdfs.custom</a>
+</li>
+        <li><a href="modules/ganpdfs/ganpdfs.html#module-ganpdfs.filetrials">ganpdfs.filetrials</a>
+</li>
+        <li><a href="modules/ganpdfs/ganpdfs.html#module-ganpdfs.model">ganpdfs.model</a>
+</li>
+        <li><a href="modules/ganpdfs/ganpdfs.html#module-ganpdfs.utils">ganpdfs.utils</a>
+</li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.filetrials.FileTrials.new_trial_docs">new_trial_docs() (ganpdfs.filetrials.FileTrials method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.filetrials.FileTrials.new_trial_ids">new_trial_ids() (ganpdfs.filetrials.FileTrials method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.custom.PreprocessFit">PreprocessFit (class in ganpdfs.custom)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.filetrials.FileTrials.refresh">refresh() (ganpdfs.filetrials.FileTrials method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.utils.save_checkpoint">save_checkpoint() (in module ganpdfs.utils)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.utils.smm">smm() (in module ganpdfs.utils)</a>
+</li>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.filetrials.space_eval_trial">space_eval_trial() (in module ganpdfs.filetrials)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.custom.wasserstein_loss">wasserstein_loss() (in module ganpdfs.custom)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/ganpdfs/ganpdfs.html#ganpdfs.model.WassersteinGanModel">WassersteinGanModel (class in ganpdfs.model)</a>
+</li>
   </ul></td>
 </tr></table>
 

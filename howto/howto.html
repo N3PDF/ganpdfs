@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>How to run the code &mdash; ganpdfs 0.1 documentation</title>
+  <title>How to use the code &mdash; ganpdfs 0.1 documentation</title>
   
 
   
@@ -30,13 +30,15 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="GANPDFs documentation" href="../index.html" /> 
+    <link rel="next" title="ganpdfs" href="../modules/ganpdfs/modules.html" />
+    <link rel="prev" title="References" href="../ref-bibs.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -81,9 +83,23 @@
               
             
             
-              <p class="caption"><span class="caption-text">HowTo</span></p>
+              <p class="caption"><span class="caption-text">Introduction to GANs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction/intro.html">What are GANs?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../introduction/intro.html#why-the-need-of-gans-for-pdf">Why the need of GANs for PDF</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../introduction/intro.html#discriminator-training">Discriminator Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../introduction/intro.html#generator-training">Generator Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../introduction/intro.html#hyperoptimization">Hyperoptimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ref-bibs.html">References</a></li>
+</ul>
+<p class="caption"><span class="caption-text">How To</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">How to run the code</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">How to use the code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#post-analysis">Post-Analysis</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/ganpdfs/modules.html">ganpdfs</a></li>
 </ul>
 
             
@@ -130,7 +146,7 @@
     
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>How to run the code</li>
+      <li>How to use the code</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -149,9 +165,174 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="how-to-run-the-code">
-<h1>How to run the code<a class="headerlink" href="#how-to-run-the-code" title="Permalink to this headline">¶</a></h1>
-<p>This section go through the steps of using the package…</p>
+  <div class="section" id="how-to-use-the-code">
+<h1>How to use the code<a class="headerlink" href="#how-to-use-the-code" title="Permalink to this headline">¶</a></h1>
+<p>To install the <strong>ganpdfs</strong> package, just run the following:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install --upgrade ganpdfs
+</pre></div>
+</div>
+<p>The <strong>ganpdfs</strong> pogram takes as an input argument a run card file in which all the input parameters
+such as the name of the PDF set and the architecture of the network models are defined.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ganpdfs &lt;runcard_folder&gt;/&lt;runcard_file&gt;.yml
+</pre></div>
+</div>
+<p>In addition, it takes optional arguments that are defined by the following flags:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-o</span></code> / <code class="docutils literal notranslate"><span class="pre">--output</span></code>: name of the output folder</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-f</span></code> / <code class="docutils literal notranslate"><span class="pre">--force</span></code>: overwrite the previous folder</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-n</span></code> / <code class="docutils literal notranslate"><span class="pre">--nreplicas</span></code>: number of input replicas to be considered (default: entire set)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">k</span></code> / <code class="docutils literal notranslate"><span class="pre">--fake</span></code>: number of fake replicas to be generated (default: same size as the input)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--hyperopt</span></code>: number of hyper-parameter scan trials</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cluster</span></code>: enable hyper-parameter scan in cluster</p></li>
+</ul>
+</div></blockquote>
+<p>In the run card file, the following keys are required:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pdf</span></code> - <em>str</em> : name of the PDF set</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">q</span></code> - <em>float</em> : initial scale at which the PDF grid will be computed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x_grid</span></code> - <em>str</em> : format of the x-grid (<em>options: custom/lhapdf</em>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">architecture</span></code> - <em>str</em>: architecture of the network models (<em>options: dnn/dcnn</em>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">g_nodes</span></code> - <em>int</em> : number of nodes in the 1st layer of the Generator</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d_nodes</span></code> - <em>int</em> : number of nodes in the 1st layer of the Discriminator</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gdnn_size</span></code> - <em>int</em> : number of Generator’s hidden layers (<em>optional, default=1</em>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ddnn_size</span></code> - <em>int</em> : number of Discriminator’s hidden layers (<em>optional, default=1</em>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">g_act</span></code> - <em>str</em> : activation function for the Generator</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d_act</span></code> - <em>str</em> : activation function for the Discriminator</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">batch_size</span></code> - <em>int</em> : size of the batches per training</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ng_steps</span></code> - <em>int</em> : number of steps to train the Generator per epoch (<em>optional, default=3</em>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nd_steps</span></code> - <em>int</em> : number of steps to train the Discriminator per epoch (<em>optional, default=4</em>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ConvoluteOutput</span></code> - <em>bool</em> : convolute the output of the Generator with some samples from the input PDF</p></li>
+</ul>
+</div></blockquote>
+<p>An example of standard run card is shown below:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1">#############################################################</span>
+<span class="c1"># Input PDF                                                 #</span>
+<span class="c1">#############################################################</span>
+<span class="nt">pdf</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001</span>
+
+
+<span class="c1">#############################################################</span>
+<span class="c1"># PDF Grids:                                                #</span>
+<span class="c1"># ---------                                                 #</span>
+<span class="c1"># * Inittial scale q (TODO: change to q^2)                  #</span>
+<span class="c1"># * Options for x-grid:                                     #</span>
+<span class="c1">#   - custom: Custom GANs xgrid as defined in the Module    #</span>
+<span class="c1">#   - lhapdf: Use the same xgrid as in the input PDF        #</span>
+<span class="c1">#############################################################</span>
+<span class="nt">q        </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1.65</span>
+<span class="nt">x_grid   </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">custom</span>
+
+<span class="c1">#############################################################</span>
+<span class="c1"># GAN setup:                                                #</span>
+<span class="c1"># ---------                                                 #</span>
+<span class="c1"># * Options for architecture:                               #</span>
+<span class="c1">#   - dnn : Deep Neural Network                             #</span>
+<span class="c1">#   - dcnn: Deep Convolutional Neural Network               #</span>
+<span class="c1">#############################################################</span>
+<span class="nt">architecture</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">dnn</span>
+
+<span class="c1"># Number of Nodes in 1st Layer</span>
+<span class="nt">g_nodes  </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">128</span>
+<span class="nt">d_nodes  </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">450</span>
+
+<span class="c1"># [Activations]</span>
+<span class="nt">g_act    </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">leakyrelu</span>
+<span class="nt">d_act    </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">leakyrelu</span>
+
+<span class="c1"># Architecture</span>
+<span class="nt">ddnn_size   </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="nt">gdnn_size   </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+
+<span class="c1"># Optimizers</span>
+<span class="nt">d_opt    </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">rms</span>
+<span class="nt">gan_opt  </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">rms</span>
+<span class="nt">epochs   </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">5000</span>
+
+<span class="c1"># Intrinsic features</span>
+<span class="nt">ConvoluteOutput </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+
+<span class="c1">#############################################################</span>
+<span class="c1"># Training Setup:                                           #</span>
+<span class="c1"># --------------                                            #</span>
+<span class="c1"># * batch size                                              #</span>
+<span class="c1"># * {i}_steps: number of steps to train a {i}={generator,   #</span>
+<span class="c1">#              discriminator/critic} at each iteration.     #</span>
+<span class="c1">#############################################################</span>
+<span class="nt">batch_size </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">64</span>
+
+<span class="nt">nd_steps </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4</span>
+<span class="nt">ng_steps </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">3</span>
+</pre></div>
+</div>
+<p>In order a hyper-parameter scan, the run card has to be slightly modified:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1">#############################################################</span>
+<span class="c1"># Input PDF                                                 #</span>
+<span class="c1">#############################################################</span>
+<span class="nt">pdf </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001</span>
+
+<span class="c1">#############################################################</span>
+<span class="c1"># PDF Grids:                                                #</span>
+<span class="c1"># ---------                                                 #</span>
+<span class="c1"># * Inittial scale q (TODO: change to q^2)                  #</span>
+<span class="c1"># * Options for x-grid:                                     #</span>
+<span class="c1">#   - custom: Custom GANs xgrid as defined in the Module    #</span>
+<span class="c1">#   - lhapdf: Use the same xgrid as in the input PDF        #</span>
+<span class="c1">#############################################################</span>
+<span class="nt">q      </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1.65</span>
+<span class="nt">x_grid </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">custom</span>
+
+<span class="c1"># Intrinsic features</span>
+<span class="nt">ConvoluteOutput </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+
+<span class="c1">#############################################################</span>
+<span class="c1"># GAN setup:                                                #</span>
+<span class="c1"># ---------                                                 #</span>
+<span class="c1"># * Options for architecture:                               #</span>
+<span class="c1">#   - dnn : Deep Neural Network                             #</span>
+<span class="c1">#   - dcnn: Deep Convolutional Neural Network               #</span>
+<span class="c1">#############################################################</span>
+<span class="nt">architecture </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">dnn</span>
+
+<span class="nt">hyperopt</span><span class="p">:</span>
+    <span class="c1"># Number of Nodes in 1st Layer</span>
+    <span class="nt">g_nodes  </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hp.choice(&#39;g_nodes&#39;, [64, 128, 200])</span>
+    <span class="nt">d_nodes  </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hp.choice(&#39;d_nodes&#39;, [128, 256, 450])</span>
+
+    <span class="c1"># [Activations]</span>
+    <span class="nt">g_act    </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hp.choice(&#39;g_act&#39;, [&#39;leakyrelu&#39;, &#39;elu&#39;, &#39;relu&#39;])</span>
+    <span class="nt">d_act    </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hp.choice(&#39;d_act&#39;, [&#39;leakyrelu&#39;, &#39;elu&#39;, &#39;relu&#39;])</span>
+
+    <span class="c1"># Architecture</span>
+    <span class="nt">gdnn_size   </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hp.choice(&#39;gdnn_size&#39;, [1, 2])</span>
+    <span class="nt">ddnn_size   </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hp.choice(&#39;ddnn_size&#39;, [1, 2])</span>
+
+    <span class="c1"># Optimizers</span>
+    <span class="nt">d_opt    </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hp.choice(&#39;d_opt&#39;, [&#39;adadelta&#39;, &#39;sgd&#39;, &#39;rms&#39;])</span>
+    <span class="nt">gan_opt  </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hp.choice(&#39;gan_opt&#39;, [&#39;adadelta&#39;, &#39;sgd&#39;, &#39;rms&#39;])</span>
+
+    <span class="c1"># Number of Epochs</span>
+    <span class="nt">epochs   </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hp.choice(&#39;epochs&#39;, [4000, 5000, 6000])</span>
+
+    <span class="c1">#############################################################</span>
+    <span class="c1"># Training Setup:                                           #</span>
+    <span class="c1"># --------------                                            #</span>
+    <span class="c1"># * batch size                                              #</span>
+    <span class="c1"># * {i}_steps: number of steps to train a {i}={generator,   #</span>
+    <span class="c1">#              discriminator/critic} at each iteration.     #</span>
+    <span class="c1">#############################################################</span>
+    <span class="nt">batch_size </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hp.choice(&#39;batch_size&#39;, [50, 64, 70])</span>
+
+    <span class="nt">nd_steps </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hp.choice(&#39;nd_steps&#39;, [2, 4, 5])</span>
+    <span class="nt">ng_steps </span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hp.choice(&#39;ng_steps&#39;, [2, 3, 4])</span>
+</pre></div>
+</div>
+<p>During the hyper-parameter scan, the models are optimized w.t.r to a similarity metric measue known
+as the <strong>Fréchet Inception Distance</strong> which measure the quality of the generated PDF.</p>
+</div>
+<div class="section" id="post-analysis">
+<h1>Post-Analysis<a class="headerlink" href="#post-analysis" title="Permalink to this headline">¶</a></h1>
 </div>
 
 
@@ -162,8 +343,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
+        <a href="../modules/ganpdfs/modules.html" class="btn btn-neutral float-right" title="ganpdfs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
-        <a href="../index.html" class="btn btn-neutral float-left" title="GANPDFs documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+        <a href="../ref-bibs.html" class="btn btn-neutral float-left" title="References" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

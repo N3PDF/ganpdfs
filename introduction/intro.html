@@ -1,0 +1,316 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>What are GANs? &mdash; ganpdfs 0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="References" href="../ref-bibs.html" />
+    <link rel="prev" title="GANPDFs documentation" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> ganpdfs
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Introduction to GANs</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">What are GANs?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#why-the-need-of-gans-for-pdf">Why the need of GANs for PDF</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#discriminator-training">Discriminator Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#generator-training">Generator Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#hyperoptimization">Hyperoptimization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#frechet-inception-distance-fid">Fréchet Inception Distance (FID)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optimization-algorithm-tpe">Optimization Algorithm: TPE</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ref-bibs.html">References</a></li>
+</ul>
+<p class="caption"><span class="caption-text">How To</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../howto/howto.html">How to use the code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../howto/howto.html#post-analysis">Post-Analysis</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/ganpdfs/modules.html">ganpdfs</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ganpdfs</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>What are GANs?</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/introduction/intro.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="what-are-gans">
+<h1>What are GANs?<a class="headerlink" href="#what-are-gans" title="Permalink to this headline">¶</a></h1>
+<p>Generative Adversarial Networks are classes of generative-based learning models that given an input
+data with some probability distribution P generate new data following the same probability distribution
+by competing two neural network models: a generative model G (Generator) that tries to capture and
+generate data distribution, and a discriminative model D (Discriminator or Critic) that estimates the
+probability that a sample came from the input data rather than from the Generator. This adversarial
+training allows both models to improve over training to the point that the Generator is becoming very
+good at faking the input data such that the Discriminator can no longer distinguish between generated
+and input data.</p>
+<p>The two neural network models, Generator and Discriminator, are trained together. The Generator generates
+a batch of samples that along with the samples from the input datad are provided to the Discriminator and
+classified as real (from the input) or fake (from the generated). The training goes on until equilibrium
+(Nash Equilibrium) is reached.</p>
+<div class="figure align-center">
+<img alt="../_images/gans.png" src="../_images/gans.png" />
+</div>
+</div>
+<div class="section" id="why-the-need-of-gans-for-pdf">
+<h1>Why the need of GANs for PDF<a class="headerlink" href="#why-the-need-of-gans-for-pdf" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Add motivations (issues &amp; solutions) here.</p>
+</div>
+</div>
+<div class="section" id="discriminator-training">
+<h1>Discriminator Training<a class="headerlink" href="#discriminator-training" title="Permalink to this headline">¶</a></h1>
+<p>The Discriminator model takes as input MC PDF replicas of shape (NB, NF, X) where NB denotes the number of
+replica batches, NF the number of flavors, and X the size of the x-grid. The model then outputs predictions
+as to wether the samples are <strong>real</strong> with (-1) labels or <strong>fake</strong> with (1) labels. In different implemtations
+of GANs, (0) and (1) labels are respectively used to denote the fake and real samples with a Sigmoid as an
+activation function for the output layer. However, using (-1) and (1) as labels with tanh as activation
+function is found to be much more efficient. The information as to whether the Discriminator manages to
+distinguish between real and fake samples is then used to update its weights.</p>
+<div class="figure align-center">
+<img alt="../_images/disc_train.png" src="../_images/disc_train.png" />
+</div>
+</div>
+<div class="section" id="generator-training">
+<h1>Generator Training<a class="headerlink" href="#generator-training" title="Permalink to this headline">¶</a></h1>
+<p>The Generator model takes as input a vector (matrix) of random noise and outputs synthetic MC replicas of shape
+(NB, NF, X). The Generator’s outputs are then fetch into the Discriminator. During the training of the Generator,
+it is important that the Discriminator is freezed; otherwise equilibirum might never be reached.</p>
+<div class="figure align-center">
+<img alt="../_images/gen_train.png" src="../_images/gen_train.png" />
+</div>
+</div>
+<div class="section" id="hyperoptimization">
+<h1>Hyperoptimization<a class="headerlink" href="#hyperoptimization" title="Permalink to this headline">¶</a></h1>
+<p><em>Hyperoptimization</em> or <em>hyper-parameter tuning</em> refers to the automatic optimizations of the hyper-parameters
+of a Machine Learning model. We refer to <em>hyper-parameters</em> all the parameters of a model that are not updated
+during the training such as the number of layers, the activation functions, and the algorithm used to minimize
+the cost function(s). Such optimization (tunning) allows us to search for the best values of hyper-parameters
+through an <em>hyper-parameter space</em>.</p>
+<div class="section" id="frechet-inception-distance-fid">
+<h2>Fréchet Inception Distance (FID)<a class="headerlink" href="#frechet-inception-distance-fid" title="Permalink to this headline">¶</a></h2>
+<p>An important part of the hyper-parameter tuning is the definition of a metric that assesses the goodness
+of the model. In context of GANs (for PDFs), such a quantity must measure the quality of the generated PDF
+replicas. To evaluate the performance of the GAN model, we use the <strong>Fréchet Inception Distance (FID)</strong> <a class="bibtex reference internal" href="../ref-bibs.html#heuselrunkh17" id="id1">[1]</a>.</p>
+<p>The Fréchet Inception Distance between a multivariate Gaussian with mean <span class="math notranslate nohighlight">\(\mu_{r}\)</span> and covariance
+<span class="math notranslate nohighlight">\(\Sigma_{r}\)</span> and a multivariate Gaussian wit mean <span class="math notranslate nohighlight">\(\mu_{g}\)</span> and covariance <span class="math notranslate nohighlight">\(\Sigma_{g}\)</span>
+(where <span class="math notranslate nohighlight">\(r\)</span> and <span class="math notranslate nohighlight">\(g\)</span> resp. denotes samples from real and generated) is given by:</p>
+<div class="math notranslate nohighlight">
+\[\mathrm{FID} = || \mu_{r} - \mu_{g} ||^2 + \mathrm{Tr} \left( \Sigma_{r} + \Sigma_{g} -  2 \sqrt{\Sigma_{r} \Sigma_{g}} \right)\]</div>
+<p>Thus, the lower the value of the FID is, the closer the generated PDFs are to the priors; if the generated
+PDFs are exactly the same as the input MC PDFreplicas, then the value of the FID is zero.</p>
+</div>
+<div class="section" id="optimization-algorithm-tpe">
+<h2>Optimization Algorithm: TPE<a class="headerlink" href="#optimization-algorithm-tpe" title="Permalink to this headline">¶</a></h2>
+<p>For the tunning of the hyper-parameters, we rely on a python library called <a class="reference external" href="https://github.com/hyperopt/hyperopt">hyperopt</a> with
+the <em>Tree-structured Parzen Estimator (TPE)</em> <a class="bibtex reference internal" href="../ref-bibs.html#nips2011-4443" id="id2">[2]</a> as the optimization algorithm. Given a set of hyper-parameters <span class="math notranslate nohighlight">\(x\)</span> with an
+associated quality score <span class="math notranslate nohighlight">\(y\)</span>, the idea of TPE is to compute a tree of Parzen estimators <span class="math notranslate nohighlight">\(P (x | y)\)</span> and <span class="math notranslate nohighlight">\(P(y)\)</span>.
+To initialize the algorithm, the TPE starts from a random search. Then, it splits the results into two groups: the best performing ones
+and the reset by defining a splitting value <span class="math notranslate nohighlight">\(\tilde{y}\)</span>. The likelihood probability for being in each of the groups is modeled as:</p>
+<div class="math notranslate nohighlight">
+\[P(x|y) = \mathcal{L} (x) \quad \text{if} \quad y &lt; \tilde{y}\]</div>
+<div class="math notranslate nohighlight">
+\[P(x|y) = \mathcal{G} (x) \quad \text{if} \quad y &gt; \tilde{y}\]</div>
+<p>where the two densities <span class="math notranslate nohighlight">\(\mathcal{L}\)</span> and <span class="math notranslate nohighlight">\(\mathcal{G}\)</span> are modeled using kernel density estimators
+which are a simple average of the kernels centered on existing data points. <span class="math notranslate nohighlight">\(P(y)\)</span> is modeled using the fact
+that <span class="math notranslate nohighlight">\(P(y &lt; \tilde{y}) = 0.75\)</span> if <span class="math notranslate nohighlight">\(\mathcal{G}\)</span> models the upper quartile. Finally, the next set of hyper-parameters
+are taken as the maximizer of <span class="math notranslate nohighlight">\(\mathcal{L}(x) / \mathcal{G}(x)\)</span> <a class="bibtex reference internal" href="../ref-bibs.html#bissuel-2019" id="id3">[3]</a> as shown below:</p>
+<div class="figure align-center">
+<img alt="../_images/hyperscan.gif" src="../_images/hyperscan.gif" />
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../ref-bibs.html" class="btn btn-neutral float-right" title="References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../index.html" class="btn btn-neutral float-left" title="GANPDFs documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, N3PDF
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
