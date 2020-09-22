@@ -193,7 +193,7 @@ def smm(prior, generated):
 
     dim = prior.shape
     # Reshape if the architecture is a DCNN
-    if prior.ndim > 4:
+    if prior.ndim > 3:
         prior = prior.reshape((dim[0], dim[1], dim[2]))
         generated = generated.reshape((dim[0], dim[1], dim[2]))
 
@@ -235,6 +235,7 @@ def smm(prior, generated):
         # Check if Infs or NaNs and return a big nnumber
         if (np.isnan(mu2).any() or np.isnan(sigma2).any()):
             return np.random.randint(400, 1000)
+
         # calculate sum squared difference between means
         ssdiff = np.sum((mu1 - mu2) ** 2.0)
         # calculate sqrt of product between cov
