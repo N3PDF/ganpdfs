@@ -42,6 +42,7 @@ class GanTrain:
         self.params = params
         self.noise_size = noise_size
         self.nb_replicas = nb_replicas
+        self.hyperopt = params.get("scan")
         self.folder = params.get("save_output")
 
         # Choose architecture
@@ -58,7 +59,7 @@ class GanTrain:
         self.adversarial = self.gan_model.adversarial_model(self.generator, self.critic)
 
         # Print Summary when not in Hyperopt
-        if not params.get("scan"):
+        if not self.hyperopt:
             self.generator.summary()
             self.critic.summary()
             self.adversarial.summary()
@@ -282,7 +283,7 @@ class GanTrain:
         check_dir = f"./{self.folder}/checkpoint/ckpt"
 
         logger.info("Training:")
-        with trange(nb_steps) as iter_range:
+        with trange(nb_steps, disable=self.hyperopt) as iter_range:
             for k in iter_range:
                 iter_range.set_description("Training")
                 # Train the Critic
@@ -305,25 +306,26 @@ class GanTrain:
 
                 iter_range.set_postfix(Disc=r_dloss+f_dloss, Adv=gloss)
 
-                # Print log output
-                if k % 100 == 0:
-                    advloss.append(gloss)
-                    rdloss.append(r_dloss)
-                    fdloss.append(f_dloss)
-                    self.checkpoint.save(file_prefix=check_dir)
+                if not self.hyperopt:
+                    # Print log output
+                    if k % 100 == 0:
+                        advloss.append(gloss)
+                        rdloss.append(r_dloss)
+                        fdloss.append(f_dloss)
+                        self.checkpoint.save(file_prefix=check_dir)
 
-                if k % 1000 == 0:
-                    # TODO: Fix arguments plot
-                    self.plot_generated_pdf(
-                        self.generator,
-                        self.params.get("out_replicas"),
-                        self.folder,
-                        k
-                    )
+                    if k % 1000 == 0:
+                        # TODO: Fix arguments plot
+                        self.plot_generated_pdf(
+                            self.generator,
+                            self.params.get("out_replicas"),
+                            self.folder,
+                            k
+                        )
 
         # Save Losses
-        loss_info = [{"rdloss": rdloss, "fdloss": fdloss, "advloss": advloss}]
-        if not self.params.get("scan"):
+        if not self.hyperopt:
+            loss_info = [{"rdloss": rdloss, "fdloss": fdloss, "advloss": advloss}]
             output_losses = self.params.get("save_output")
             with open(f"{output_losses}/losses_info.json", "w") as outfile:
                 json.dump(loss_info, outfile, indent=2)
@@ -332,7 +334,7 @@ class GanTrain:
         logger.info("Generating fake replicas with the trained model.")
         fake_pdf, _ = self.generate_fake_samples(self.generator, self.params.get("out_replicas"))
 
-        if  not self.params.get("scan"):
+        if  not self.hyperopt:
 
             xgrid = self.xgrid
             #############################################################
