@@ -193,9 +193,9 @@ def smm(prior, generated):
 
     dim = prior.shape
     # Reshape if the architecture is a DCNN
-    if len(dim) > 2:
-        prior = prior.reshape(dim[0], dim[1], dim[2])
-        generated = generated.reshape(dim[0], dim[1], dim[2])
+    if prior.ndim > 4:
+        prior = prior.reshape((dim[0], dim[1], dim[2]))
+        generated = generated.reshape((dim[0], dim[1], dim[2]))
 
     # Transpose results w.r.t. the flavors
     prior = np.transpose(prior, axes=[1, 0, 2])
@@ -232,6 +232,9 @@ def smm(prior, generated):
         # calculate mean and covariance statistics
         mu1, sigma1 = fl_prior.mean(axis=0), np.cov(fl_prior, rowvar=False)
         mu2, sigma2 = fl_generated.mean(axis=0), np.cov(fl_generated, rowvar=False)
+        # Check if Infs or NaNs and return a big nnumber
+        if (np.isnan(mu2).any() or np.isnan(sigma2).any()):
+            return np.random.randint(400, 1000)
         # calculate sum squared difference between means
         ssdiff = np.sum((mu1 - mu2) ** 2.0)
         # calculate sqrt of product between cov
