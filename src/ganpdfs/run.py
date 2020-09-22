@@ -111,7 +111,7 @@ def main():
 
     # Prepare Grids
     # One-time Generation
-    nf = hps.get("nf", 6)              # Choose Number of flavours
+    nf = hps.get("nf", 6)            # Choose Number of flavours
     qvalue = hps.get("q", 1.65)      # Choose value of Initial
 
     # Generate PDF grids
@@ -125,7 +125,7 @@ def main():
     elif hps["x_grid"] == "lhapdf":
         x_grid = hps["pdfgrid"]
     else:
-        raise ValueError("{} is not a valid gird".format(hps["x_grid"]))
+        raise ValueError("{} is not a valid grid".format(hps["x_grid"]))
     pdf = init_pdf.build_pdf(x_grid)
 
     # Define the number of input replicas
