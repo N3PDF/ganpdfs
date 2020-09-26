@@ -161,10 +161,10 @@ def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid):
     for replica in fake_pdf:
         fl_space = []
         for fl in replica:
-            f_interpol = interpolate.interp1d(
+            f_interpol = interpolate.PchipInterpolator(
                     gan_grid,
                     fl,
-                    fill_value="extrapolate"
+                    extrapolate=True
             )
             new_grid = f_interpol(lhapdf_grid)
             fl_space.append(new_grid)
