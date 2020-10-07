@@ -366,6 +366,6 @@ class GanTrain:
                 write_grid.write_data(grid_path)
         else:
             # Compute FID inception score
-            metric = smm(self.pdf, fake_pdf)
+            metric, _ = smm(self.pdf, fake_pdf)
 
         return metric
