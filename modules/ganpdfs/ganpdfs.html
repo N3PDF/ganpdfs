@@ -199,9 +199,9 @@ score (element wise), then calculating the mean. For more details, see
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>y_true</strong> (<em>tf.tensor</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>)</em>) – list of estimated probabilities for the true
+<li><p><strong>y_true</strong> (<em>tf.tensor</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>)</em>) – list of estimated probabilities for the true
 samples</p></li>
-<li><p><strong>y_pred</strong> (<em>tf.tensor</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>)</em>) – list of estimated probabilities for the fake
+<li><p><strong>y_pred</strong> (<em>tf.tensor</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>)</em>) – list of estimated probabilities for the fake
 samples</p></li>
 </ul>
 </dd>
@@ -478,7 +478,7 @@ method to support masking.</p>
 <dl class="py class">
 <dt id="ganpdfs.model.WassersteinGanModel">
 <em class="property">class </em><code class="sig-prename descclassname">ganpdfs.model.</code><code class="sig-name descname">WassersteinGanModel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf</span></em>, <em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">noise_size</span></em>, <em class="sig-param"><span class="n">activ</span></em>, <em class="sig-param"><span class="n">optmz</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WassersteinGanModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>WassersteinGanModel.</p>
 <dl class="py method">
 <dt id="ganpdfs.model.WassersteinGanModel.generator_model">
@@ -511,7 +511,7 @@ method to support masking.</p>
 <dl class="py class">
 <dt id="ganpdfs.model.DCNNWassersteinGanModel">
 <em class="property">class </em><code class="sig-prename descclassname">ganpdfs.model.</code><code class="sig-name descname">DCNNWassersteinGanModel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf</span></em>, <em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">noise_size</span></em>, <em class="sig-param"><span class="n">activ</span></em>, <em class="sig-param"><span class="n">optmz</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DCNNWassersteinGanModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>DCNNWassersteinGanModel.</p>
 <dl class="py method">
 <dt id="ganpdfs.model.DCNNWassersteinGanModel.generator_model">
@@ -593,13 +593,13 @@ following integers [7,5,2].</p>
 <p>Notice that by definition, 1 is not included.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – number to be factorized</p>
+<dd class="field-odd"><p><strong>number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – number to be factorized</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>list of the factors</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a>)</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a>(<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -623,15 +623,15 @@ naturally set to 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – numbker to be factorized</p></li>
-<li><p><strong>nb_layer</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – dimension of the list that contains the factors</p></li>
+<li><p><strong>number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – numbker to be factorized</p></li>
+<li><p><strong>nb_layer</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – dimension of the list that contains the factors</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>list of the factors with length <cite>nb_layer</cite></p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a>)</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a>(<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -655,7 +655,7 @@ match with the LHAPDF grid-format. It uses the <cite>interpolate</cite> module f
 <dd class="field-even"><p>fake PDF replica of shape (nb_repl, nb_flv, gan_grid)</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.array(<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a>)</p>
+<dd class="field-odd"><p>np.array(<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -669,15 +669,15 @@ using the <cite>Fréchet Inception Distance</cite> (FID).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>prior</strong> (<em>np.array</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>)</em>) – Prior MC PDF replicas of shape (N, Nf, X)</p></li>
-<li><p><strong>generated</strong> (<em>np.array</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>)</em>) – Generated MC PDF replicas of shape (    ilde{N}, Nf, X)</p></li>
+<li><p><strong>prior</strong> (<em>np.array</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>)</em>) – Prior MC PDF replicas of shape (N, Nf, X)</p></li>
+<li><p><strong>generated</strong> (<em>np.array</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>)</em>) – Generated MC PDF replicas of shape (    ilde{N}, Nf, X)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>FID</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
