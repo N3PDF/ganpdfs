@@ -161,10 +161,10 @@ def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid):
     for replica in fake_pdf:
         fl_space = []
         for fl in replica:
-            f_interpol = interpolate.PchipInterpolator(
+            f_interpol = interpolate.interp1d(
                     gan_grid,
                     fl,
-                    extrapolate=True
+                    fill_value="extrapolate"
             )
             new_grid = f_interpol(lhapdf_grid)
             fl_space.append(new_grid)
@@ -251,5 +251,6 @@ def smm(prior, generated):
         fid_arr[fl] = compute_fid(prior[fl], generated[fl])
     fids_stdv = np.std(fid_arr)
     fids_mean = np.mean(fid_arr)
+    fids_resc = fids_stdv * fids_mean
 
-    return fids_stdv * fids_mean
+    return fids_resc, fid_arr
