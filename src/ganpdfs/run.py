@@ -35,6 +35,7 @@ def splash():
 |Generative Adversarial Neural Networks (GANs) for PDF replicas.          |
 |https://n3pdf.github.io/ganpdfs/                                         |
 |© N3PDF                                                                  |
+|© N3PDF                                                                  |
 +-------------------------------------------------------------------------+ 
            """
     print(info + '\033[0m \033[97m')
@@ -111,20 +112,20 @@ def main():
 
     # Prepare Grids
     # One-time Generation
-    nf = hps.get("nf", 6)            # Choose Number of flavours
     qvalue = hps.get("q", 1.65)      # Choose value of Initial
 
     # Generate PDF grids
     logger.info("Loading input PDFs.")
-    init_pdf = InputPDFs(hps["pdf"], qvalue, nf)
+    init_pdf = InputPDFs(hps["pdf"], qvalue)
     # Load the x-Grid
     # Choose the LHAPDF x-grid by default
     hps["pdfgrid"] = init_pdf.extract_xgrid()
-    if hps["x_grid"] == "custom":
-        # x_grid = XNodes().build_xgrid()
+    if hps["x_grid"] == "standard":
+        x_grid = XNodes().build_xgrid()
+    elif hps["x_grid"] == "custom":
         mn = hps["pdfgrid"][0]
         mx = hps["pdfgrid"][-1]
-        x_grid = init_pdf.custom_xgrid(mn, mx, 60)
+        x_grid = init_pdf.custom_xgrid(mn, mx, 150)
     elif hps["x_grid"] == "lhapdf":
         x_grid = hps["pdfgrid"]
     else:
