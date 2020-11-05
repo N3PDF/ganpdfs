@@ -6,6 +6,8 @@ import numpy as np
 from subprocess import PIPE
 from subprocess import Popen
 
+from validphys.pdfbases import fitbasis_to_NN31IC
+
 
 class XNodes:
 
@@ -106,13 +108,11 @@ class InputPDFs:
     q_value : float
         initiale value of the scale at which the PDF grid is
         constructed
-    nf: int
-        total number of flavors
     """
 
-    def __init__(self, pdf_name, q_value, nf):
+    def __init__(self, pdf_name, q_value):
 
-        self.nf = nf
+        self.nf = 3
         self.q_value = q_value
         self.pdf_name = pdf_name
 
@@ -162,7 +162,7 @@ class InputPDFs:
         np.array(float)
             x-grid array
         """
-        
+
         if grid_type == "linear":
             return np.linspace(minval, maxval, num=nbpoints, endpoint=False)
         else:
@@ -175,8 +175,10 @@ class InputPDFs:
             return xgrid
 
     def build_pdf(self, xgrid):
-        """Construct the input PDFs based on the number of input
-        replicas and the number of flavors.
+        """Construct the input PDFs grid based on the number of input
+        replicas. The PDF grid is represented in the evolution basis
+        following the structure.
+        evolbasis = {"sigma","g","v","v3","v8","t3","t8","t15"}
 
         The  following returns a multi-dimensional array that has
         the following shape (nb_replicas, nb_flavours, size_xgrid)
@@ -192,17 +194,46 @@ class InputPDFs:
         """
 
         # Sample pdf with all the flavors
-        # nb total flavors = 2 * nf + 1
+        # nb total flavors = 2 * nf + 2
         lhpdf = lhapdf.mkPDFs(self.pdf_name)
         pdf_size = len(lhpdf) - 1
         xgrid_size = xgrid.shape[0]
         # Construct a grid of zeros to store the results
-        inpdf = np.zeros((pdf_size, 2 * self.nf + 2, xgrid_size))
+        inpdf = np.zeros((pdf_size, xgrid_size, 2 * self.nf + 2))
+        # Evolution basis
+        flav_info = [
+            {"fl": "u"},
+            {"fl": "ubar"},
+            {"fl": "d"},
+            {"fl": "dbar"},
+            {"fl": "s"},
+            {"fl": "sbar"},
+            {"fl": "c"},
+            {"fl": "g"},
+        ]
+        # Flavours PIDs
+        flav_list = {
+             "u": 2,
+             "ubar": -2,
+             "d": 1,
+             "dbar": -1,
+             "s": 3,
+             "sbar": -3,
+             "c": 4,
+             "g": 0,
+        }
 
         for p in range(pdf_size):
-            for f in range(-self.nf, self.nf + 2):
+            for f in range(len(flav_info)):
+                flav_alias = flav_info[f]["fl"]
+                flav_pid = flav_list[flav_alias]
                 for x in range(xgrid_size):
-                    inpdf[p][f + self.nf][x] = lhpdf[p + 1].xfxQ(
-                        f, xgrid[x], self.q_value
+                    inpdf[p][x][f] = lhpdf[p + 1].xfxQ(
+                        flav_pid, xgrid[x], self.q_value
                     )
-        return inpdf
+
+        # Compute Rotation Matrix from Flavour basis to
+        rotmat = fitbasis_to_NN31IC(flav_info, 'FLAVOUR')
+        evolbasis = np.tensordot(inpdf, rotmat, (2, 0))
+        evolbasis = np.transpose(evolbasis, axes=[0, 2, 1])
+        return evolbasis
