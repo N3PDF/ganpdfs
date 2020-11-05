@@ -3,10 +3,10 @@ import pathlib
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 
 from tqdm import trange
 from ganpdfs.utils import smm
+from ganpdfs.utils import axes_width
 from ganpdfs.writer import WriterWrapper
 from ganpdfs.utils import save_checkpoint
 from ganpdfs.utils import interpolate_grid
@@ -48,10 +48,10 @@ class GanTrain:
         # Choose architecture
         if params.get("architecture") == "dcnn":
             self.pdf = pdf.reshape((pdf.shape[0], pdf.shape[1], pdf.shape[2], 1))
-            self.gan_model = DCNNWassersteinGanModel(self.pdf, params, noise_size, activ, optmz)
+            self.gan_model = DCNNWassersteinGanModel(xgrid, self.pdf, params, noise_size, activ, optmz)
         else:
             self.pdf = pdf
-            self.gan_model = WassersteinGanModel(self.pdf, params, noise_size, activ, optmz)
+            self.gan_model = WassersteinGanModel(xgrid, self.pdf, params, noise_size, activ, optmz)
 
         # Initialize Models
         self.critic = self.gan_model.critic_model()
@@ -78,7 +78,7 @@ class GanTrain:
 
         Returns
         -------
-        tuple(np.array, np.array) 
+        tuple(np.array, np.array)
             containing the random real samples and the target
         labels
         """
@@ -106,7 +106,7 @@ class GanTrain:
 
         Returns
         -------
-        np.array(float) 
+        np.array(float)
             array of random numbers
         """
         # Generate points in the latent space
@@ -117,7 +117,7 @@ class GanTrain:
         """Generate fake samples from the Generator. `generate_fake_samples`
         takes input from the latent space and generate synthetic dataset.
         The synthetic dataset are assigned with target labels (1). The
-        output of this is then gets fed to the Critic/Discriminator and used 
+        output of this is then gets fed to the Critic/Discriminator and used
         to train the later.
 
         Parameters
@@ -198,47 +198,43 @@ class GanTrain:
         # Generate Fake Samples
         generated_pdf, _ = self.generate_fake_samples(generator, nb_output)
 
-        # Initialize Grids
-        fig = plt.figure(constrained_layout=True)
-        spec = gridspec.GridSpec(ncols=2, nrows=3, figure=fig)
-        pl1 = fig.add_subplot(spec[0, 0])
-        pl2 = fig.add_subplot(spec[0, 1])
-        pl3 = fig.add_subplot(spec[1, 0])
-        pl4 = fig.add_subplot(spec[1, 1])
-        pl5 = fig.add_subplot(spec[2, 0])
-        pl6 = fig.add_subplot(spec[2, 1])
+        # Initialize Grid Plots
+        fig, axes = plt.subplots(ncols=2, nrows=4, figsize=[20, 26])
 
-        # Define list of flavours and grids
-        fl = [0, 1, 2, 3, 4, 5]
-        ls_pl = [pl1, pl2, pl3, pl4, pl5, pl6]
+        # Define Evolution Basis Labels
+        # TODO: Check if this is correct
+        evolbasis = ["sng", "g", "v", "v3", "v8", "t3", "t8", "cp"]
 
-        for fl, pos in zip(fl, ls_pl):
+        for i, axis in enumerate(axes.reshape(-1)):
+            axis.set_xscale('log')
+            axis.set_title(evolbasis[i], fontsize=16)
             # Plot true replicas
             for true_rep in self.pdf:
-                pos.plot(
+                axis.plot(
                         self.xgrid,
-                        true_rep[fl],
+                        true_rep[i],
                         color="r",
                         label="true",
                         alpha=0.35
                 )
             # Plot fake replicas
             for fake_rep in generated_pdf:
-                pos.plot(
+                axis.plot(
                         self.xgrid,
-                        fake_rep[fl],
+                        fake_rep[i],
                         color="b",
                         label="fake",
                         alpha=0.35
                 )
-            # Plot in log scale
-            pos.set_xscale("log")
+            axes_width(axis, lw=1.5)
+            axis.grid(alpha=0.1, linewidth=1.5)
+            axis.tick_params(length=7, width=1.5)
+            axis.tick_params(which="minor", length=4, width=1)
 
         fig.suptitle("Samples at Iteration %d" % niter)
         fig.savefig(
             f"{folder}/iterations/pdf_generated_at_{niter}.png",
-            dpi=100,
-            pad_inches=0.2,
+            dpi=100
         )
 
     def train(self, nb_epochs=5000, batch_size=64):
