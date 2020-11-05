@@ -25,43 +25,6 @@ def wasserstein_loss(y_true, y_pred):
     return K.mean(y_true * y_pred)
 
 
-def compute_smr(pdf, inverse_x):
-    """Impose sum rules on a bacth of PDF by performing the following:
-    -   Compute the sum of the PDF over x while dividing the basis by x
-        except for `sigma` and `g`.
-    -   Take the x grid and expand the dimension such that the output
-        shape is exactly the same as the batched PDF such that both can
-        just be multiplied together.
-
-    Parameters
-    ----------
-    pdf: tf
-        Batches of PDF
-    xgrid: tf
-        Grid of x values
-
-    Returns
-    -------
-    """
-    sum_overx = K.sum(pdf * inverse_x, axis=2)
-    # Compute Normalization Factor
-    # ones = K.ones(2)
-    # pdf_arr, sum_overx_arr = K.eval(pdf), K.eval(sum_overx)
-    # vv_norm = [3 / v[2] for v in sum_overx]
-    # v3_norm = [1 / v[3] for v in sum_overx]
-    # v8_norm = [3 / v[4] for v in sum_overx]
-    # gg_norm = [(1 - v[0]) / v[1] for v in sum_overx_arr]
-    # norm_arr = np.array([gg_norm, vv_norm, v3_norm, v8_norm, ones, ones, ones, ones])
-    # Perform Multiplication
-    # pdf_norm = []
-    # for p, n in zip(pdf_arr, norm_arr):
-    #     normalized = (p.T * n.T).T
-    #     pdf_norm.append(normalized)
-    # pdf_norm = np.array(pdf_norm)
-    # return K.constant(pdf_norm)
-    return sum_overx
-
-
 class ClipConstraint(Constraint):
     """Put constraints on the weights of a given
     Layer.
@@ -94,12 +57,16 @@ class ImposeSumRules(Layer):
         return input_shape
     
     def build(self, input_shape):
+        """What this does is compute 1/x for all the bases except for `sigma` and `gluon` as
+        those are the ones that are not dived by x in the sum rules described by eq. (10) of
+        [arXiv:1410.8849]. Thus `inverse_x` is a tensor of shape (evol,  xgrid).
+        """
         nb_basis_to_divide = 6
         arr_ones = K.ones((2, self.xgrid.shape[0]))
         xgrid = K.reshape(self.xgrid, shape=(1, self.xgrid.shape[0]))
         inverse_x = K.tile(1 / xgrid, (nb_basis_to_divide, 1))
         self.inverse_x = K.concatenate([arr_ones, inverse_x], axis=0)
-        # super(ImposeSumRules, self).build(input_shape)
+        super(ImposeSumRules, self).build(input_shape)
 
     def call(self, previous_layer):
         if previous_layer.shape[0] is not None:
@@ -146,15 +113,16 @@ class ConvPDF(Layer):
     """
 
     def __init__(self, pdf, **kwargs):
-        index = np.random.randint(pdf.shape[0])
-        self.pdf = K.constant(pdf[index])
+        self.pdf = pdf
         super(ConvPDF, self).__init__(**kwargs)
 
     def compute_output_shape(self, input_shape):
         return input_shape
 
     def call(self, previous_layer):
-        mult = previous_layer * self.pdf
+        index = np.random.randint(self.pdf.shape[0])
+        sampled_pdf = K.constant(self.pdf[index])
+        mult = previous_layer * sampled_pdf
         return mult
 
 
