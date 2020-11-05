@@ -208,29 +208,6 @@ samples</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt id="ganpdfs.custom.compute_smr">
-<code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">compute_smr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf</span></em>, <em class="sig-param"><span class="n">inverse_x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.compute_smr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Impose sum rules on a bacth of PDF by performing the following:
--   Compute the sum of the PDF over x while dividing the basis by x</p>
-<blockquote>
-<div><p>except for <cite>sigma</cite> and <cite>g</cite>.</p>
-</div></blockquote>
-<ul class="simple">
-<li><p>Take the x grid and expand the dimension such that the output
-shape is exactly the same as the batched PDF such that both can
-just be multiplied together.</p></li>
-</ul>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pdf</strong> (<em>tf</em>) – Batches of PDF</p></li>
-<li><p><strong>xgrid</strong> (<em>tf</em>) – Grid of x values</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py class">
 <dt id="ganpdfs.custom.ClipConstraint">
 <em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">ClipConstraint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">clip_value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ClipConstraint" title="Permalink to this definition">¶</a></dt>
@@ -277,18 +254,9 @@ instead of an integer.</p>
 <dl class="py method">
 <dt id="ganpdfs.custom.ImposeSumRules.build">
 <code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ImposeSumRules.build" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates the variables of the layer (optional, for subclass implementers).</p>
-<p>This is a method that implementers of subclasses of <cite>Layer</cite> or <cite>Model</cite>
-can override if they need a state-creation step in-between
-layer instantiation and layer call.</p>
-<p>This is typically used to create the weights of <cite>Layer</cite> subclasses.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>input_shape</strong> – Instance of <cite>TensorShape</cite>, or list of instances of
-<cite>TensorShape</cite> if the layer expects a list of inputs
-(one instance per input).</p>
-</dd>
-</dl>
+<dd><p>What this does is compute 1/x for all the bases except for <cite>sigma</cite> and <cite>gluon</cite> as
+those are the ones that are not dived by x in the sum rules described by eq. (10) of
+[arXiv:1410.8849]. Thus <cite>inverse_x</cite> is a tensor of shape (evol,  xgrid).</p>
 </dd></dl>
 
 <dl class="py method">
