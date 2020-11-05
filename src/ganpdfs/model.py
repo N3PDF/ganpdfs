@@ -9,6 +9,7 @@ from tensorflow.keras.layers import BatchNormalization
 from ganpdfs.custom import ConvPDF
 from ganpdfs.custom import ConvXgrid
 from ganpdfs.utils import construct_cnn
+from ganpdfs.custom import ImposeSumRules
 from ganpdfs.custom import ClipConstraint
 from ganpdfs.custom import wasserstein_loss
 
@@ -17,8 +18,9 @@ class WassersteinGanModel:
     """WassersteinGanModel.
     """
 
-    def __init__(self, pdf, params, noise_size, activ, optmz):
+    def __init__(self, xgrid, pdf, params, noise_size, activ, optmz):
         self.pdf = pdf
+        self.xgrid = xgrid
         self.activ = activ
         self.optmz = optmz
         self.params = params
@@ -56,6 +58,8 @@ class WassersteinGanModel:
         # Convolute input PDF
         if self.params.get("ConvoluteOutput", True):
             g_model.add(ConvPDF(self.pdf))
+        if self.params.get("ImposeSumRules", True):
+            g_model.add(ImposeSumRules(self.xgrid))
         return g_model
         
     def critic_model(self):
@@ -112,8 +116,9 @@ class DCNNWassersteinGanModel:
     """DCNNWassersteinGanModel.
     """
 
-    def __init__(self, pdf, params, noise_size, activ, optmz):
+    def __init__(self, xgrid, pdf, params, noise_size, activ, optmz):
         self.pdf = pdf
+        self.xgrid = xgrid
         self.activ = activ
         self.optmz = optmz
         self.params = params
