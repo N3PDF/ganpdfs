@@ -7,6 +7,20 @@ from scipy.linalg import sqrtm
 from tensorflow.train import Checkpoint
 
 
+def axes_width(ax, lw=1):
+    """Change width of axes.
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        Figure's axes
+    lw : float
+        Define width of axes
+    """
+
+    for axis in ['top', 'bottom', 'left', 'right']:
+        ax.spines[axis].set_linewidth(lw)
+
+
 def save_checkpoint(generator, critic, adversarial):
     """Save the training information into a file. This includes but
     not limited to the information on the wieghts and the biases of
@@ -14,7 +28,7 @@ def save_checkpoint(generator, critic, adversarial):
     different neural networks (generator, critic/discriminator,
     adversarial) and the information on each one of them are saved.
 
-    For more information on the constructor `Checkpoint` from 
+    For more information on the constructor `Checkpoint` from
     the module `tensorflow.train`, refer to
     https://www.tensorflow.org/api_docs/python/tf/train/Checkpoint
 
@@ -29,7 +43,7 @@ def save_checkpoint(generator, critic, adversarial):
 
     Returns
     -------
-    A load status object, which can be used to make assertions about 
+    A load status object, which can be used to make assertions about
     the status of a checkpoint restoration
     """
 
@@ -53,7 +67,7 @@ def factorize_number(number):
 
     Parameters
     ----------
-    number : int 
+    number : int
         number to be factorized
 
     Returns
@@ -90,12 +104,12 @@ def factorize_number(number):
 
 def construct_cnn(number, nb_layer):
     """Factorize_number using Pollard's rho algorithm that is defined by the
-    `factorize_number` method. This is used in order to define the dimension 
-    of the `strides` for performing the convolution in the model class 
-    `DCNNWassersteinGanModel`. 
+    `factorize_number` method. This is used in order to define the dimension
+    of the `strides` for performing the convolution in the model class
+    `DCNNWassersteinGanModel`.
 
-    The issue is the following: given a pair of two integers (m, n) such that 
-    n < m, how can we decompose m into n factors. 
+    The issue is the following: given a pair of two integers (m, n) such that
+    n < m, how can we decompose m into n factors.
 
     Example:
         Given a pair (70, 3), we have [7,5,2]
@@ -209,8 +223,8 @@ def smm(prior, generated):
         and X_2 ~ N(mu_2, C_2) is:
             d^2 = ||mu_1 - mu_2||^2 + Tr(C_1 + C_2 - 2*sqrt(C_1*C_2)).
 
-        If the generated PDF replica is exactly the same as the prior, the value of the FID 
-        is zero; that means that the smaller the value of the FID is, the similar the generated 
+        If the generated PDF replica is exactly the same as the prior, the value of the FID
+        is zero; that means that the smaller the value of the FID is, the similar the generated
         replica is to the prior.
 
         For details about the FID's Inception Score measure, refer to the following:
