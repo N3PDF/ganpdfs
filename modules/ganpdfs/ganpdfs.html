@@ -232,26 +232,6 @@ Layer.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="ganpdfs.custom.ImposeSumRules.compute_output_shape">
-<code class="sig-name descname">compute_output_shape</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ImposeSumRules.compute_output_shape" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the output shape of the layer.</p>
-<p>If the layer has not been built, this method will call <cite>build</cite> on the
-layer. This assumes that the layer will later be used with inputs that
-match the input shape provided here.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>input_shape</strong> – Shape tuple (tuple of integers)
-or list of shape tuples (one per output tensor of the layer).
-Shape tuples can include None for free dimensions,
-instead of an integer.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An input shape tuple.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt id="ganpdfs.custom.ImposeSumRules.build">
 <code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ImposeSumRules.build" title="Permalink to this definition">¶</a></dt>
 <dd><p>What this does is compute 1/x for all the bases except for <cite>sigma</cite> and <cite>gluon</cite> as
@@ -293,26 +273,6 @@ a subsample of the input/prior replica.</p>
 <dd class="field-odd"><p><strong>pdf</strong> (<em>np.array</em>) – Array of PDF grids</p>
 </dd>
 </dl>
-<dl class="py method">
-<dt id="ganpdfs.custom.ConvPDF.compute_output_shape">
-<code class="sig-name descname">compute_output_shape</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF.compute_output_shape" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the output shape of the layer.</p>
-<p>If the layer has not been built, this method will call <cite>build</cite> on the
-layer. This assumes that the layer will later be used with inputs that
-match the input shape provided here.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>input_shape</strong> – Shape tuple (tuple of integers)
-or list of shape tuples (one per output tensor of the layer).
-Shape tuples can include None for free dimensions,
-instead of an integer.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An input shape tuple.</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt id="ganpdfs.custom.ConvPDF.call">
 <code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">previous_layer</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF.call" title="Permalink to this definition">¶</a></dt>
