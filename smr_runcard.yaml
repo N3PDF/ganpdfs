@@ -1,0 +1,60 @@
+#############################################################
+# Input PDF                                                 #       
+#############################################################
+pdf: PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001
+
+
+#############################################################
+# PDF Grids:                                                #
+# ---------                                                 #
+# * Inittial scale q (TODO: change to q^2)                  #
+# * Options for x-grid:                                     #
+#   - custom: Custom GANs xgrid as defined in the Module    #
+#   - lhapdf: Use the same xgrid as in the input PDF        #
+#############################################################
+q        : 1.65
+x_grid   : custom
+
+#############################################################
+# GAN setup:                                                #
+# ---------                                                 #
+# * Options for architecture:                               #
+#   - dnn : Deep Neural Network                             #
+#   - dcnn: Deep Convolutional Neural Network               #
+#############################################################
+architecture: dnn
+
+# Number of Nodes in 1st Layer
+#g_nodes  : 128
+#d_nodes  : 450
+g_nodes  : 64
+d_nodes  : 200
+
+# [Activations]
+g_act    : leakyrelu
+d_act    : leakyrelu
+
+# Architecture
+ddnn_size   : 1
+gdnn_size   : 1
+
+# Optimizers
+d_opt    : rms
+gan_opt  : rms
+epochs   : 5000
+
+# Intrinsic features
+ImposeSumRules  : True
+ConvoluteOutput : True
+
+#############################################################
+# Training Setup:                                           #
+# --------------                                            #
+# * batch size                                              #
+# * {i}_steps: number of steps to train a {i}={generator,   #
+#              discriminator/critic} at each iteration.     #
+#############################################################
+batch_size : 64
+
+nd_steps : 4
+ng_steps : 3
