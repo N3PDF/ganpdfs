@@ -51,11 +51,9 @@ class ImposeSumRules(Layer):
 
     def __init__(self, xgrid, **kwargs):
         self.xgrid = K.constant(xgrid)
+        self.inverse_x = None
         super(ImposeSumRules, self).__init__(**kwargs)
 
-    def compute_output_shape(self, input_shape):
-        return input_shape
-    
     def build(self, input_shape):
         """What this does is compute 1/x for all the bases except for `sigma` and `gluon` as
         those are the ones that are not dived by x in the sum rules described by eq. (10) of
@@ -72,33 +70,28 @@ class ImposeSumRules(Layer):
         if previous_layer.shape[0] is not None:
             # Multiplication along the last two axes
             xsummed = K.sum(previous_layer * self.inverse_x, axis=2)        # Shape=(batches, evol)
-            xtransposed = K.permute_dimensions(xsummed, pattern=(1, 0))     # Shape=(evol, batches)
+            xtransposed = K.transpose(xsummed) # shape=(evol, batches)
             gg_norm = (1 - xtransposed[0]) / xtransposed[1]
             vv_norm = 3 / xtransposed[2]
             v3_norm = 1 / xtransposed[3]
             v8_norm = 3 / xtransposed[4]
-            normalized_pdf = K.concatenate(
-                    [
-                        [xtransposed[0]],
-                        [gg_norm],
-                        [vv_norm],
-                        [v3_norm],
-                        [v8_norm],
-                        [xtransposed[5]],
-                        [xtransposed[6]],
-                        [xtransposed[7]]
-                    ],
-                    axis=0
-            )   # Shape=(evol, batches) 
-            # Permute the dimensions
-            pdfpermute = K.permute_dimensions(
-                    previous_layer,
-                    pattern=(2, 1, 0)
-            )
-            previous_layer = K.permute_dimensions(
-                    pdfpermute * normalized_pdf,
-                    pattern=(0, 1, 2)
-            )
+            # Note, jcm:
+            # I'm guessing the flavours are sigma, g, v, v3, v8...
+            # so the ones that don't need to be normalized I'm multiplying just by one
+            # after that stack all the constants in the "evolution axis" to multiply with the pdf
+            ones = K.ones_like(gg_norm)
+            normalization_constant = K.stack([
+                        ones,
+                        gg_norm,
+                        vv_norm,
+                        v3_norm,
+                        v8_norm,
+                        ones,
+                        ones,
+                        ones
+                    ], axis=1) # Shape=(batches, evol)
+            normalized_pdf = previous_layer * tf.expand_dims(normalization_constant, axis=-1)
+            return normalized_pdf
         return previous_layer
 
 
@@ -115,9 +108,6 @@ class ConvPDF(Layer):
     def __init__(self, pdf, **kwargs):
         self.pdf = pdf
         super(ConvPDF, self).__init__(**kwargs)
-
-    def compute_output_shape(self, input_shape):
-        return input_shape
 
     def call(self, previous_layer):
         index = np.random.randint(self.pdf.shape[0])
