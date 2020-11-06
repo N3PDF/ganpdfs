@@ -61,7 +61,7 @@ class WassersteinGanModel:
         if self.params.get("ImposeSumRules", True):
             g_model.add(ImposeSumRules(self.xgrid))
         return g_model
-        
+
     def critic_model(self):
         """critic_model.
         """
