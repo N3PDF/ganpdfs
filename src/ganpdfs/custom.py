@@ -25,6 +25,28 @@ def wasserstein_loss(y_true, y_pred):
     return K.mean(y_true * y_pred)
 
 
+def compute_weights(xgrid):
+    """compute_weights.
+
+    Parameters
+    ----------
+    xgrid :
+        xgrid
+    """
+
+    # Compute space between neighboring points
+    spacing = [0.0]
+    for x in range(1, xgrid.shape[0]):
+        spacing.append(np.abs(xgrid[x - 1] - xgrid[x]))
+    spacing.append(0.0)
+    # Compute Weights array
+    weights = []
+    for s in range(xgrid.shape[0]):
+        weights.append((spacing[s] + spacing[s + 1]) / 2)
+    weights = np.array(weights).reshape(1, xgrid.shape[0])
+    return weights
+
+
 class ClipConstraint(Constraint):
     """Put constraints on the weights of a given
     Layer.
@@ -40,6 +62,29 @@ class ClipConstraint(Constraint):
         return {"clip_value": self.clip_value}
 
 
+class ConvPDF(Layer):
+    """Convolute the output of the previous layer with
+    a subsample of the input/prior replica.
+
+    Parameters
+    ----------
+    pdf: np.array
+        Grids of PDF
+    """
+
+    def __init__(self, pdf, **kwargs):
+        # pdf = tf.convert_to_tensor(pdf, dtype='float32')
+        pdf = K.constant(pdf)
+        self.pdf = tf.random.shuffle(pdf)
+        super(ConvPDF, self).__init__(**kwargs)
+
+    def call(self, previous_layer):
+        if previous_layer.shape[0] is not None:
+            sampled_pdf = self.pdf[:previous_layer.shape[0]]
+            return previous_layer * sampled_pdf
+        return previous_layer
+
+
 class ImposeSumRules(Layer):
     """Impose sum rules on PDF.
 
@@ -50,35 +95,27 @@ class ImposeSumRules(Layer):
     """
 
     def __init__(self, xgrid, **kwargs):
-        self.xgrid = K.constant(xgrid)
-        self.inverse_x = None
-        super(ImposeSumRules, self).__init__(**kwargs)
-
-    def build(self, input_shape):
-        """What this does is compute 1/x for all the bases except for `sigma` and `gluon` as
-        those are the ones that are not dived by x in the sum rules described by eq. (10) of
-        [arXiv:1410.8849]. Thus `inverse_x` is a tensor of shape (evol,  xgrid).
-        """
         nb_basis_to_divide = 6
-        arr_ones = K.ones((2, self.xgrid.shape[0]))
-        xgrid = K.reshape(self.xgrid, shape=(1, self.xgrid.shape[0]))
+        xgrid = K.constant(xgrid)
+        arr_ones = K.ones((2, xgrid.shape[0]))
+        self.weight = K.constant(compute_weights(xgrid))
+        # Compute 1/x tensor
+        xgrid = K.reshape(xgrid, shape=(1, xgrid.shape[0]))
         inverse_x = K.tile(1 / xgrid, (nb_basis_to_divide, 1))
         self.inverse_x = K.concatenate([arr_ones, inverse_x], axis=0)
-        super(ImposeSumRules, self).build(input_shape)
+        super(ImposeSumRules, self).__init__(**kwargs)
 
     def call(self, previous_layer):
         if previous_layer.shape[0] is not None:
+            inverseXweighted = self.inverse_x * self.weight
             # Multiplication along the last two axes
-            xsummed = K.sum(previous_layer * self.inverse_x, axis=2)        # Shape=(batches, evol)
-            xtransposed = K.transpose(xsummed) # shape=(evol, batches)
+            xsummed = K.sum(previous_layer * inverseXweighted, axis=2)  # Shape=(batches, evol)
+            xtransposed = K.transpose(xsummed)                          # shape=(evol, batches)
             gg_norm = (1 - xtransposed[0]) / xtransposed[1]
             vv_norm = 3 / xtransposed[2]
             v3_norm = 1 / xtransposed[3]
             v8_norm = 3 / xtransposed[4]
-            # Note, jcm:
-            # I'm guessing the flavours are sigma, g, v, v3, v8...
-            # so the ones that don't need to be normalized I'm multiplying just by one
-            # after that stack all the constants in the "evolution axis" to multiply with the pdf
+            # Define Normalization tensor
             ones = K.ones_like(gg_norm)
             normalization_constant = K.stack([
                         ones,
@@ -89,31 +126,11 @@ class ImposeSumRules(Layer):
                         ones,
                         ones,
                         ones
-                    ], axis=1) # Shape=(batches, evol)
-            normalized_pdf = previous_layer * tf.expand_dims(normalization_constant, axis=-1)
+                    ], axis=1)  # Shape=(batches, evol)
+            final_normalization = K.expand_dims(normalization_constant, axis=-1)
+            normalized_pdf = previous_layer * final_normalization
             return normalized_pdf
         return previous_layer
-
-
-class ConvPDF(Layer):
-    """Convolute the output of the previous layer with
-    a subsample of the input/prior replica.
-
-    Parameters
-    ----------
-    pdf: np.array
-        Array of PDF grids
-    """
-
-    def __init__(self, pdf, **kwargs):
-        self.pdf = pdf
-        super(ConvPDF, self).__init__(**kwargs)
-
-    def call(self, previous_layer):
-        index = np.random.randint(self.pdf.shape[0])
-        sampled_pdf = K.constant(self.pdf[index])
-        mult = previous_layer * sampled_pdf
-        return mult
 
 
 class ConvXgrid(Layer):
