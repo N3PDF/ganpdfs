@@ -208,6 +208,17 @@ samples</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt id="ganpdfs.custom.compute_weights">
+<code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">compute_weights</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xgrid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.compute_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>compute_weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xgrid</strong> – xgrid</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py class">
 <dt id="ganpdfs.custom.ClipConstraint">
 <em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">ClipConstraint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">clip_value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ClipConstraint" title="Permalink to this definition">¶</a></dt>
@@ -222,26 +233,19 @@ Layer.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="ganpdfs.custom.ImposeSumRules">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">ImposeSumRules</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ImposeSumRules" title="Permalink to this definition">¶</a></dt>
+<dt id="ganpdfs.custom.ConvPDF">
+<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">ConvPDF</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
-<p>Impose sum rules on PDF.</p>
+<p>Convolute the output of the previous layer with
+a subsample of the input/prior replica.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>xgrid</strong> (<em>np.array</em>) – Array of x values</p>
+<dd class="field-odd"><p><strong>pdf</strong> (<em>np.array</em>) – Grids of PDF</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="ganpdfs.custom.ImposeSumRules.build">
-<code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ImposeSumRules.build" title="Permalink to this definition">¶</a></dt>
-<dd><p>What this does is compute 1/x for all the bases except for <cite>sigma</cite> and <cite>gluon</cite> as
-those are the ones that are not dived by x in the sum rules described by eq. (10) of
-[arXiv:1410.8849]. Thus <cite>inverse_x</cite> is a tensor of shape (evol,  xgrid).</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="ganpdfs.custom.ImposeSumRules.call">
-<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">previous_layer</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ImposeSumRules.call" title="Permalink to this definition">¶</a></dt>
+<dt id="ganpdfs.custom.ConvPDF.call">
+<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">previous_layer</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is where the layer’s logic lives.</p>
 <p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
 from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
@@ -263,19 +267,18 @@ method to support masking.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="ganpdfs.custom.ConvPDF">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">ConvPDF</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF" title="Permalink to this definition">¶</a></dt>
+<dt id="ganpdfs.custom.ImposeSumRules">
+<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">ImposeSumRules</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ImposeSumRules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
-<p>Convolute the output of the previous layer with
-a subsample of the input/prior replica.</p>
+<p>Impose sum rules on PDF.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>pdf</strong> (<em>np.array</em>) – Array of PDF grids</p>
+<dd class="field-odd"><p><strong>xgrid</strong> (<em>np.array</em>) – Array of x values</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="ganpdfs.custom.ConvPDF.call">
-<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">previous_layer</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF.call" title="Permalink to this definition">¶</a></dt>
+<dt id="ganpdfs.custom.ImposeSumRules.call">
+<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">previous_layer</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ImposeSumRules.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is where the layer’s logic lives.</p>
 <p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
 from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
