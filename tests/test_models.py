@@ -13,6 +13,7 @@ from tensorflow.keras.optimizers import RMSprop
 NB_REPLICAS = 100
 NB_FLAVORS = 14
 XGRID_SIZE = 125
+XGRID_TOY = np.linspace(1e-3, 1, XGRID_SIZE)
 DNN_TOY_PDF = np.random.random((NB_REPLICAS, NB_FLAVORS, XGRID_SIZE))
 CNN_TOY_PDF = np.random.random((NB_REPLICAS, NB_FLAVORS, XGRID_SIZE, 1))
 
@@ -33,6 +34,7 @@ NOISE_DIM = 100
 
 # Init DNN Model
 DNNWGAN_MODEL = WassersteinGanModel(
+        XGRID_TOY,
         DNN_TOY_PDF,
         PARAMS,
         NOISE_DIM,
@@ -42,6 +44,7 @@ DNNWGAN_MODEL = WassersteinGanModel(
 
 # Init DCNN Model
 DCNNWGAN_MODEL = DCNNWassersteinGanModel(
+        XGRID_TOY,
         CNN_TOY_PDF,
         PARAMS,
         NOISE_DIM,
