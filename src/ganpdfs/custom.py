@@ -73,14 +73,13 @@ class ConvPDF(Layer):
     """
 
     def __init__(self, pdf, **kwargs):
-        # pdf = tf.convert_to_tensor(pdf, dtype='float32')
-        pdf = K.constant(pdf)
-        self.pdf = tf.random.shuffle(pdf)
+        self.pdf = K.constant(pdf)
         super(ConvPDF, self).__init__(**kwargs)
 
     def call(self, previous_layer):
         if previous_layer.shape[0] is not None:
-            sampled_pdf = self.pdf[:previous_layer.shape[0]]
+            pdfshuffled = tf.random.shuffle(self.pdf)
+            sampled_pdf = pdfshuffled[:previous_layer.shape[0]]
             return previous_layer * sampled_pdf
         return previous_layer
 
@@ -99,18 +98,19 @@ class ImposeSumRules(Layer):
         xgrid = K.constant(xgrid)
         arr_ones = K.ones((2, xgrid.shape[0]))
         self.weight = K.constant(compute_weights(xgrid))
-        # Compute 1/x tensor
+        # Compute 1/x
         xgrid = K.reshape(xgrid, shape=(1, xgrid.shape[0]))
         inverse_x = K.tile(1 / xgrid, (nb_basis_to_divide, 1))
-        self.inverse_x = K.concatenate([arr_ones, inverse_x], axis=0)
+        inverse_x = K.concatenate([arr_ones, inverse_x], axis=0)
+        # Weight 1/x
+        self.inverseXweighted = inverse_x * self.weight
         super(ImposeSumRules, self).__init__(**kwargs)
 
     def call(self, previous_layer):
         if previous_layer.shape[0] is not None:
-            inverseXweighted = self.inverse_x * self.weight
             # Multiplication along the last two axes
-            xsummed = K.sum(previous_layer * inverseXweighted, axis=2)  # Shape=(batches, evol)
-            xtransposed = K.transpose(xsummed)                          # shape=(evol, batches)
+            xsummed = K.sum(previous_layer * self.inverseXweighted, axis=2)     # Shape=(batches, evol)
+            xtransposed = K.transpose(xsummed)                                  # shape=(evol, batches)
             gg_norm = (1 - xtransposed[0]) / xtransposed[1]
             vv_norm = 3 / xtransposed[2]
             v3_norm = 1 / xtransposed[3]
