@@ -1,7 +1,7 @@
 #############################################################
 # Input PDF                                                 #       
 #############################################################
-pdf: PN3_GLOBAL_NNPDF31_nnlo_as_0118_070219-001
+pdf: 130920-nnpdf40_jcm_iterated_70k_epochs
 
 
 #############################################################
@@ -39,7 +39,7 @@ gdnn_size   : 1
 # Optimizers
 d_opt    : rms
 gan_opt  : rms
-epochs   : 5000
+epochs   : 15000
 
 # Intrinsic features
 ConvoluteOutput : True
