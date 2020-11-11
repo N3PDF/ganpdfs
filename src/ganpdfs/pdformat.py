@@ -15,6 +15,31 @@ class XNodes:
 
     def __init__(self):
         self.x_nodes = [
+            1.0000000000000001e-09,
+            1.4508287784959398e-09,
+            2.1049041445120207e-09,
+            3.0538555088334157e-09,
+            4.4306214575838816e-09,
+            6.4280731172843209e-09,
+            9.3260334688321995e-09,
+            1.3530477745798068e-08,
+            1.9630406500402714e-08,
+            2.8480358684358022e-08,
+            4.1320124001153370e-08,
+            5.9948425031894094e-08,
+            8.6974900261778356e-08,
+            1.2618568830660210e-07,
+            1.8307382802953678e-07,
+            2.6560877829466870e-07,
+            3.8535285937105315e-07,
+            5.5908101825122239e-07,
+            8.1113083078968731e-07,
+            1.1768119524349981e-06,
+            1.7073526474706905e-06,
+            2.4770763559917115e-06,
+            3.5938136638046262e-06,
+            5.2140082879996849e-06,
+            7.5646332755462914e-06,
             1.0974987654930569e-05,
             1.5922827933410941e-05,
             2.3101297000831580e-05,
@@ -85,6 +110,11 @@ class XNodes:
             0.87142857142857133,
             0.88979591836734695,
             0.90816326530612246,
+            0.92653061224489797,
+            0.94489795918367347,
+            0.96326530612244898,
+            0.98163265306122449,
+            1.0000000000000000
         ]
 
     def build_xgrid(self):
@@ -144,7 +174,7 @@ class InputPDFs:
         lhapdf_grid = [float(i) for i in lhapdf_grid.split()]
         return np.array(lhapdf_grid)
 
-    def custom_xgrid(self, minval, maxval, nbpoints, grid_type="linear"):
+    def custom_xgrid(self):
         """Construct a custom xgrid by taking the smallest and largest
         value of the LHAPDF grid and sample the points equally spaced.
 
@@ -162,17 +192,14 @@ class InputPDFs:
         np.array(float)
             x-grid array
         """
-        
-        if grid_type == "linear":
-            return np.linspace(minval, maxval, num=nbpoints, endpoint=False)
-        else:
-            xgrid = np.logspace(
-                        math.log(minval),
-                        math.log(maxval),
-                        num=nbpoints,
-                        base=math.exp(1)
-                    )
-            return xgrid
+        #TODO: Move this function!
+
+        logx = int(nbpoints / 2)
+        linx = int(nbpoints - logx)
+        xgrid_log = np.logspace(-9, -1, logx + 1)
+        xgrid_lin = np.linspace(0.1, 1, linx)
+        xgrid = np.concatenate([xgrid_log[:-1], xgrid_lin]).reshape(nbpoints, 1)
+        return xgrid
 
     def build_pdf(self, xgrid):
         """Construct the input PDFs based on the number of input
