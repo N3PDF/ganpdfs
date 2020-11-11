@@ -7,6 +7,7 @@ import matplotlib.gridspec as gridspec
 
 from tqdm import trange
 from ganpdfs.utils import smm
+from ganpdfs.utils import axes_width
 from ganpdfs.writer import WriterWrapper
 from ganpdfs.utils import save_checkpoint
 from ganpdfs.utils import interpolate_grid
@@ -198,47 +199,44 @@ class GanTrain:
         # Generate Fake Samples
         generated_pdf, _ = self.generate_fake_samples(generator, nb_output)
 
-        # Initialize Grids
-        fig = plt.figure(constrained_layout=True)
-        spec = gridspec.GridSpec(ncols=2, nrows=3, figure=fig)
-        pl1 = fig.add_subplot(spec[0, 0])
-        pl2 = fig.add_subplot(spec[0, 1])
-        pl3 = fig.add_subplot(spec[1, 0])
-        pl4 = fig.add_subplot(spec[1, 1])
-        pl5 = fig.add_subplot(spec[2, 0])
-        pl6 = fig.add_subplot(spec[2, 1])
+        # Initialize Grid Plots
+        fig, axes = plt.subplots(ncols=2, nrows=4, figsize=[20, 26])
 
-        # Define list of flavours and grids
-        fl = [0, 1, 2, 3, 4, 5]
-        ls_pl = [pl1, pl2, pl3, pl4, pl5, pl6]
+        # Define Evolution Basis Labels
+        # TODO: Check if this is correct
+        evolbasis = [r"\bar{b}", r"\bar{c}", r"\bar{u}", r"\bar{d}", "g", "d", "u", "s"]
 
-        for fl, pos in zip(fl, ls_pl):
+        for i, axis in enumerate(axes.reshape(-1)):
             # Plot true replicas
             for true_rep in self.pdf:
-                pos.plot(
-                        self.xgrid,
-                        true_rep[fl],
+                axis.plot(
+                        self.xgrid[26:],
+                        true_rep[i][26:],
                         color="r",
                         label="true",
                         alpha=0.35
                 )
             # Plot fake replicas
             for fake_rep in generated_pdf:
-                pos.plot(
-                        self.xgrid,
-                        fake_rep[fl],
+                axis.plot(
+                        self.xgrid[26:],
+                        fake_rep[i][26:],
                         color="b",
                         label="fake",
                         alpha=0.35
                 )
-            # Plot in log scale
-            pos.set_xscale("log")
+            axes_width(axis, lw=1.5)
+            axis.grid(alpha=0.1, linewidth=1.5)
+            axis.tick_params(length=7, width=1.5)
+            axis.tick_params(which="minor", length=4, width=1)
+            # axis.set_xlim(self.xgrid[26:], self.xgrid[-1])
+            axis.set_xscale('log')
+            axis.set_title(evolbasis[i], fontsize=16)
 
         fig.suptitle("Samples at Iteration %d" % niter)
         fig.savefig(
             f"{folder}/iterations/pdf_generated_at_{niter}.png",
-            dpi=100,
-            pad_inches=0.2,
+            dpi=100
         )
 
     def train(self, nb_epochs=5000, batch_size=64):
@@ -337,31 +335,31 @@ class GanTrain:
         if  not self.hyperopt:
 
             xgrid = self.xgrid
+            comb_pdf = np.concatenate([self.pdf, fake_pdf])
             #############################################################
             # Interpolate the grids if the GANS-grids is not the same   #
             # as the input PDF.                                         #
             #############################################################
             if self.params.get("architecture") == "dcnn":
-                fake_pdf = fake_pdf.reshape((fake_pdf.shape[0], fake_pdf.shape[1], fake_pdf.shape[2]))
+                comb_pdf = fake_pdf.reshape((comb_pdf.shape[0], comb_pdf.shape[1], comb_pdf.shape[2]))
             if self.xgrid.shape != self.params.get("pdfgrid").shape:
                 xgrid = self.params.get("pdfgrid")
                 logger.info("Interpolate and/or Extrapolate GANs grid to PDF grid.")
-                fake_pdf = interpolate_grid(fake_pdf, self.xgrid, xgrid)
+                comb_pdf = interpolate_grid(comb_pdf, self.xgrid, xgrid)
 
             #############################################################
             # Construct the output grids in the same structure as the   #
             # N3FIT outputs. This allows for easy evolution.            #
             #############################################################
             logger.info("Write grids to file.")
-            for repindex, replica  in enumerate(fake_pdf, start=1):
-                rpid = self.pdf.shape[0] + repindex
+            for rpid, replica  in enumerate(comb_pdf, start=1):
                 grid_path = f"{self.folder}/nnfit/replica_{rpid}"
                 write_grid = WriterWrapper(
                         self.folder,
                         replica,
                         xgrid,
                         rpid,
-                        self.params.get("q") ** 2
+                        self.params.get("q")
                     )
                 write_grid.write_data(grid_path)
         else:
