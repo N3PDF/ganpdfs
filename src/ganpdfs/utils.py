@@ -7,6 +7,20 @@ from scipy.linalg import sqrtm
 from tensorflow.train import Checkpoint
 
 
+def axes_width(ax, lw=1):
+    """Change width of axes.
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+    Figure's axes
+    lw : float
+    Define width of axes
+    """
+
+    for axis in ['top', 'bottom', 'left', 'right']:
+        ax.spines[axis].set_linewidth(lw)
+
+
 def save_checkpoint(generator, critic, adversarial):
     """Save the training information into a file. This includes but
     not limited to the information on the wieghts and the biases of
