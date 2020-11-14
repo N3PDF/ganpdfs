@@ -38,9 +38,11 @@ class GanTrain:
         number of replicas
     """
 
-    def __init__(self, xgrid, pdf, noise_size, params, activ, optmz, nb_replicas=10):
+    def __init__(self, xgrid, pdfs, noise_size, params, activ, optmz, nb_replicas=10):
+        pdf = pdfs[0]
         self.xgrid = xgrid
         self.params = params
+        self.lhaPDFs = pdfs[1]
         self.noise_size = noise_size
         self.nb_replicas = nb_replicas
         self.hyperopt = params.get("scan")
@@ -344,17 +346,18 @@ class GanTrain:
         if  not self.hyperopt:
 
             xgrid = self.xgrid
-            comb_pdf = np.concatenate([self.pdf, fake_pdf])
             #############################################################
             # Interpolate the grids if the GANS-grids is not the same   #
             # as the input PDF.                                         #
             #############################################################
             if self.params.get("architecture") == "dcnn":
-                comb_pdf = fake_pdf.reshape((comb_pdf.shape[0], comb_pdf.shape[1], comb_pdf.shape[2]))
+                fake_pdf = fake_pdf.reshape((fake_pdf.shape[0], fake_pdf.shape[1], fake_pdf.shape[2]))
             if self.xgrid.shape != self.params.get("pdfgrid").shape:
                 xgrid = self.params.get("pdfgrid")
                 logger.info("Interpolate and/or Extrapolate GANs grid to PDF grid.")
-                comb_pdf = interpolate_grid(comb_pdf, self.xgrid, xgrid, interpol_type="UnivariateSpline")
+                fake_pdf = interpolate_grid(fake_pdf, self.xgrid, xgrid, interpol_type="UnivariateSpline")
+            # Combiend the PDFs
+            comb_pdf = np.concatenate([self.lhaPDFs, fake_pdf])
 
             #############################################################
             # Construct the output grids in the same structure as the   #
