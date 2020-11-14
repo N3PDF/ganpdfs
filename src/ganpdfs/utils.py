@@ -151,7 +151,7 @@ def construct_cnn(number, nb_layer):
     return cnn_dim
 
 
-def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid):
+def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid, interpol_type="standard"):
     """Interpolate the generated output according to the x-grid in order to 
     match with the LHAPDF grid-format. It uses the `interpolate` module from
     `scipy`. For more details, refere to
@@ -175,12 +175,35 @@ def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid):
     for replica in fake_pdf:
         fl_space = []
         for fl in replica:
-            f_interpol = interpolate.interp1d(
-                    gan_grid,
-                    fl,
-                    fill_value="extrapolate"
-            )
-            new_grid = f_interpol(lhapdf_grid)
+            if interpol_type == "Intperp1D":
+                f_interpol = interpolate.interp1d(
+                        gan_grid,
+                        fl,
+                        kind="cubic",
+                        fill_value="extrapolate"
+                )
+                new_grid = f_interpol(lhapdf_grid)
+            elif interpol_type == "SplineEv":
+                f_interpol = interpolate.splrep(gan_grid, fl, s=0)
+                new_grid = interpolate.splev(lhapdf_grid, f_interpol, der=0)
+            elif interpol_type == "CubicSpline":
+                f_interpol = interpolate.CubicSpline(gan_grid, fl)
+                new_grid = f_interpol(lhapdf_grid)
+            elif interpol_type == "InterpSpline":
+                f_interpol = interpolate.make_interp_spline(gan_grid, fl)
+                new_grid = f_interpol(lhapdf_grid)
+            elif interpol_type == "UnivariateSpline":
+                weights = np.isnan(fl)
+                fl[weights] = 0.
+                f_interpol = interpolate.UnivariateSpline(
+                        gan_grid,
+                        fl,
+                        w=~weights
+                )
+                f_interpol.set_smoothing_factor(0.01)
+                new_grid = f_interpol(lhapdf_grid)
+            else:
+                raise ValueError(f"{interpol_type} is not an interpolation.")
             fl_space.append(new_grid)
         final_grid.append(fl_space)
     return np.array(final_grid)
