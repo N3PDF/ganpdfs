@@ -129,6 +129,8 @@ def main():
     else:
         raise ValueError("{} is not a valid grid".format(hps["x_grid"]))
     pdf = init_pdf.build_pdf(x_grid)
+    pdf_lhapdf = init_pdf.lhaPDF_grids()
+    pdfs = [pdf, pdf_lhapdf]
 
     # Define the number of input replicas
     if args.nreplicas is None:
@@ -148,7 +150,7 @@ def main():
         hps["scan"] = True
 
         def fn_hyper_train(params):
-            return hyper_train(params, x_grid, pdf)
+            return hyper_train(params, x_grid, pdfs)
 
         # Run hyper scan
         hps = run_hyperparameter_scan(
@@ -159,4 +161,4 @@ def main():
     hps["scan"] = False
     hps["verbose"] = True
 
-    loss = hyper_train(hps, x_grid, pdf)
+    loss = hyper_train(hps, x_grid, pdfs)
