@@ -41,7 +41,7 @@ class WassersteinGanModel:
 
         dnn_dim = self.params.get("g_nodes")
         # Generator Input
-        g_model = Sequential()
+        g_model = Sequential(name="Generator")
         # 1st Layer
         g_model.add(Dense(dnn_dim, input_dim=self.noise_size))
         g_model.add(self.activ.get(self.g_activ))
