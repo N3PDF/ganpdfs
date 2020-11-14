@@ -39,7 +39,7 @@ gdnn_size   : 1
 # Optimizers
 d_opt    : rms
 gan_opt  : rms
-epochs   : 15000
+epochs   : 2000
 
 # Intrinsic features
 ConvoluteOutput : True
@@ -51,7 +51,7 @@ ConvoluteOutput : True
 # * {i}_steps: number of steps to train a {i}={generator,   #
 #              discriminator/critic} at each iteration.     #
 #############################################################
-batch_size : 64
+batch_size : 32
 
 nd_steps : 4
 ng_steps : 3
