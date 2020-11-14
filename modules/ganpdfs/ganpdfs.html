@@ -650,7 +650,7 @@ naturally set to 1.</p>
 
 <dl class="py function">
 <dt id="ganpdfs.utils.interpolate_grid">
-<code class="sig-prename descclassname">ganpdfs.utils.</code><code class="sig-name descname">interpolate_grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fake_pdf</span></em>, <em class="sig-param"><span class="n">gan_grid</span></em>, <em class="sig-param"><span class="n">lhapdf_grid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.interpolate_grid" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ganpdfs.utils.</code><code class="sig-name descname">interpolate_grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fake_pdf</span></em>, <em class="sig-param"><span class="n">gan_grid</span></em>, <em class="sig-param"><span class="n">lhapdf_grid</span></em>, <em class="sig-param"><span class="n">interpol_type</span><span class="o">=</span><span class="default_value">'standard'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.interpolate_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Interpolate the generated output according to the x-grid in order to
 match with the LHAPDF grid-format. It uses the <cite>interpolate</cite> module from
 <cite>scipy</cite>. For more details, refere to
