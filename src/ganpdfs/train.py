@@ -354,7 +354,7 @@ class GanTrain:
             if self.xgrid.shape != self.params.get("pdfgrid").shape:
                 xgrid = self.params.get("pdfgrid")
                 logger.info("Interpolate and/or Extrapolate GANs grid to PDF grid.")
-                comb_pdf = interpolate_grid(comb_pdf, self.xgrid, xgrid)
+                comb_pdf = interpolate_grid(comb_pdf, self.xgrid, xgrid, interpol_type="UnivariateSpline")
 
             #############################################################
             # Construct the output grids in the same structure as the   #

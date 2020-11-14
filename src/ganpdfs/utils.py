@@ -151,7 +151,7 @@ def construct_cnn(number, nb_layer):
     return cnn_dim
 
 
-def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid, interpol_type="standard"):
+def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid, interpol_type="Intperp1D"):
     """Interpolate the generated output according to the x-grid in order to 
     match with the LHAPDF grid-format. It uses the `interpolate` module from
     `scipy`. For more details, refere to
