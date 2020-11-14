@@ -145,6 +145,7 @@ class InputPDFs:
         self.nf = nf
         self.q_value = q_value
         self.pdf_name = pdf_name
+        self.lhpdf = lhapdf.mkPDFs(pdf_name)
 
     def extract_xgrid(self):
         """Extract the x-grid format from the input PDF file. The nice
@@ -220,16 +221,21 @@ class InputPDFs:
 
         # Sample pdf with all the flavors
         # nb total flavors = 2 * nf + 1
-        lhpdf = lhapdf.mkPDFs(self.pdf_name)
-        pdf_size = len(lhpdf) - 1
         xgrid_size = xgrid.shape[0]
+        pdf_size = len(self.lhpdf) - 1
         # Construct a grid of zeros to store the results
         inpdf = np.zeros((pdf_size, 2 * self.nf + 2, xgrid_size))
 
         for p in range(pdf_size):
             for f in range(-self.nf, self.nf + 2):
                 for x in range(xgrid_size):
-                    inpdf[p][f + self.nf][x] = lhpdf[p + 1].xfxQ(
+                    inpdf[p][f + self.nf][x] = self.lhpdf[p + 1].xfxQ(
                         f, xgrid[x], self.q_value
                     )
         return inpdf
+
+    def lhaPDF_grids(self):
+        """lhaPDF_grids.
+        """
+        xgrid = self.extract_xgrid()
+        return self.build_pdf(xgrid)
