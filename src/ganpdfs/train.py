@@ -199,28 +199,37 @@ class GanTrain:
         # Generate Fake Samples
         generated_pdf, _ = self.generate_fake_samples(generator, nb_output)
 
+        # Interpolates
+        xgrid = self.params.get("pdfgrid")
+        interpol_fake = interpolate_grid(
+                generated_pdf,
+                self.xgrid,
+                xgrid,
+                interpol_type="UnivariateSpline"
+        )
+
         # Initialize Grid Plots
-        fig, axes = plt.subplots(ncols=2, nrows=4, figsize=[20, 26])
+        fig, axes = plt.subplots(ncols=2, nrows=3, figsize=[20, 26])
 
         # Define Evolution Basis Labels
         # TODO: Check if this is correct
-        evolbasis = [r"\bar{b}", r"\bar{c}", r"\bar{u}", r"\bar{d}", "g", "d", "u", "s"]
+        evolbasis = [r"\bar{u}", r"\bar{d}", "g", "d", "u", "s"]
 
         for i, axis in enumerate(axes.reshape(-1)):
             # Plot true replicas
             for true_rep in self.pdf:
                 axis.plot(
                         self.xgrid[26:],
-                        true_rep[i][26:],
+                        true_rep[i + 2][26:],
                         color="r",
                         label="true",
-                        alpha=0.35
+                        alpha=0.25
                 )
             # Plot fake replicas
-            for fake_rep in generated_pdf:
+            for fake_rep in interpol_fake:
                 axis.plot(
-                        self.xgrid[26:],
-                        fake_rep[i][26:],
+                        xgrid[36:],
+                        fake_rep[i + 2][36:],
                         color="b",
                         label="fake",
                         alpha=0.35
@@ -229,7 +238,7 @@ class GanTrain:
             axis.grid(alpha=0.1, linewidth=1.5)
             axis.tick_params(length=7, width=1.5)
             axis.tick_params(which="minor", length=4, width=1)
-            # axis.set_xlim(self.xgrid[26:], self.xgrid[-1])
+            axis.set_xlim(self.xgrid[26], self.xgrid[-1])
             axis.set_xscale('log')
             axis.set_title(evolbasis[i], fontsize=16)
 
