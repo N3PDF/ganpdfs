@@ -192,10 +192,10 @@
 <dl class="py function">
 <dt id="ganpdfs.custom.wasserstein_loss">
 <code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">wasserstein_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y_true</span></em>, <em class="sig-param"><span class="n">y_pred</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.wasserstein_loss" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the wasserstein loss from the true and predictions. The loss function
-is implemented by multiplying the expected label for each sample by the predicted
-score (element wise), then calculating the mean. For more details, see
-<a class="reference external" href="https://arxiv.org/abs/1506.05439">https://arxiv.org/abs/1506.05439</a></p>
+<dd><p>Compute the wasserstein loss from the true and predictions. The
+loss function is implemented by multiplying the expected label for
+each sample by the predicted score (element wise), then calculating
+the mean. For more details, see <a class="reference external" href="https://arxiv.org/abs/1506.05439">https://arxiv.org/abs/1506.05439</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -204,6 +204,17 @@ samples</p></li>
 <li><p><strong>y_pred</strong> (<em>tf.tensor</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>)</em>) – list of estimated probabilities for the fake
 samples</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ganpdfs.custom.compute_weights">
+<code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">compute_weights</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xgrid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.compute_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>compute_weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xgrid</strong> – xgrid</p>
 </dd>
 </dl>
 </dd></dl>
@@ -229,32 +240,45 @@ Layer.</p>
 a subsample of the input/prior replica.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>pdf</strong> (<em>np.array</em>) – Array of PDF grids</p>
+<dd class="field-odd"><p><strong>pdf</strong> (<em>np.array</em>) – Grids of PDF</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="ganpdfs.custom.ConvPDF.compute_output_shape">
-<code class="sig-name descname">compute_output_shape</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF.compute_output_shape" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the output shape of the layer.</p>
-<p>If the layer has not been built, this method will call <cite>build</cite> on the
-layer. This assumes that the layer will later be used with inputs that
-match the input shape provided here.</p>
+<dt id="ganpdfs.custom.ConvPDF.call">
+<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">previous_layer</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF.call" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is where the layer’s logic lives.</p>
+<p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
+from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
+layers as additional arguments. Whereas <cite>tf.keras</cite> has <cite>compute_mask()</cite>
+method to support masking.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>input_shape</strong> – Shape tuple (tuple of integers)
-or list of shape tuples (one per output tensor of the layer).
-Shape tuples can include None for free dimensions,
-instead of an integer.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> – Input tensor, or list/tuple of input tensors.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments. Currently unused.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An input shape tuple.</p>
+<dd class="field-even"><p>A tensor or list/tuple of tensors.</p>
 </dd>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt id="ganpdfs.custom.ImposeSumRules">
+<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">ImposeSumRules</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ImposeSumRules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
+<p>Impose sum rules on PDF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xgrid</strong> (<em>np.array</em>) – Array of x values</p>
+</dd>
+</dl>
 <dl class="py method">
-<dt id="ganpdfs.custom.ConvPDF.call">
-<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">previous_layer</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF.call" title="Permalink to this definition">¶</a></dt>
+<dt id="ganpdfs.custom.ImposeSumRules.call">
+<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">previous_layer</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ImposeSumRules.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is where the layer’s logic lives.</p>
 <p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
 from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
@@ -477,7 +501,7 @@ method to support masking.</p>
 <span id="ganpdfs-model-module"></span><h2>ganpdfs.model module<a class="headerlink" href="#module-ganpdfs.model" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="ganpdfs.model.WassersteinGanModel">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.model.</code><code class="sig-name descname">WassersteinGanModel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf</span></em>, <em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">noise_size</span></em>, <em class="sig-param"><span class="n">activ</span></em>, <em class="sig-param"><span class="n">optmz</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WassersteinGanModel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.model.</code><code class="sig-name descname">WassersteinGanModel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xgrid</span></em>, <em class="sig-param"><span class="n">pdf</span></em>, <em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">noise_size</span></em>, <em class="sig-param"><span class="n">activ</span></em>, <em class="sig-param"><span class="n">optmz</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WassersteinGanModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>WassersteinGanModel.</p>
 <dl class="py method">
@@ -510,7 +534,7 @@ method to support masking.</p>
 
 <dl class="py class">
 <dt id="ganpdfs.model.DCNNWassersteinGanModel">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.model.</code><code class="sig-name descname">DCNNWassersteinGanModel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf</span></em>, <em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">noise_size</span></em>, <em class="sig-param"><span class="n">activ</span></em>, <em class="sig-param"><span class="n">optmz</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DCNNWassersteinGanModel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.model.</code><code class="sig-name descname">DCNNWassersteinGanModel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xgrid</span></em>, <em class="sig-param"><span class="n">pdf</span></em>, <em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">noise_size</span></em>, <em class="sig-param"><span class="n">activ</span></em>, <em class="sig-param"><span class="n">optmz</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DCNNWassersteinGanModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>DCNNWassersteinGanModel.</p>
 <dl class="py method">
@@ -557,12 +581,10 @@ method to support masking.</p>
 <dt id="ganpdfs.utils.axes_width">
 <code class="sig-prename descclassname">ganpdfs.utils.</code><code class="sig-name descname">axes_width</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ax</span></em>, <em class="sig-param"><span class="n">lw</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.axes_width" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change width of axes.
-:param ax:
+:param ax: Figure’s axes
 :type ax: matplotlib.axes.Axes
-:param Figure’s axes:
-:param lw:
-:type lw: float
-:param Define width of axes:</p>
+:param lw: Define width of axes
+:type lw: float</p>
 </dd></dl>
 
 <dl class="py function">
@@ -650,7 +672,7 @@ naturally set to 1.</p>
 
 <dl class="py function">
 <dt id="ganpdfs.utils.interpolate_grid">
-<code class="sig-prename descclassname">ganpdfs.utils.</code><code class="sig-name descname">interpolate_grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fake_pdf</span></em>, <em class="sig-param"><span class="n">gan_grid</span></em>, <em class="sig-param"><span class="n">lhapdf_grid</span></em>, <em class="sig-param"><span class="n">interpol_type</span><span class="o">=</span><span class="default_value">'Intperp1D'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.interpolate_grid" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ganpdfs.utils.</code><code class="sig-name descname">interpolate_grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fake_pdf</span></em>, <em class="sig-param"><span class="n">gan_grid</span></em>, <em class="sig-param"><span class="n">lhapdf_grid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.interpolate_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Interpolate the generated output according to the x-grid in order to
 match with the LHAPDF grid-format. It uses the <cite>interpolate</cite> module from
 <cite>scipy</cite>. For more details, refere to
