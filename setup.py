@@ -24,13 +24,7 @@ TESTS_REQUIEREMENTS = ["pytest", "pytest-cov"]
 # Depending on the documents more dependencies can be added
 DOCS_REQUIEREMENTS = ["recommonmark", "sphinx_rtd_theme", "sphinxcontrib-bibtex"]
 # Dependencies for the packages
-PACKAGE_REQUIEREMENTS = ["tensorflow", "numpy", "scipy", "tqdm", "hyperopt", "matplotlib"]
-
-# Check if LHAPDF is installed
-try:
-    import lhapdf
-except ImportError:
-    print(f"Note: {PACKAGE} requires the installation of LHAPDF")
+PACKAGE_REQUIEREMENTS = ["tensorflow", "pdfflow", "numpy", "scipy", "tqdm", "hyperopt", "matplotlib"]
 
 # Read through Readme
 try:

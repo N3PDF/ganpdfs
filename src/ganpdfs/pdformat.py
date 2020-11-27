@@ -1,7 +1,7 @@
 import os
 import math
-import lhapdf
 import numpy as np
+import pdfflow
 
 from subprocess import PIPE
 from subprocess import Popen
@@ -195,11 +195,9 @@ class InputPDFs:
 
         # Sample pdf with all the flavors
         # nb total flavors = 2 * nf + 2
-        lhpdf = lhapdf.mkPDFs(self.pdf_name)
+        pflow = pdfflow.mkPDFs(self.pdf_name)
+        pflow.trace()
         pdf_size = len(lhpdf) - 1
-        xgrid_size = xgrid.shape[0]
-        # Construct a grid of zeros to store the results
-        inpdf = np.zeros((pdf_size, xgrid_size, 2 * self.nf + 2))
         # Evolution basis
         flav_info = [
             {"fl": "u"},
@@ -223,14 +221,13 @@ class InputPDFs:
              "g": 0,
         }
 
-        for p in range(pdf_size):
-            for f in range(len(flav_info)):
-                flav_alias = flav_info[f]["fl"]
-                flav_pid = flav_list[flav_alias]
-                for x in range(xgrid_size):
-                    inpdf[p][x][f] = lhpdf[p + 1].xfxQ(
-                        flav_pid, xgrid[x], self.q_value
-                    )
+        # Read the pdffgrid with pflow
+        pids = list(flav_list.values())
+        qs = np.ones_like(xgrid)*self.q_value
+        inpdf_full = pflow.py_xfxQ2(pids, xgrid, qs)
+
+        # Remove member 0
+        inpdf = inpdf_full[1:]
 
         # Compute Rotation Matrix from Flavour basis to
         rotmat = fitbasis_to_NN31IC(flav_info, 'FLAVOUR')
