@@ -26,6 +26,8 @@ jobs:
         conda info
         # Install LHAPDF
         conda install -y lhapdf -c https://packages.nnpdf.science/conda
+        # Install pdfflow from right branch for now
+        pip install git+https://github.com/N3PDF/pdfflow.git@load_all_members
         # Install package
         python -m pip install --upgrade pip
         pip install .
