@@ -195,9 +195,6 @@ class InputPDFs:
 
         # Sample pdf with all the flavors
         # nb total flavors = 2 * nf + 2
-        pflow = pdfflow.mkPDFs(self.pdf_name)
-        pflow.trace()
-        pdf_size = len(lhpdf) - 1
         # Evolution basis
         flav_info = [
             {"fl": "u"},
@@ -221,10 +218,14 @@ class InputPDFs:
              "g": 0,
         }
 
+        # Since we need to call the grid just once, it doesn't make sense to compile it
+        pdfflow.run_eager(True)
+        pflow = pdfflow.mkPDFs(self.pdf_name)
         # Read the pdffgrid with pflow
         pids = list(flav_list.values())
         qs = np.ones_like(xgrid)*self.q_value
         inpdf_full = pflow.py_xfxQ2(pids, xgrid, qs)
+        pdfflow.run_eager(False)
 
         # Remove member 0
         inpdf = inpdf_full[1:]
