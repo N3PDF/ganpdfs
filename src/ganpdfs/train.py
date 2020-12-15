@@ -280,7 +280,8 @@ class GanTrain:
         # Initialize the value of metric
         metric = 0
         batch_per_epoch = int(self.pdf.shape[0] / batch_size)
-        nb_steps = batch_per_epoch * nb_epochs
+        nb_steps = nb_epochs
+        #nb_steps = batch_per_epoch * nb_epochs
         if batch_size < 2:
             half_batch_size = 1
         else:
