@@ -7,6 +7,8 @@ import matplotlib.gridspec as gridspec
 
 from tqdm import trange
 from ganpdfs.utils import smm
+from numpy.random import PCG64
+from numpy.random import Generator
 from ganpdfs.utils import axes_width
 from ganpdfs.writer import WriterWrapper
 from ganpdfs.utils import save_checkpoint
@@ -46,12 +48,14 @@ class GanTrain:
         self.noise_size = noise_size
         self.nb_replicas = nb_replicas
         self.hyperopt = params.get("scan")
+        self.rndgen = Generator(PCG64(seed=0))
         self.folder = params.get("save_output")
 
         # Choose architecture
         if params.get("architecture") == "dcnn":
-            self.pdf = pdf.reshape((pdf.shape[0], pdf.shape[1], pdf.shape[2], 1))
-            self.gan_model = DCNNWassersteinGanModel(self.pdf, params, noise_size, activ, optmz)
+            raise NotImplementedError("Not implemented yet!")
+            # self.pdf = pdf.reshape((pdf.shape[0], pdf.shape[1], pdf.shape[2], 1))
+            # self.gan_model = DCNNWassersteinGanModel(self.pdf, params, noise_size, activ, optmz)
         else:
             self.pdf = pdf
             self.gan_model = WassersteinGanModel(self.pdf, params, noise_size, activ, optmz)
@@ -93,7 +97,7 @@ class GanTrain:
         #                     ^_________________________________|   #
         #                          TUNING / BACKPROPAGATION         #
         #############################################################
-        pdf_index = np.random.randint(0, self.pdf.shape[0], half_batch_size)
+        pdf_index = self.rndgen.integers(0, self.pdf.shape[0], half_batch_size)
         pdf_batch = self.pdf[pdf_index]
         # Use (-1) as label for true pdfs
         y_disc = -np.ones((half_batch_size, 1))
@@ -113,8 +117,10 @@ class GanTrain:
             array of random numbers
         """
         # Generate points in the latent space
-        latent = np.random.randn(self.noise_size * half_batch_size)
-        return latent.reshape(half_batch_size, self.noise_size)
+        pdf_index = self.rndgen.integers(0, self.pdf.shape[0], half_batch_size)
+        pdf_as_latent = self.pdf[pdf_index]
+        assert pdf_as_latent.shape == (half_batch_size, self.pdf.shape[1], self.pdf.shape[2])
+        return pdf_as_latent
 
     def generate_fake_samples(self, generator, half_batch_size):
         """Generate fake samples from the Generator. `generate_fake_samples`
@@ -207,7 +213,7 @@ class GanTrain:
                 generated_pdf,
                 self.xgrid,
                 xgrid,
-                interpol_type="UnivariateSpline"
+                interpol_type="Intperp1D"
         )
 
         # Initialize Grid Plots
@@ -356,7 +362,7 @@ class GanTrain:
             if self.xgrid.shape != self.params.get("pdfgrid").shape:
                 xgrid = self.params.get("pdfgrid")
                 logger.info("Interpolate and/or Extrapolate GANs grid to PDF grid.")
-                fake_pdf = interpolate_grid(fake_pdf, self.xgrid, xgrid, interpol_type="UnivariateSpline")
+                fake_pdf = interpolate_grid(fake_pdf, self.xgrid, xgrid, interpol_type="Intperp1D")
             # Combiend the PDFs
             comb_pdf = np.concatenate([self.lhaPDFs, fake_pdf])
 

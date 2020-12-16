@@ -1,16 +1,29 @@
+from tensorflow.keras import Model
+from tensorflow.keras.layers import Add
+from tensorflow.keras.layers import Input
 from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Lambda
 from tensorflow.keras.layers import Conv2D
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.layers import Reshape
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2DTranspose
 from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.initializers import Identity
 
 from ganpdfs.custom import ConvPDF
 from ganpdfs.custom import ConvXgrid
 from ganpdfs.utils import construct_cnn
 from ganpdfs.custom import ClipConstraint
 from ganpdfs.custom import wasserstein_loss
+
+
+def do_nothing(tensor):
+    """do_nothing.
+
+    :param tensor:
+    """
+    return tensor
 
 
 class WassersteinGanModel:
@@ -39,24 +52,20 @@ class WassersteinGanModel:
         """generator_model.
         """
 
-        dnn_dim = self.params.get("g_nodes")
+        initializer = Identity()
         # Generator Input
-        g_model = Sequential(name="Generator")
-        # 1st Layer
-        g_model.add(Dense(dnn_dim, input_dim=self.noise_size))
-        g_model.add(self.activ.get(self.g_activ))
-        # Loop over the number of layers
-        for it in range(self.g_size):
-            g_model.add(Dense(dnn_dim * (2 ** (it + 1))))
-            g_model.add(BatchNormalization())
-            g_model.add(self.activ.get(self.g_activ))
-        # Reshape to Input PDF set and/or Output
-        g_model.add(Dense(self.fl_size * self.xg_size))
-        g_model.add(Reshape((self.fl_size, self.xg_size)))
-        # Convolute input PDF
-        if self.params.get("ConvoluteOutput", True):
-            g_model.add(ConvPDF(self.pdf))
-        return g_model
+        g_shape = (self.fl_size, self.xg_size)
+        g_input = Input(shape=g_shape)
+        # Output of Lambda layer has a shape
+        # (None, nb_flavors, xgrid_size)
+        g_lambd = Lambda(do_nothing)(g_input) 
+        g_dense = Dense(
+            self.xg_size,
+            use_bias=False,
+            trainable=True,
+            kernel_initializer=initializer
+        )(g_lambd)
+        return Model(g_input, g_dense)
         
     def critic_model(self):
         """critic_model.
@@ -83,7 +92,7 @@ class WassersteinGanModel:
         d_model.add(Dense(1))
         # Compile Critic Model
         critic_opt = self.optmz.get(self.c_optmz)
-        d_model.compile(loss=wasserstein_loss, optimizer=critic_opt)
+        d_model.compile(loss="binary_crossentropy", optimizer=critic_opt)
         return d_model
 
     def adversarial_model(self, generator, critic):
@@ -104,7 +113,7 @@ class WassersteinGanModel:
         model.add(critic)
         # Compile Adversarial Model
         adv_opt = self.optmz.get(self.adv_opmtz)
-        model.compile(loss=wasserstein_loss, optimizer=adv_opt)
+        model.compile(loss="binary_crossentropy", optimizer=adv_opt)
         return model
 
 
