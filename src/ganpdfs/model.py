@@ -36,22 +36,17 @@ class WGanModel:
         self.activ = activ
         self.optmz = optmz
         self.params = params
-        # Get PDF grid info
-        self.fl_size = pdf.shape[1]
-        self.xg_size = pdf.shape[2]
-        # Define Activations & Optimizers
         self.g_activ = params.get("g_act")
         self.c_activ = params.get("d_act")
         self.c_optmz = params.get("d_opt")
         self.adv_opmtz = params.get("gan_opt")
-        # Architecture
         self.d_size = params.get("ddnn_size", 1)
         self.g_size = params.get("gdnn_size", 2)
+        _, self.fl_size, self.xg_size = pdf.shape
 
     def generator_model(self):
         """generator_model.
         """
-
         initializer = Identity()
         # Generator Input
         g_shape = (self.fl_size, self.xg_size)
@@ -70,29 +65,30 @@ class WGanModel:
     def critic_model(self):
         """critic_model.
         """
-
-        dnn_dim = self.params["d_nodes"]
         # Weight Constraints
         const = ClipConstraint(1)
+        closs = "binary_crossentropy"
+        dnn_dim = self.params["d_nodes"]
+        critic_opt = self.optmz.get(self.c_optmz)
         # Discriminator Input
         d_input = (self.fl_size, self.xg_size)
-        d_model = Sequential(name="Critic")
-        # 1st Layer
-        d_model.add(Dense(dnn_dim, kernel_constraint=const, input_shape=d_input))
-        d_model.add(BatchNormalization())
-        d_model.add(self.activ.get(self.c_activ))
-        # Loop over the number of Layers
-        # by decreasing the size at each iterations
+        d_hidden = Dense(
+            dnn_dim,
+            kernel_constraint=const
+        )(d_input)
+        d_hidden = BatchNormalization()(d_hidden)
+        d_hidden = self.activ.get(self.c_activ)(d_hidden)
         for it in range(1, self.d_size + 1):
-            d_model.add(Dense(dnn_dim // (2 ** it), kernel_constraint=const))
-            d_model.add(BatchNormalization())
-            d_model.add(self.activ.get(self.c_activ))
-        # Flatten and Output Logit
-        d_model.add(Flatten())
-        d_model.add(Dense(1))
-        # Compile Critic Model
-        critic_opt = self.optmz.get(self.c_optmz)
-        d_model.compile(loss="binary_crossentropy", optimizer=critic_opt)
+            d_hidden = Dense(
+                dnn // (2 ** it),
+                kernel_constraint=const
+            )(d_hidden)
+            d_hidden = BatchNormalization()(d_hidden)
+            d_hidden = self.activ.get(self.c_activ)(d_hidden)
+        d_flatten = Flatten()(d_hidden)
+        d_output = Dense(1)(d_flatten)
+        d_model = Model(d_input, d_output, name="Critic")
+        d_model.compile(loss=closs, optimizer=critic_opt)
         return d_model
 
     def adversarial_model(self, generator, critic):
@@ -105,15 +101,12 @@ class WGanModel:
         critic :
             critic
         """
-
-        model = Sequential(name="Adversarial")
-        # Add Generator Model
-        model.add(generator)
-        # Add Critic Model
-        model.add(critic)
-        # Compile Adversarial Model
+        advloss = "binary_crossentropy"
         adv_opt = self.optmz.get(self.adv_opmtz)
-        model.compile(loss="binary_crossentropy", optimizer=adv_opt)
+        model = Sequential(name="Adversarial")
+        model.add(generator)  # Add Generator Model
+        model.add(critic)     # Add Critic Model
+        model.compile(loss=advloss, optimizer=adv_opt)
         return model
 
 
@@ -127,15 +120,11 @@ class DWGanModel:
         self.optmz = optmz
         self.params = params
         self.noise_size = None
-        # Get PDF grid info
-        self.fl_size = pdf.shape[1]
-        self.xg_size = pdf.shape[2]
-        # Define Activations & Optimizers
         self.g_activ = params.get("g_act")
         self.c_activ = params.get("d_act")
         self.c_optmz = params.get("d_opt")
         self.adv_opmtz = params.get("gan_opt")
-        # Compute DCNN structure
+        _, self.fl_size, self.xg_size = pdf.shape
         self.d_size = params.get("dcnn_size", 1) + 1
         self.g_size = params.get("gcnn_size", 2) + 1
         self.cnnf = construct_cnn(pdf.shape[1], self.g_size)
@@ -144,7 +133,6 @@ class DWGanModel:
     def generator_model(self):
         """generator_model.
         """
-
         gcnn = self.params.get("g_nodes")
         n_nodes = self.cnnf[0] * self.cnnx[0] * gcnn
         g_model = Sequential(name="Generator")
@@ -185,7 +173,6 @@ class DWGanModel:
     def critic_model(self):
         """critic_model.
         """
-
         dcnn = self.params.get("d_nodes")
         const = ClipConstraint(1)
         d_input = (self.fl_size, self.xg_size, 1)
@@ -235,13 +222,9 @@ class DWGanModel:
         critic :
             critic
         """
-
         adv_model = Sequential(name="Adversarial")
-        # Add Generator
-        adv_model.add(generator)
-        # Add Critic
-        adv_model.add(critic)
-        # Compile Adversarial Model
         adv_opt = self.optmz.get(self.adv_opmtz)
+        adv_model.add(generator)    # Add Generator
+        adv_model.add(critic)       # Add Critic
         adv_model.compile(loss=wasserstein_loss, optimizer=adv_opt)
         return adv_model
