@@ -69,8 +69,8 @@ def latent_sampling(pdf, nb_output, rndgen):
         rslt = np.array(selected)
         rslt = np.sum(rslt, axis=0) / rslt.shape[0]
         extra_latent.append(rslt)
-    reslt = np.concatenate((pdf, extra_latent), axis=0)
-    freslt = latent_nosie(pdf, rndgen)
+    freslt = np.concatenate((pdf, extra_latent), axis=0)
+    freslt = latent_nosie(freslt, rndgen)
     return freslt
 
 
