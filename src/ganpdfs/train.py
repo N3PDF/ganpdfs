@@ -9,20 +9,20 @@ from tqdm import trange
 from ganpdfs.utils import smm
 from numpy.random import PCG64
 from numpy.random import Generator
+from ganpdfs.model import WGanModel
 from ganpdfs.utils import axes_width
+from ganpdfs.model import DWGanModel
 from ganpdfs.writer import WriterWrapper
-from ganpdfs.utils import save_checkpoint
 from ganpdfs.utils import interpolate_grid
-from ganpdfs.model import WassersteinGanModel
-from ganpdfs.model import DCNNWassersteinGanModel
+from ganpdfs.utils import latent_sampling
 
 logger = logging.getLogger(__name__)
 
 
 class GanTrain:
-    """Training class that controls the training of the GANs. It sets the interplay
-    between the two different networks, namely the critic/discriminator and the
-    generator.
+    """Training class that controls the training of the GANs. It sets the
+    interplay between the two different networks (Discriminator & Generator)
+    and the generator.
 
     Parameters
     ----------
@@ -30,49 +30,41 @@ class GanTrain:
         array of x-grid
     pdf : np.array(float)
         grid of PDF replicas of shape (nb_rep, nb_flv, xgrid_size)
-    noise_size : int
-        dimension of the noise input
-    params : dict
-        dictionary that contains all the specific parameters
     optmz : list
         list of optimizers
-    nb_replicas: int, optional
-        number of replicas
     """
 
-    def __init__(self, xgrid, pdfs, noise_size, params, activ, optmz, nb_replicas=10):
-        pdf = pdfs[0]
-        self.xgrid = xgrid
-        self.params = params
-        self.lhaPDFs = pdfs[1]
-        self.noise_size = noise_size
-        self.nb_replicas = nb_replicas
+    def __init__(self, xgrid, pdfs, params, activ, optmz):
+        pdf, self.lhaPDFs = pdfs
+        self.xgrid, self.params = xgrid, params
         self.hyperopt = params.get("scan")
         self.rndgen = Generator(PCG64(seed=0))
         self.folder = params.get("save_output")
+        self.latent_pdf = latent_sampling(
+                pdf,
+                params.get("tot_replicas"),
+                self.rndgen
+        )
 
         # Choose architecture
         if params.get("architecture") == "dcnn":
             raise NotImplementedError("Not implemented yet!")
             # self.pdf = pdf.reshape((pdf.shape[0], pdf.shape[1], pdf.shape[2], 1))
-            # self.gan_model = DCNNWassersteinGanModel(self.pdf, params, noise_size, activ, optmz)
+            # self.gan = DWGanModel(self.pdf, params, activ, optmz)
         else:
             self.pdf = pdf
-            self.gan_model = WassersteinGanModel(self.pdf, params, noise_size, activ, optmz)
+            self.gan = WGanModel(self.pdf, params, activ, optmz)
 
         # Initialize Models
-        self.critic = self.gan_model.critic_model()
-        self.generator = self.gan_model.generator_model()
-        self.adversarial = self.gan_model.adversarial_model(self.generator, self.critic)
+        self.critic = self.gan.critic_model()
+        self.generator = self.gan.generator_model()
+        self.adversarial = self.gan.adversarial_model(self.generator, self.critic)
 
         # Print Summary when not in Hyperopt
         if not self.hyperopt:
-            self.generator.summary()
             self.critic.summary()
+            self.generator.summary()
             self.adversarial.summary()
-
-        # Init. Checkpoint
-        self.checkpoint = save_checkpoint(self.generator, self.critic, self.adversarial)
 
     def generate_real_samples(self, half_batch_size):
         """Prepare the real samples. This samples a half-batch of real dataset and
@@ -118,7 +110,7 @@ class GanTrain:
         """
         # Generate points in the latent space
         pdf_index = self.rndgen.integers(0, self.pdf.shape[0], half_batch_size)
-        pdf_as_latent = self.pdf[pdf_index]
+        pdf_as_latent = self.latent_pdf[pdf_index]
         assert pdf_as_latent.shape == (half_batch_size, self.pdf.shape[1], self.pdf.shape[2])
         return pdf_as_latent
 
@@ -208,36 +200,32 @@ class GanTrain:
         generated_pdf, _ = self.generate_fake_samples(generator, nb_output)
 
         # Interpolates
-        xgrid = self.params.get("pdfgrid")
-        interpol_fake = interpolate_grid(
-                generated_pdf,
-                self.xgrid,
-                xgrid,
-                interpol_type="Intperp1D"
-        )
+        # xgrid = self.params.get("pdfgrid")
+        # interpol_fake = interpolate_grid(
+        #         generated_pdf,
+        #         self.xgrid,
+        #         xgrid,
+        #         interpol_type="Intperp1D"
+        # )
 
         # Initialize Grid Plots
         fig, axes = plt.subplots(ncols=2, nrows=3, figsize=[20, 26])
-
-        # Define Evolution Basis Labels
-        # TODO: Check if this is correct
-        evolbasis = [r"\bar{u}", r"\bar{d}", "g", "d", "u", "s"]
 
         for i, axis in enumerate(axes.reshape(-1)):
             # Plot true replicas
             for true_rep in self.pdf:
                 axis.plot(
-                        self.xgrid[26:],
-                        true_rep[i + 2][26:],
+                        self.xgrid[650:],
+                        true_rep[i + 2][650:],
                         color="r",
                         label="true",
                         alpha=0.25
                 )
             # Plot fake replicas
-            for fake_rep in interpol_fake:
+            for fake_rep in generated_pdf:
                 axis.plot(
-                        xgrid[36:],
-                        fake_rep[i + 2][36:],
+                        self.xgrid[650:],
+                        fake_rep[i + 2][650:],
                         color="b",
                         label="fake",
                         alpha=0.35
@@ -246,9 +234,9 @@ class GanTrain:
             axis.grid(alpha=0.1, linewidth=1.5)
             axis.tick_params(length=7, width=1.5)
             axis.tick_params(which="minor", length=4, width=1)
-            axis.set_xlim(self.xgrid[26], self.xgrid[-1])
-            axis.set_xscale('log')
-            axis.set_title(evolbasis[i], fontsize=16)
+            axis.set_xlim(1e-1, self.xgrid[-1])
+            # axis.set_xlim(self.xgrid[50], self.xgrid[-1])
+            #axis.set_xscale('log')
 
         fig.suptitle("Samples at Iteration %d" % niter)
         fig.savefig(
@@ -328,7 +316,6 @@ class GanTrain:
                         advloss.append(gloss)
                         rdloss.append(r_dloss)
                         fdloss.append(f_dloss)
-                        self.checkpoint.save(file_prefix=check_dir)
 
                     if k % 1000 == 0:
                         # TODO: Fix arguments plot

@@ -10,6 +10,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2DTranspose
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.initializers import Identity
+from tensorflow.keras.initializers import GlorotUniform
 
 from ganpdfs.custom import ConvPDF
 from ganpdfs.custom import ConvXgrid
@@ -26,16 +27,15 @@ def do_nothing(tensor):
     return tensor
 
 
-class WassersteinGanModel:
+class WGanModel:
     """WassersteinGanModel.
     """
 
-    def __init__(self, pdf, params, noise_size, activ, optmz):
+    def __init__(self, pdf, params, activ, optmz):
         self.pdf = pdf
         self.activ = activ
         self.optmz = optmz
         self.params = params
-        self.noise_size = noise_size
         # Get PDF grid info
         self.fl_size = pdf.shape[1]
         self.xg_size = pdf.shape[2]
@@ -117,16 +117,16 @@ class WassersteinGanModel:
         return model
 
 
-class DCNNWassersteinGanModel:
+class DWGanModel:
     """DCNNWassersteinGanModel.
     """
 
-    def __init__(self, pdf, params, noise_size, activ, optmz):
+    def __init__(self, pdf, params, activ, optmz):
         self.pdf = pdf
         self.activ = activ
         self.optmz = optmz
         self.params = params
-        self.noise_size = noise_size
+        self.noise_size = None
         # Get PDF grid info
         self.fl_size = pdf.shape[1]
         self.xg_size = pdf.shape[2]

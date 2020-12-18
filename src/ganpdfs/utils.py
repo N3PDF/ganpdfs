@@ -1,10 +1,13 @@
 # Some useful Functions
 
+import logging
 import numpy as np
 from math import gcd
 from scipy import interpolate
 from scipy.linalg import sqrtm
 from tensorflow.train import Checkpoint
+
+logger = logging.getLogger(__name__)
 
 
 def axes_width(ax, lw=1):
@@ -19,6 +22,56 @@ def axes_width(ax, lw=1):
 
     for axis in ['top', 'bottom', 'left', 'right']:
         ax.spines[axis].set_linewidth(lw)
+
+
+def latent_nosie(pdf, rndgen, s=0.4):
+    """Apply gaussian noise to the latent input.
+
+    Parameters
+    ----------
+    pdf: np.array
+        Input PDF to be noised
+    rndgen:
+        random number generator
+    s: float
+        Intensity of the noise
+    """
+    arrmin = np.min(pdf)
+    arrmax = np.max(pdf)
+    gaussian = rndgen.normal(loc=0, scale=1, size=pdf.shape)
+    reslt = np.clip(pdf * (1 + s * gaussian), arrmin, arrmax)
+    return reslt
+
+
+def latent_sampling(pdf, nb_output, rndgen):
+    """latent_sampling.
+
+    Parameters
+    ----------
+    pdf: np.array
+        Array/Grid of input PDFs
+    nb_output: int
+       Total number of replica
+    rndgen:
+        Random replica generator
+    """
+
+    assert pdf.shape[0] <= nb_output
+    if nb_output is None: return pdf
+    nbgen = nb_output - pdf.shape[0]
+    logger.info("[+] Preparing latent space.")
+    extra_latent = []
+    for n in range(nbgen):
+        selected = []
+        for _ in range(rndgen.integers(1, 4)):
+            select = pdf[rndgen.integers(pdf.shape[0])]
+            selected.append(select)
+        rslt = np.array(selected)
+        rslt = np.sum(rslt, axis=0) / rslt.shape[0]
+        extra_latent.append(rslt)
+    reslt = np.concatenate((pdf, extra_latent), axis=0)
+    freslt = latent_nosie(pdf, rndgen)
+    return freslt
 
 
 def save_checkpoint(generator, critic, adversarial):
@@ -51,7 +104,7 @@ def save_checkpoint(generator, critic, adversarial):
             critic=critic,
             generator=generator,
             adversarial=adversarial
-            )
+    )
     return checkpoint
 
 

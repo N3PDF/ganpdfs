@@ -175,7 +175,7 @@ class InputPDFs:
         lhapdf_grid = [float(i) for i in lhapdf_grid.split()]
         return np.array(lhapdf_grid)
 
-    def custom_xgrid(self, nbpoints):
+    def custom_xgrid(self, nbpoints=1000):
         """Construct a custom xgrid by taking the smallest and largest
         value of the LHAPDF grid and sample the points equally spaced.
 
@@ -195,11 +195,11 @@ class InputPDFs:
         """
         #TODO: Move this function!
 
-        logx = int(nbpoints / 2)
+        logx = int((2 * nbpoints) / 3)
         linx = int(nbpoints - logx)
         xgrid_log = np.logspace(-9, -1, logx + 1)
         xgrid_lin = np.linspace(0.1, 1, linx)
-        xgrid = np.concatenate([xgrid_log[:-1], xgrid_lin]).reshape(nbpoints, 1)
+        xgrid = np.concatenate([xgrid_log[:-1], xgrid_lin], axis=0)
         return xgrid
 
     def build_pdf(self, xgrid):

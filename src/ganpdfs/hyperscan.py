@@ -92,9 +92,9 @@ def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder
 
 
 def hyper_train(params, xpdf, pdf):
-    """Take care of running the hyperparameter scan by designing a search space
-    through which the model tries to find the best architecture that maximizes
-    the figure of merit.
+    """Take care of running the hyperparameter scan by designing a
+    search space through which the model tries to find the best
+    architecture that maximizes the figure of merit.
 
     Parameters
     ----------
@@ -117,7 +117,11 @@ def hyper_train(params, xpdf, pdf):
     # Model Parameters
     # TODO: Do this depending on the parameters instead of generating
     # all of them List of activation funtions
-    activ = {"leakyrelu": LeakyReLU(alpha=0.2), "elu": ELU(alpha=1.0), "relu": ReLU()}
+    activ = {
+        "relu": ReLU(),
+        "elu": ELU(alpha=1.0),
+        "leakyrelu": LeakyReLU(alpha=0.2)
+    }
     # List of optimization functions
     optmz = {
         "sgd": SGD(lr=0.0075),
@@ -127,9 +131,7 @@ def hyper_train(params, xpdf, pdf):
     }
 
     # Train on Input/True pdf
-    xgan_pdfs = GanTrain(
-        xpdf, pdf, NOISE_SIZE, params, activ, optmz, nb_replicas=NB_INPUT_REP,
-    )
+    xgan_pdfs = GanTrain(xpdf, pdf, params, activ, optmz)
 
     # In case one needs to pretrain the Discriminator
     # xgan_pdfs.pretrain_disc(BATCH_SIZE, epochs=4)

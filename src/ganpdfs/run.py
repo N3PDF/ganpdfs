@@ -1,4 +1,4 @@
-# This file contains the main driver of the wganpdfs code
+# This file contains the main driver of the ganpdfs code
 
 import os
 import shutil
@@ -23,7 +23,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Random Seeds
-np.random.seed(0)
 tf.random.set_seed(0)
 
 
@@ -40,7 +39,7 @@ def splash():
     print(info + '\033[0m \033[97m')
 
 
-def positive_int(value):
+def posint(value):
     """Checks that a given number is positive.
     """
 
@@ -57,24 +56,13 @@ def argument_parser():
     """
     # read command line arguments
     parser = argparse.ArgumentParser(description="Train a PDF GAN.")
-    parser.add_argument("runcard", help="A json file with the setup.")
-    parser.add_argument("-o", "--output", help="The output folder.", required=True)
     parser.add_argument("-f", "--force", action="store_true")
-    parser.add_argument("--hyperopt", type=int, help="Enable hyperopt scan.")
-    parser.add_argument("--cluster", help="Enable cluster scan.")
-    parser.add_argument(
-        "-n",
-        "--nreplicas",
-        type=positive_int,
-        help="Define the number of input replicas.",
-    )
-    parser.add_argument(
-        "-k",
-        "--fake",
-        type=positive_int,
-        help="Define the number of output replicas."
-    )
-    # parser.add_argument('--timeline', action='store_true')
+    parser.add_argument("runcard", help="A json file with the setup.")
+    parser.add_argument("-c", "--cluster", help="Enable cluster scan.")
+    parser.add_argument("-o", "--output", help="The output folder.", required=True)
+    parser.add_argument("-s", "--hyperopt", type=int, help="Enable hyperopt scan.")
+    parser.add_argument("-k", "--fake", type=posint, help="Number of output replicas.")
+    parser.add_argument("-n", "--nreplicas", type=posint, help="Number of input replicas.")
     args = parser.parse_args()
 
     # check the runcard
@@ -90,8 +78,7 @@ def argument_parser():
         shutil.rmtree(args.output)
         os.mkdir(args.output)
     else:
-        raise Exception(f'{args.output} already exists, use "--force" to overwrite.')
-
+        raise Exception(f'{args.output} exists, use "--force" to overwrite.')
     return args
 
 
@@ -108,46 +95,36 @@ def main():
     logger.info("Loading runcard.")
     hps = load_yaml(args.runcard)
     hps["save_output"] = out
+    hps["tot_replicas"] = args.fake
+    nf = hps.get("nf", 6)                        # Choose Number of flavours
+    qvalue = hps.get("q", 1.65)                  # Choose value of Initial
 
-    # Prepare Grids
-    # One-time Generation
-    nf = hps.get("nf", 6)            # Choose Number of flavours
-    qvalue = hps.get("q", 1.65)      # Choose value of Initial
-
-    # Generate PDF grids
+    # Generate PDF grids (one time generation)
     logger.info("Loading input PDFs.")
     init_pdf = InputPDFs(hps["pdf"], qvalue, nf)
     # Load the x-Grid
     # Choose the LHAPDF x-grid by default
     hps["pdfgrid"] = init_pdf.extract_xgrid()
-    if hps["x_grid"] == "standard":
-        x_grid = init_pdf.custom_xgrid()
+    if hps["x_grid"] == "lhapdf":
+        x_grid = hps["pdfgrid"]
     elif hps["x_grid"] == "custom":
         x_grid = XNodes().build_xgrid()
-    elif hps["x_grid"] == "lhapdf":
-        x_grid = hps["pdfgrid"]
+    elif hps["x_grid"] == "standard":
+        x_grid = init_pdf.custom_xgrid()
     else:
         raise ValueError("{} is not a valid grid".format(hps["x_grid"]))
     pdf = init_pdf.build_pdf(x_grid)
     pdf_lhapdf = init_pdf.lhaPDF_grids()
-    pdfs = [pdf, pdf_lhapdf]
+    pdfs = (pdf, pdf_lhapdf)
 
     # Define the number of input replicas
-    if args.nreplicas is None:
-        hps["input_replicas"] = pdf.shape[0]
-    else:
-        hps["input_replicas"] = args.nreplicas
+    hps["input_replicas"] = pdf.shape[0] if args.nreplicas is None else args.nreplicas
+    synthetics = args.fake - hps["input_replicas"]
+    hps["out_replicas"] = hps["input_replicas"] if args.fake is None else synthetics
 
-    # Define the number of output replicas
-    if args.fake is None:
-        hps["out_replicas"] = hps["input_replicas"]
-    else:
-        # Generate the missing replicas
-        hps["out_replicas"] = args.fake - hps["input_replicas"]
-
-    # If hyperscan is set true
+    # If hyperscan is True
     if args.hyperopt:
-        hps["scan"] = True
+        hps["scan"] = True  # Enable hyperscan
 
         def fn_hyper_train(params):
             return hyper_train(params, x_grid, pdfs)
@@ -157,8 +134,7 @@ def main():
             fn_hyper_train, hps, args.hyperopt, args.cluster, out
         )
 
-    # Run the best Model and output log
+    # Run the best Model and output logs
     hps["scan"] = False
     hps["verbose"] = True
-
     loss = hyper_train(hps, x_grid, pdfs)
