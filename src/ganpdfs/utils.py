@@ -56,9 +56,9 @@ def latent_sampling(pdf, nb_output, rndgen):
         Random replica generator
     """
 
-    assert pdf.shape[0] <= nb_output
-    if nb_output is None: return pdf
-    nbgen = nb_output - pdf.shape[0]
+    # assert pdf.shape[0] <= nb_output
+    if nb_output is None: nbgen = pdf.shape[0]
+    else: nbgen = nb_output
     logger.info("[+] Preparing latent space.")
     extra_latent = []
     for n in range(nbgen):
@@ -69,9 +69,39 @@ def latent_sampling(pdf, nb_output, rndgen):
         rslt = np.array(selected)
         rslt = np.sum(rslt, axis=0) / rslt.shape[0]
         extra_latent.append(rslt)
-    freslt = np.concatenate((pdf, extra_latent), axis=0)
-    freslt = latent_nosie(freslt, rndgen)
+    freslt = np.array(extra_latent)
     return freslt
+
+
+# def latent_sampling(pdf, nb_output, rndgen):
+#     """latent_sampling.
+# 
+#     Parameters
+#     ----------
+#     pdf: np.array
+#         Array/Grid of input PDFs
+#     nb_output: int
+#        Total number of replica
+#     rndgen:
+#         Random replica generator
+#     """
+# 
+#     assert pdf.shape[0] <= nb_output
+#     if nb_output is None: return pdf
+#     nbgen = nb_output - pdf.shape[0]
+#     logger.info("[+] Preparing latent space.")
+#     extra_latent = []
+#     for n in range(nbgen):
+#         selected = []
+#         for _ in range(rndgen.integers(1, 4)):
+#             select = pdf[rndgen.integers(pdf.shape[0])]
+#             selected.append(select)
+#         rslt = np.array(selected)
+#         rslt = np.sum(rslt, axis=0) / rslt.shape[0]
+#         extra_latent.append(rslt)
+#     freslt = np.concatenate((pdf, extra_latent), axis=0)
+#     freslt = latent_nosie(freslt, rndgen)
+#     return freslt
 
 
 def save_checkpoint(generator, critic, adversarial):

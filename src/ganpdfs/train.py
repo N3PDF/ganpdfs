@@ -317,7 +317,7 @@ class GanTrain:
                         rdloss.append(r_dloss)
                         fdloss.append(f_dloss)
 
-                    if k % 1000 == 0:
+                    if k % 200 == 0:
                         # TODO: Fix arguments plot
                         self.plot_generated_pdf(
                             self.generator,

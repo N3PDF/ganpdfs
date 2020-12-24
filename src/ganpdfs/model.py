@@ -61,35 +61,63 @@ class WGanModel:
             kernel_initializer=initializer
         )(g_lambd)
         return Model(g_input, g_dense)
-        
+
     def critic_model(self):
         """critic_model.
         """
+
+        dnn_dim = self.params["d_nodes"]
         # Weight Constraints
         const = ClipConstraint(1)
-        closs = "binary_crossentropy"
-        dnn_dim = self.params["d_nodes"]
-        critic_opt = self.optmz.get(self.c_optmz)
         # Discriminator Input
         d_input = (self.fl_size, self.xg_size)
-        d_hidden = Dense(
-            dnn_dim,
-            kernel_constraint=const
-        )(d_input)
-        d_hidden = BatchNormalization()(d_hidden)
-        d_hidden = self.activ.get(self.c_activ)(d_hidden)
+        d_model = Sequential(name="Critic")
+        # 1st Layer
+        d_model.add(Dense(dnn_dim, kernel_constraint=const, input_shape=d_input))
+        d_model.add(BatchNormalization())
+        d_model.add(self.activ.get(self.c_activ))
+        # Loop over the number of Layers
+        # by decreasing the size at each iterations
         for it in range(1, self.d_size + 1):
-            d_hidden = Dense(
-                dnn // (2 ** it),
-                kernel_constraint=const
-            )(d_hidden)
-            d_hidden = BatchNormalization()(d_hidden)
-            d_hidden = self.activ.get(self.c_activ)(d_hidden)
-        d_flatten = Flatten()(d_hidden)
-        d_output = Dense(1)(d_flatten)
-        d_model = Model(d_input, d_output, name="Critic")
-        d_model.compile(loss=closs, optimizer=critic_opt)
+            d_model.add(Dense(dnn_dim // (2 ** it), kernel_constraint=const))
+            d_model.add(BatchNormalization())
+            d_model.add(self.activ.get(self.c_activ))
+        # Flatten and Output Logit
+        d_model.add(Flatten())
+        d_model.add(Dense(1))
+        # Compile Critic Model
+        critic_opt = self.optmz.get(self.c_optmz)
+        d_model.compile(loss="binary_crossentropy", optimizer=critic_opt)
         return d_model
+        
+    # def critic_model(self):
+    #     """critic_model.
+    #     """
+    #     # Weight Constraints
+    #     const = ClipConstraint(1)
+    #     closs = "binary_crossentropy"
+    #     dnn_dim = self.params["d_nodes"]
+    #     critic_opt = self.optmz.get(self.c_optmz)
+    #     # Discriminator Input
+    #     d_input = (self.fl_size, self.xg_size)
+    #     d_hidden = Dense(
+    #         dnn_dim,
+    #         kernel_constraint=const
+    #     )(d_input)
+    #     d_hidden = BatchNormalization()(d_hidden)
+    #     d_hidden = self.activ.get(self.c_activ)(d_hidden)
+    #     for it in range(1, self.d_size + 1):
+    #         d_hidden = Dense(
+    #             dnn // (2 ** it),
+    #             kernel_constraint=const
+    #         )(d_hidden)
+    #         d_hidden = BatchNormalization()(d_hidden)
+    #         d_hidden = self.activ.get(self.c_activ)(d_hidden)
+    #     d_flatten = Flatten()(d_hidden)
+    #     d_output = Dense(1)(d_flatten)
+    #     d_model = Model(d_input, d_output, name="Critic")
+    #     d_model.compile(loss=closs, optimizer=critic_opt)
+    #     return d_model
 
     def adversarial_model(self, generator, critic):
         """adversarial_model.
