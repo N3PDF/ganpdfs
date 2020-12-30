@@ -243,6 +243,7 @@ class GanTrain:
             f"{folder}/iterations/pdf_generated_at_{niter}.png",
             dpi=100
         )
+        plt.close("all")
 
     def train(self, nb_epochs=5000, batch_size=64):
         """Train the GANs networks for a given batch size. The training is done in
@@ -308,6 +309,8 @@ class GanTrain:
                     noise, y_gen = self.sample_output_noise(batch_size)
                     gloss = self.adversarial.train_on_batch(noise, y_gen)
 
+                # Get weights
+                weights = self.generator.get_layer('dense_3').get_weights()
                 iter_range.set_postfix(Disc=r_dloss+f_dloss, Adv=gloss)
 
                 if not self.hyperopt:
@@ -317,7 +320,7 @@ class GanTrain:
                         rdloss.append(r_dloss)
                         fdloss.append(f_dloss)
 
-                    if k % 200 == 0:
+                    if k % 100 == 0:
                         # TODO: Fix arguments plot
                         self.plot_generated_pdf(
                             self.generator,
@@ -327,6 +330,8 @@ class GanTrain:
                         )
 
         # Save Losses
+        import pdb
+        pdb.set_trace()
         if not self.hyperopt:
             loss_info = [{"rdloss": rdloss, "fdloss": fdloss, "advloss": advloss}]
             output_losses = self.params.get("save_output")
