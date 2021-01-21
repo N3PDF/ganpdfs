@@ -6,19 +6,23 @@ import logging
 import argparse
 import numpy as np
 
-# Silent tf for the time being
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+# Set tensorflow log level to error only
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
 
 import tensorflow as tf
+from rich.table import Table
+from rich.style import Style
+from rich.console import Console
 from ganpdfs.pdformat import XNodes
 from ganpdfs.pdformat import InputPDFs
 from ganpdfs.hyperscan import load_yaml
 from ganpdfs.hyperscan import hyper_train
 from ganpdfs.hyperscan import run_hyperparameter_scan
 
+console = Console()
 logging.basicConfig(
         level=logging.INFO,
-        format="\033[0;32m[%(levelname)s]\033[97m %(message)s"
+        format="\033[0;32m[%(levelname)s]\033[97m %(message)s",
     )
 logger = logging.getLogger(__name__)
 
@@ -26,28 +30,29 @@ logger = logging.getLogger(__name__)
 tf.random.set_seed(0)
 
 
+NF = 6      # Number of flavours
+Q0 = 1.65   # Initial energy scale
+
+
 def splash():
-    info = """\033[34m
-+-------------------------------------------------------------------------+
-|𝖌𝖆𝖓𝖕𝖉𝖋𝖘:                                                                 |
-|-------                                                                  |
-|Generative Adversarial Neural Networks (GANs) for PDF replicas.          |
-|https://n3pdf.github.io/ganpdfs/                                         |
-|© N3PDF                                                                  |
-+-------------------------------------------------------------------------+ 
-           """
-    print(info + '\033[0m \033[97m')
+    """Splash information."""
+
+    style = Style(color="blue")
+    logo = Table(show_header=True, header_style="bold blue", style=style)
+    logo.add_column("𝖌𝖆𝖓𝖕𝖉𝖋𝖘", justify="center", width=80)
+    logo.add_row("[bold blue]Generative Adversarial Neural Networks (GANs) for PDF replicas.")
+    logo.add_row("[bold blue]https://n3pdf.github.io/ganpdfs/")
+    logo.add_row("[bold blue]© N3PDF 2021")
+    logo.add_row("[bold blue]Authors: Stefano Carrazza, Juan E. Cruz-Martinez, Tanjona R. Rabemananjara")
+    console.print(logo)
 
 
 def posint(value):
-    """Checks that a given number is positive.
-    """
+    """Checks that a given number is positive."""
 
     ivalue = int(value)
     if ivalue <= 0:
-        raise argparse.ArgumentTypeError(
-            f"Negative values are not allowed, received: {value}"
-        )
+        raise argparse.ArgumentTypeError(f"Negative values are not allowed: {value}")
     return ivalue
 
 
@@ -69,7 +74,7 @@ def argument_parser():
     if not os.path.isfile(args.runcard):
         raise ValueError("Invalid runcard: not a file.")
     if args.force:
-        logger.warning("Running with --force will overwrite existing model.")
+        logger.warning("Running with --force will overwrite existing results.")
 
     # prepare the output folder
     if not os.path.exists(args.output):
@@ -92,42 +97,54 @@ def main():
     # Copy runcard to output folder
     shutil.copyfile(args.runcard, f"{out}/input-runcard.json")
 
-    logger.info("Loading runcard.")
     hps = load_yaml(args.runcard)
     hps["save_output"] = out
     hps["tot_replicas"] = args.fake
-    nf = hps.get("nf", 6)                        # Choose Number of flavours
-    qvalue = hps.get("q", 1.65)                  # Choose value of Initial
+    nf = hps.get("nf", NF)
+    qvalue = hps.get("q", Q0)
 
     # Generate PDF grids (one time generation)
-    logger.info("Loading input PDFs.")
+    console.print("\n• Computing PDF grids with the following parameters:", style="bold blue")
     init_pdf = InputPDFs(hps["pdf"], qvalue, nf)
     # Load the x-Grid
     # Choose the LHAPDF x-grid by default
     hps["pdfgrid"] = init_pdf.extract_xgrid()
     if hps["x_grid"] == "lhapdf":
-        x_grid = hps["pdfgrid"]
+        xgrid = hps["pdfgrid"]
     elif hps["x_grid"] == "custom":
-        x_grid = XNodes().build_xgrid()
+        xgrid = XNodes().build_xgrid()
     elif hps["x_grid"] == "standard":
-        x_grid = init_pdf.custom_xgrid()
+        xgrid = init_pdf.custom_xgrid()
     else:
         raise ValueError("{} is not a valid grid".format(hps["x_grid"]))
-    pdf = init_pdf.build_pdf(x_grid)
+
+    # Print summary table of PDF grids
+    summary = Table(show_header=True, header_style="bold blue")
+    summary.add_column("Parameters", justify="left", width=30)
+    summary.add_column("Description", justify="center", width=40)
+    summary.add_row("Prior PDF set", f"{hps['pdf']}")
+    summary.add_row("Input energy Q0", f"{Q0} GeV")
+    summary.add_row(
+        "x-grid size",
+        f"{xgrid.shape[0]} points, x=({xgrid[0]:.4e}, {xgrid[-1]:.4e})"
+    )
+    console.print(summary)
+
+    pdf = init_pdf.build_pdf(xgrid)
     pdf_lhapdf = init_pdf.lhaPDF_grids()
     pdfs = (pdf, pdf_lhapdf)
 
     # Define the number of input replicas
     hps["input_replicas"] = pdf.shape[0] if args.nreplicas is None else args.nreplicas
-    synthetics = args.fake - hps["input_replicas"]
-    hps["out_replicas"] = hps["input_replicas"] if args.fake is None else synthetics
+    hps["out_replicas"] = hps["input_replicas"] if args.fake is None else \
+            args.fake - hps["input_replicas"]
 
     # If hyperscan is True
     if args.hyperopt:
         hps["scan"] = True  # Enable hyperscan
 
         def fn_hyper_train(params):
-            return hyper_train(params, x_grid, pdfs)
+            return hyper_train(params, xgrid, pdfs)
 
         # Run hyper scan
         hps = run_hyperparameter_scan(
@@ -137,4 +154,4 @@ def main():
     # Run the best Model and output logs
     hps["scan"] = False
     hps["verbose"] = True
-    loss = hyper_train(hps, x_grid, pdfs)
+    loss = hyper_train(hps, xgrid, pdfs)

@@ -20,11 +20,28 @@ from setuptools import find_packages
 PACKAGE = "ganpdfs"
 
 # Used for pytest and code coverage
-TESTS_REQUIEREMENTS = ["pytest", "pytest-cov"]
-# Depending on the documents more dependencies can be added
-DOCS_REQUIEREMENTS = ["recommonmark", "sphinx_rtd_theme", "sphinxcontrib-bibtex"]
+TESTS_REQUIEREMENTS = [
+        "pylint",
+        "pytest",
+        "pytest-cov",
+        "pytest-env",
+        "pygit2",
+        "semver"
+    ]
+
 # Dependencies for the packages
-PACKAGE_REQUIEREMENTS = ["tqdm", "hyperopt"]
+PACKAGE_REQUIEREMENTS = [
+        "tqdm",
+        "hyperopt",
+        "rich"
+    ]
+
+# Depending on the documents more dependencies can be added
+DOCS_REQUIEREMENTS = [
+        "recommonmark",
+        "sphinx_rtd_theme",
+        "sphinxcontrib-bibtex"
+    ]
 
 # Check if LHAPDF is installed
 try:

@@ -7,6 +7,9 @@ from subprocess import PIPE
 from subprocess import Popen
 
 
+lhapdf.setVerbosity(0)
+
+
 class XNodes:
 
     """Custom x-grid. This might be useful in case there are some
@@ -167,8 +170,7 @@ class InputPDFs:
         w = open(file_path, "r")
         # Skip the head
         for _ in range(0, 10):
-            if "--" in w.readline():
-                break
+            if "--" in w.readline(): break
         # Fetch x-grid
         lhapdf_info = w.readline()
         lhapdf_grid = lhapdf_info.replace("\n", "")

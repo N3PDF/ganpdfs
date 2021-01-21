@@ -5,9 +5,29 @@ import numpy as np
 from math import gcd
 from scipy import interpolate
 from scipy.linalg import sqrtm
+from rich.console import Console
 from tensorflow.train import Checkpoint
 
+console = Console()
 logger = logging.getLogger(__name__)
+
+
+def do_nothing(tensor):
+    """Function that does nothing.
+
+    Parameters
+    ----------
+    tensor: tf.tensor
+        Tensor
+    """
+    return tensor
+
+
+def gan_summary(critic, generator, adversarial):
+    console.print("\n• GanPDFs Architecture:\n", style="bold blue")
+    critic.summary()
+    generator.summary()
+    adversarial.summary()
 
 
 def axes_width(ax, lw=1):
@@ -24,7 +44,7 @@ def axes_width(ax, lw=1):
         ax.spines[axis].set_linewidth(lw)
 
 
-def latent_nosie(pdf, rndgen, s=0.4):
+def latent_noise(pdf, rndgen, s=0.4):
     """Apply gaussian noise to the latent input.
 
     Parameters
@@ -59,7 +79,6 @@ def latent_sampling(pdf, nb_output, rndgen):
     # assert pdf.shape[0] <= nb_output
     if nb_output is None: nbgen = pdf.shape[0]
     else: nbgen = nb_output
-    logger.info("[+] Preparing latent space.")
     extra_latent = []
     for n in range(nbgen):
         selected = []
@@ -73,37 +92,6 @@ def latent_sampling(pdf, nb_output, rndgen):
     return freslt
 
 
-# def latent_sampling(pdf, nb_output, rndgen):
-#     """latent_sampling.
-# 
-#     Parameters
-#     ----------
-#     pdf: np.array
-#         Array/Grid of input PDFs
-#     nb_output: int
-#        Total number of replica
-#     rndgen:
-#         Random replica generator
-#     """
-# 
-#     assert pdf.shape[0] <= nb_output
-#     if nb_output is None: return pdf
-#     nbgen = nb_output - pdf.shape[0]
-#     logger.info("[+] Preparing latent space.")
-#     extra_latent = []
-#     for n in range(nbgen):
-#         selected = []
-#         for _ in range(rndgen.integers(1, 4)):
-#             select = pdf[rndgen.integers(pdf.shape[0])]
-#             selected.append(select)
-#         rslt = np.array(selected)
-#         rslt = np.sum(rslt, axis=0) / rslt.shape[0]
-#         extra_latent.append(rslt)
-#     freslt = np.concatenate((pdf, extra_latent), axis=0)
-#     freslt = latent_nosie(freslt, rndgen)
-#     return freslt
-
-
 def save_checkpoint(generator, critic, adversarial):
     """Save the training information into a file. This includes but
     not limited to the information on the wieghts and the biases of
@@ -111,7 +99,7 @@ def save_checkpoint(generator, critic, adversarial):
     different neural networks (generator, critic/discriminator,
     adversarial) and the information on each one of them are saved.
 
-    For more information on the constructor `Checkpoint` from 
+    For more information on the constructor `Checkpoint` from
     the module `tensorflow.train`, refer to
     https://www.tensorflow.org/api_docs/python/tf/train/Checkpoint
 
@@ -126,7 +114,7 @@ def save_checkpoint(generator, critic, adversarial):
 
     Returns
     -------
-    A load status object, which can be used to make assertions about 
+    A load status object, which can be used to make assertions about
     the status of a checkpoint restoration
     """
 
@@ -150,7 +138,7 @@ def factorize_number(number):
 
     Parameters
     ----------
-    number : int 
+    number : int
         number to be factorized
 
     Returns
@@ -186,13 +174,13 @@ def factorize_number(number):
 
 
 def construct_cnn(number, nb_layer):
-    """Factorize_number using Pollard's rho algorithm that is defined by the
-    `factorize_number` method. This is used in order to define the dimension 
-    of the `strides` for performing the convolution in the model class 
-    `DCNNWassersteinGanModel`. 
+    """Factorize_number using Pollard's rho algorithm that is defined
+    by the `factorize_number` method. This is used in order to define
+    the dimension of the `strides` for performing the convolution in
+    the model class `DCNNWassersteinGanModel`.
 
-    The issue is the following: given a pair of two integers (m, n) such that 
-    n < m, how can we decompose m into n factors. 
+    The issue is the following: given a pair of two integers (m, n)
+    such that n < m, how can we decompose m into n factors.
 
     Example:
         Given a pair (70, 3), we have [7,5,2]
@@ -234,10 +222,10 @@ def construct_cnn(number, nb_layer):
     return cnn_dim
 
 
-def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid, interpol_type="Intperp1D"):
-    """Interpolate the generated output according to the x-grid in order to 
-    match with the LHAPDF grid-format. It uses the `interpolate` module from
-    `scipy`. For more details, refere to
+def interpolate(fake_pdf, gan_grid, lhapdf_grid, mthd="Intperp1D"):
+    """Interpolate the generated output according to the x-grid in
+    order to match with the LHAPDF grid-format. It uses the `interpolate`
+    module from `scipy`. For more details, refere to
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html
 
     Parameters
@@ -258,7 +246,7 @@ def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid, interpol_type="Intperp1D")
     for replica in fake_pdf:
         fl_space = []
         for fl in replica:
-            if interpol_type == "Intperp1D":
+            if mthd == "Intperp1D":
                 f_interpol = interpolate.interp1d(
                         gan_grid,
                         fl,
@@ -266,16 +254,16 @@ def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid, interpol_type="Intperp1D")
                         fill_value="extrapolate"
                 )
                 new_grid = f_interpol(lhapdf_grid)
-            elif interpol_type == "SplineEv":
+            elif mthd == "SplineEv":
                 f_interpol = interpolate.splrep(gan_grid, fl, s=0)
                 new_grid = interpolate.splev(lhapdf_grid, f_interpol, der=0)
-            elif interpol_type == "CubicSpline":
+            elif mthd == "CubicSpline":
                 f_interpol = interpolate.CubicSpline(gan_grid, fl)
                 new_grid = f_interpol(lhapdf_grid)
-            elif interpol_type == "InterpSpline":
+            elif mthd == "InterpSpline":
                 f_interpol = interpolate.make_interp_spline(gan_grid, fl)
                 new_grid = f_interpol(lhapdf_grid)
-            elif interpol_type == "UnivariateSpline":
+            elif mthd == "UnivariateSpline":
                 weights = np.isnan(fl)
                 fl[weights] = 0.
                 f_interpol = interpolate.UnivariateSpline(
@@ -286,15 +274,16 @@ def interpolate_grid(fake_pdf, gan_grid, lhapdf_grid, interpol_type="Intperp1D")
                 f_interpol.set_smoothing_factor(0.01)
                 new_grid = f_interpol(lhapdf_grid)
             else:
-                raise ValueError(f"{interpol_type} is not an interpolation.")
+                raise ValueError(f"{mthd} is not an interpolation.")
             fl_space.append(new_grid)
         final_grid.append(fl_space)
     return np.array(final_grid)
 
 
 def smm(prior, generated):
-    """Similarity Metric Measure that measures the quality of the generated PDF replicas
-    using the `Fréchet Inception Distance` (FID).
+    """Similarity Metric Measure that measures the quality of the
+    generated PDF replicas using the `Fréchet Inception Distance`
+    (FID).
 
     TODO: Check how the total/final FIDs is computed.
 
@@ -324,17 +313,19 @@ def smm(prior, generated):
     fid_arr = np.zeros(dim[1])
 
     def compute_fid(fl_prior, fl_generated):
-        """Measure the quality of the generated PDF using the `Fréchet Inception Distance`
-        (FID). The Frechet distance between two multivariate Gaussians X_1 ~ N(mu_1, C_1)
-        and X_2 ~ N(mu_2, C_2) is:
-            d^2 = ||mu_1 - mu_2||^2 + Tr(C_1 + C_2 - 2*sqrt(C_1*C_2)).
+        """Measure the quality of the generated PDF using the `Fréchet
+        Inception Distance` (FID). The Frechet distance between two
+        multivariate Gaussians X_1 ~ N(mu_1, C_1) and X_2 ~ N(mu_2, C_2)
+        is:
+            d^2 = ||mu_1 - mu_2||^2 + Tr(C_1 + C_2 - 2 * sqrt(C_1 * C_2)).
 
-        If the generated PDF replica is exactly the same as the prior, the value of the FID 
-        is zero; that means that the smaller the value of the FID is, the similar the generated 
-        replica is to the prior.
+        If the generated PDF replica is exactly the same as the prior,
+        the value of the FID is zero; that means that the smaller the
+        value of the FID is, the similar the generated replica is to
+        the prior.
 
-        For details about the FID's Inception Score measure, refer to the following:
-        https://arxiv.org/abs/1706.08500
+        For details about the FID's Inception Score measure, refer to
+        the following: https://arxiv.org/abs/1706.08500
 
         Parameters
         ----------

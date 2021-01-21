@@ -9,20 +9,22 @@ from tqdm import trange
 from ganpdfs.utils import smm
 from numpy.random import PCG64
 from numpy.random import Generator
+
 from ganpdfs.model import WGanModel
-from ganpdfs.utils import axes_width
 from ganpdfs.model import DWGanModel
+from ganpdfs.utils import axes_width
+from ganpdfs.utils import interpolate
+from ganpdfs.utils import gan_summary
 from ganpdfs.writer import WriterWrapper
-from ganpdfs.utils import interpolate_grid
 from ganpdfs.utils import latent_sampling
 
 logger = logging.getLogger(__name__)
 
 
 class GanTrain:
-    """Training class that controls the training of the GANs. It sets the
-    interplay between the two different networks (Discriminator & Generator)
-    and the generator.
+    """Training class that controls the training of the GANs. It sets
+    the interplay between the two different networks (Discriminator &
+    Generator) and the generator.
 
     Parameters
     ----------
@@ -40,44 +42,46 @@ class GanTrain:
         self.hyperopt = params.get("scan")
         self.rndgen = Generator(PCG64(seed=0))
         self.folder = params.get("save_output")
+
+        # Choose architecture
+        if params.get("architecture") == "cnn":
+            self.pdf = pdf
+            self.gan = WGanModel(self.pdf, params, activ, optmz)
+        else:
+            raise NotImplementedError("Not implemented yet!")
+            # self.pdf = pdf.reshape(pdf.shape + (1,)))
+            # self.gan = DWGanModel(self.pdf, params, activ, optmz)
+
+        # Initialize Models
+        self.critic = self.gan.critic_model()
+        self.generator = self.gan.generator_model()
+        self.adversarial = self.gan.adversarial_model(
+            self.generator, self.critic
+        )
+        # Prepare latent space
         self.latent_pdf = latent_sampling(
                 pdf,
                 params.get("tot_replicas"),
                 self.rndgen
         )
 
-        # Choose architecture
-        if params.get("architecture") == "dcnn":
-            raise NotImplementedError("Not implemented yet!")
-            # self.pdf = pdf.reshape((pdf.shape[0], pdf.shape[1], pdf.shape[2], 1))
-            # self.gan = DWGanModel(self.pdf, params, activ, optmz)
-        else:
-            self.pdf = pdf
-            self.gan = WGanModel(self.pdf, params, activ, optmz)
-
-        # Initialize Models
-        self.critic = self.gan.critic_model()
-        self.generator = self.gan.generator_model()
-        self.adversarial = self.gan.adversarial_model(self.generator, self.critic)
-
         # Print Summary when not in Hyperopt
         if not self.hyperopt:
-            self.critic.summary()
-            self.generator.summary()
-            self.adversarial.summary()
+            gan_summary(self.critic, self.generator, self.adversarial)
 
-    def generate_real_samples(self, half_batch_size):
-        """Prepare the real samples. This samples a half-batch of real dataset and
-        assign to them target labels (-1) indicating that the samples are reals.
+    def real_samples(self, half_batch):
+        """Prepare the real samples. This samples a half-batch of real
+        dataset and assign to them target labels (-1) indicating that
+        the samples are reals.
 
         Parameters
         ----------
-        half_batch_size : int
+        half_batch : int
             dimension of the half batch
 
         Returns
         -------
-        tuple(np.array, np.array) 
+        tuple(np.array, np.array)
             containing the random real samples and the target
         labels
         """
@@ -89,43 +93,43 @@ class GanTrain:
         #                     ^_________________________________|   #
         #                          TUNING / BACKPROPAGATION         #
         #############################################################
-        pdf_index = self.rndgen.integers(0, self.pdf.shape[0], half_batch_size)
+        pdf_index = self.rndgen.integers(0, self.pdf.shape[0], half_batch)
         pdf_batch = self.pdf[pdf_index]
         # Use (-1) as label for true pdfs
-        y_disc = -np.ones((half_batch_size, 1))
+        y_disc = -np.ones((half_batch, 1))
         return pdf_batch, y_disc
 
-    def sample_latent_space(self, half_batch_size):
+    def sample_latent_space(self, half_batch):
         """Construct the random input noise that gets fed into the generator.
 
         Parameters
         ----------
-        half_batch_size : int
+        half_batch : int
             dimension of the half batch
 
         Returns
         -------
-        np.array(float) 
+        np.array(float)
             array of random numbers
         """
         # Generate points in the latent space
-        pdf_index = self.rndgen.integers(0, self.pdf.shape[0], half_batch_size)
+        pdf_index = self.rndgen.integers(0, self.pdf.shape[0], half_batch)
         pdf_as_latent = self.latent_pdf[pdf_index]
-        assert pdf_as_latent.shape == (half_batch_size, self.pdf.shape[1], self.pdf.shape[2])
+        assert pdf_as_latent.shape == (half_batch, self.pdf.shape[1], self.pdf.shape[2])
         return pdf_as_latent
 
-    def generate_fake_samples(self, generator, half_batch_size):
-        """Generate fake samples from the Generator. `generate_fake_samples`
+    def fake_samples(self, generator, half_batch):
+        """Generate fake samples from the Generator. `fake_samples`
         takes input from the latent space and generate synthetic dataset.
         The synthetic dataset are assigned with target labels (1). The
-        output of this is then gets fed to the Critic/Discriminator and used 
-        to train the later.
+        output of this is then gets fed to the Critic/Discriminator and
+        used to train the later.
 
         Parameters
         ----------
-        generator : ganpdfs.model.WassersteinGanModel.generator
+        generator : ganpdfs.model.WGanModel.generator
             generator neural networks
-        half_batch_size : int
+        half_batch : int
             dimension of the half batch
 
 
@@ -135,7 +139,7 @@ class GanTrain:
             containing samples from the generated data and the target
             labels
         """
-        
+
         #############################################################
         # Training Description:                                     #
         # --------------------                                      #
@@ -143,10 +147,10 @@ class GanTrain:
         #                     ^_________________________________|   #
         #                          TUNING / BACKPROPAGATION         #
         #############################################################
-        noise = self.sample_latent_space(half_batch_size)
+        noise = self.sample_latent_space(half_batch)
         pdf_fake = generator.predict(noise)
         # Use (1) as label for fake pdfs
-        y_disc = np.ones((half_batch_size, 1))
+        y_disc = np.ones((half_batch, 1))
         return pdf_fake, y_disc
 
     def sample_output_noise(self, batch_size):
@@ -175,9 +179,9 @@ class GanTrain:
         return noise, y_gen
 
     def plot_generated_pdf(self, generator, nb_output, folder, niter):
-        """Generate grid-plots at a given iteration throughout the training. In each
-        grid is compared the generated dataset against the real one for a specific
-        flavor. The plots are then saved into a folder.
+        """Generate grid-plots at a given iteration throughout the training.
+        In each grid is compared the generated dataset against the real one
+        for a specific flavor. The plots are then saved into a folder.
 
         Parameters
         ----------
@@ -197,16 +201,7 @@ class GanTrain:
         output_folder.mkdir(exist_ok=True)
 
         # Generate Fake Samples
-        generated_pdf, _ = self.generate_fake_samples(generator, nb_output)
-
-        # Interpolates
-        # xgrid = self.params.get("pdfgrid")
-        # interpol_fake = interpolate_grid(
-        #         generated_pdf,
-        #         self.xgrid,
-        #         xgrid,
-        #         interpol_type="Intperp1D"
-        # )
+        generated_pdf, _ = self.fake_samples(generator, nb_output)
 
         # Initialize Grid Plots
         fig, axes = plt.subplots(ncols=2, nrows=3, figsize=[20, 26])
@@ -246,19 +241,21 @@ class GanTrain:
         plt.close("all")
 
     def train(self, nb_epochs=5000, batch_size=64):
-        """Train the GANs networks for a given batch size. The training is done in
-        such a way that the training of the generator and the critic/discriminator
-        is well balanced (more details to be added).
+        """Train the GANs networks for a given batch size. The training
+        is done in such a way that the training of the generator and the
+        critic/discriminator is well balanced (more details to be added).
 
-        In order to to be able to evolve the generated grids, the format of the x-grid
-        has to be the same as the default x-grid in the central replicas file. If this
-        is no the case, then this function also performs the interpolation.
+        In order to to be able to evolve the generated grids, the format
+        of the x-grid has to be the same as the default x-grid in the
+        central replicas file. If this is no the case, then this function
+        also performs the interpolation.
 
-        The grids are then written into a file using the `WriterWrapper` module.
+        The grids are then written into a file using the `WriterWrapper`
+        module.
 
-        In case `hyperopt` is on, the similarity metric--that is used as a sort of 
-        figrue of merit to assess the performance of the model--is computed. This
-        is afterwards used by the 'hyperscan' module.
+        In case `hyperopt` is on, the similarity metric--that is used as
+        a sort of figrue of merit to assess the performance of the model
+        --is computed. This is afterwards used by the 'hyperscan' module.
 
         Parameters
         ----------
@@ -278,16 +275,13 @@ class GanTrain:
         nb_steps = nb_epochs
         #nb_steps = batch_per_epoch * nb_epochs
         if batch_size < 2:
-            half_batch_size = 1
+            half_batch = 1
         else:
-            half_batch_size = int(batch_size / 2)
+            half_batch = int(batch_size / 2)
 
-        # Initialize Losses storing and checkpoint
-        # folder path.
-        rdloss, fdloss, advloss = [], [], []
-        check_dir = f"./{self.folder}/checkpoint/ckpt"
-
+        # Initialize Losses storing and checkpoint folder path.
         logger.info("Training:")
+        rdloss, fdloss, advloss = [], [], []
         with trange(nb_steps, disable=self.hyperopt) as iter_range:
             for k in iter_range:
                 iter_range.set_description("Training")
@@ -296,10 +290,10 @@ class GanTrain:
                 self.critic.trainable = True
                 for _ in range(self.params.get("nd_steps", 4)):
                     # Train with the real samples
-                    r_xinput, r_ydisc = self.generate_real_samples(half_batch_size)
+                    r_xinput, r_ydisc = self.real_samples(half_batch)
                     r_dloss = self.critic.train_on_batch(r_xinput, r_ydisc)
                     # Train with the fake samples
-                    f_xinput, f_ydisc = self.generate_fake_samples(self.generator, half_batch_size)
+                    f_xinput, f_ydisc = self.fake_samples(self.generator, half_batch)
                     f_dloss = self.critic.train_on_batch(f_xinput, f_ydisc)
 
                 # Train the Generator
@@ -309,8 +303,7 @@ class GanTrain:
                     noise, y_gen = self.sample_output_noise(batch_size)
                     gloss = self.adversarial.train_on_batch(noise, y_gen)
 
-                # Get weights
-                weights = self.generator.get_layer('dense_3').get_weights()
+                # Update progression bar
                 iter_range.set_postfix(Disc=r_dloss+f_dloss, Adv=gloss)
 
                 if not self.hyperopt:
@@ -321,7 +314,6 @@ class GanTrain:
                         fdloss.append(f_dloss)
 
                     if k % 100 == 0:
-                        # TODO: Fix arguments plot
                         self.plot_generated_pdf(
                             self.generator,
                             self.params.get("out_replicas"),
@@ -329,9 +321,6 @@ class GanTrain:
                             k
                         )
 
-        # Save Losses
-        import pdb
-        pdb.set_trace()
         if not self.hyperopt:
             loss_info = [{"rdloss": rdloss, "fdloss": fdloss, "advloss": advloss}]
             output_losses = self.params.get("save_output")
@@ -340,9 +329,9 @@ class GanTrain:
 
         # Generate fake replicas with the trained model
         logger.info("Generating fake replicas with the trained model.")
-        fake_pdf, _ = self.generate_fake_samples(self.generator, self.params.get("out_replicas"))
+        fake_pdf, _ = self.fake_samples(self.generator, self.params.get("out_replicas"))
 
-        if  not self.hyperopt:
+        if not self.hyperopt:
 
             xgrid = self.xgrid
             #############################################################
@@ -350,12 +339,12 @@ class GanTrain:
             # as the input PDF.                                         #
             #############################################################
             if self.params.get("architecture") == "dcnn":
-                fake_pdf = fake_pdf.reshape((fake_pdf.shape[0], fake_pdf.shape[1], fake_pdf.shape[2]))
+                fake_pdf = np.squeeze(fake_pdf, axis=3)
             if self.xgrid.shape != self.params.get("pdfgrid").shape:
                 xgrid = self.params.get("pdfgrid")
                 logger.info("Interpolate and/or Extrapolate GANs grid to PDF grid.")
-                fake_pdf = interpolate_grid(fake_pdf, self.xgrid, xgrid, interpol_type="Intperp1D")
-            # Combiend the PDFs
+                fake_pdf = interpolate(fake_pdf, self.xgrid, xgrid, mthd="Intperp1D")
+            # Combine the PDFs
             comb_pdf = np.concatenate([self.lhaPDFs, fake_pdf])
 
             #############################################################

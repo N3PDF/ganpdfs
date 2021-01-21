@@ -68,7 +68,7 @@ def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder
     folder : str
         folder to store the results
     """
-    logger.info("[+] Performing hyperparameter scan.")
+    logger.info("Performing hyperparameter scan.")
     if cluster:
         trials = MongoTrials(cluster, exp_key="exp1")
     else:
@@ -76,7 +76,11 @@ def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder
         # The following will generate a .json file containing the trials.
         trials = FileTrials(folder, parameters=search_space)
     best = fmin(
-        func_train, search_space, algo=tpe.suggest, max_evals=max_evals, trials=trials
+        func_train,
+        search_space,
+        algo=tpe.suggest,
+        max_evals=max_evals,
+        trials=trials
     )
     # Save the overall best model
     best_setup = space_eval(search_space, best)
@@ -86,7 +90,7 @@ def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder
         yaml.dump(best_setup, wfp, default_flow_style=False)
     log = "%s/hyperopt_log_{}.pickle".format(time.time()) % folder
     with open(log, "wb") as wfp:
-        logger.info(f"[+] Saving trials in {log}")
+        logger.info(f"Saving trials in {log}")
         pickle.dump(trials.trials, wfp)
     return best_setup
 
@@ -111,8 +115,6 @@ def hyper_train(params, xpdf, pdf):
     # TODO: CHANGE BELOW
     # Define the number of batches
     BATCH_SIZE = params.get("batch_size")
-    # Noise Size
-    NOISE_SIZE = 100
 
     # Model Parameters
     # TODO: Do this depending on the parameters instead of generating
@@ -140,4 +142,4 @@ def hyper_train(params, xpdf, pdf):
         nb_epochs=params.get("epochs"),
         batch_size=BATCH_SIZE
     )
-    return {"loss": smm_result, "status": STATUS_OK}
+    return {"fid": smm_result, "status": STATUS_OK}

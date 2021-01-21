@@ -8,12 +8,15 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.constraints import Constraint
 from tensorflow.keras.losses import BinaryCrossentropy
+from tensorflow.keras.initializers import GlorotUniform
+from tensorflow.keras.initializers import Zeros, Identity
 
 
 def wasserstein_loss(y_true, y_pred):
-    """Compute the wasserstein loss from the true and predictions. The loss function 
-    is implemented by multiplying the expected label for each sample by the predicted 
-    score (element wise), then calculating the mean. For more details, see
+    """Compute the wasserstein loss from the true and predictions.
+    The loss function is implemented by multiplying the expected
+    label for each sample by the predicted score (element wise),
+    then calculating the mean. For more details, refer to:
     https://arxiv.org/abs/1506.05439
 
     Parameters
@@ -33,14 +36,93 @@ class ClipConstraint(Constraint):
     Layer.
     """
 
-    def __init__(self, clip_value):
-        self.clip_value = clip_value
+    def __init__(self, value):
+        self.value = value
 
     def __call__(self, weights):
-        return K.clip(weights, -self.clip_value, self.clip_value)
+        return K.clip(weights, -self.value, self.value)
 
     def get_config(self):
-        return {"clip_value": self.clip_value}
+        return {"value": self.value}
+
+
+class WeightsClipConstraint(Constraint):
+    """Put constraints on the weights of a given
+    Layer.
+    """
+
+    def __init__(self, value):
+        self.value = value
+
+    def __call__(self, weights):
+        return K.clip(weights, -self.value, self.value)
+
+    def get_config(self):
+        return {"value": self.value}
+
+
+class GenDense(Layer):
+
+    def __init__(self, output_dim, use_bias, **kwargs):
+        self.units = output_dim
+        self.use_bias = use_bias
+        self.binitializer = Zeros()
+        self.kinitializer = Identity()
+        super(GenDense, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        self.kernel = self.add_weight(
+            name='kernel',
+            shape=(input_shape[-1], self.units),
+            initializer=self.kinitializer,
+            trainable=True
+        )
+        if self.use_bias:
+            self.bias = self.add_weight(
+                name='bias',
+                shape=(self.units),
+                initializer=self.binitializer,
+                trainable=True
+            )
+        else: self.bias = None
+        super(GenDense, self).build(input_shape)
+
+    def call(self, inputs):
+        output = K.dot(inputs, self.kernel)
+        if self.use_bias: output = output + self.bias
+        return output
+
+
+class DiscDense(Layer):
+
+    def __init__(self, output_dim, use_bias, **kwargs):
+        self.units = output_dim
+        self.use_bias = use_bias
+        self.binitializer = Zeros()
+        self.kinitializer = Identity()
+        super(DiscDense, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        self.kernel = self.add_weight(
+            name='kernel',
+            shape=(input_shape[-1], self.units),
+            initializer=self.kinitializer,
+            trainable=True
+        )
+        if self.use_bias:
+            self.bias = self.add_weight(
+                name='bias',
+                shape=(self.units),
+                initializer=self.binitializer,
+                trainable=True
+            )
+        else: self.bias = None
+        super(DiscDense, self).build(input_shape)
+
+    def call(self, inputs):
+        output = K.dot(inputs, self.kernel)
+        if self.use_bias: output = output + self.bias
+        return output
 
 
 class ConvPDF(Layer):
@@ -68,19 +150,18 @@ class ConvPDF(Layer):
 
 
 class ConvXgrid(Layer):
-    """Convolute the output of the prvious layer with the 
-    input x-grid."""
+    """Convolute the output of the previous layer with the input x-grid."""
 
-    def __init__(self, output_dim, xval, kernel_initializer="glorot_uniform", **kwargs):
-        self.output_dim = output_dim
+    def __init__(self, output_dim, xval, kinit="glorot_uniform", **kwargs):
+        self.units = output_dim
         self.xval = K.constant(xval)
-        self.kernel_initializer = initializers.get(kernel_initializer)
+        self.kernel_initializer = initializers.get(kinit)
         super(ConvXgrid, self).__init__(**kwargs)
 
     def build(self, input_shape):
         self.kernel = self.add_weight(
             name="kernel",
-            shape=(K.int_shape(self.xval)[0], input_shape[1], self.output_dim),
+            shape=(K.int_shape(self.xval)[0], input_shape[1], self.units),
             initializer=self.kernel_initializer,
             trainable=True,
         )
@@ -89,18 +170,17 @@ class ConvXgrid(Layer):
     def call(self, x):
         # xres outputs (None, input_shape[1], len(x_pdf))
         xres = tf.tensordot(x, self.xval, axes=0)
-        # xfin outputs (None, output_dim)
+        # xfin outputs (None, units)
         xfin = tf.tensordot(xres, self.kernel, axes=([1, 2], [0, 1]))
         return xfin
 
     def compute_output_shape(self, input_shape):
-        return (input_shape[0], self.output_dim)
+        return (input_shape[0], self.units)
 
 
 class PreprocessFit(Layer):
-
-    """Add preprocessing to output of the previous layer. This probably assures
-    the PDF-like behavior of the generated samples.
+    """Add preprocessing to the output of the previous layer. This is
+    expected to assure the PDF-like behavior of the generated samples.
 
     Parameters
     ----------
@@ -108,10 +188,10 @@ class PreprocessFit(Layer):
         Array of x-grid
     """
 
-    def __init__(self, xval, trainable=True, kernel_initializer="ones", **kwargs):
+    def __init__(self, xval, trainable=True, kinit="ones", **kwargs):
         self.xval = xval
         self.trainable = trainable
-        self.kernel_initializer = initializers.get(kernel_initializer)
+        self.kernel_initializer = initializers.get(kinit)
         super(PreprocessFit, self).__init__(**kwargs)
 
     def build(self, input_shape):
@@ -126,7 +206,7 @@ class PreprocessFit(Layer):
     def compute_output_shape(self, input_shape):
         return input_shape
 
-    # @tf.function
     def call(self, pdf):
-        xres = self.xval ** self.kernel[0] * (1 - self.xval) ** self.kernel[1]
-        return pdf * xres
+        xres = self.xval ** self.kernel[0]
+        zres = (1 - self.xval) ** self.kernel[1]
+        return pdf * xres * zres
