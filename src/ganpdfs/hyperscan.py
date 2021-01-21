@@ -6,13 +6,6 @@ import pickle
 import logging
 
 from tensorflow.keras import backend as K
-from tensorflow.keras.layers import ELU
-from tensorflow.keras.layers import ReLU
-from tensorflow.keras.layers import LeakyReLU
-from tensorflow.keras.optimizers import SGD
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.optimizers import RMSprop
-from tensorflow.keras.optimizers import Adadelta
 
 from hyperopt import fmin, tpe, hp
 from hyperopt.mongoexp import MongoTrials
@@ -116,24 +109,8 @@ def hyper_train(params, xpdf, pdf):
     # Define the number of batches
     BATCH_SIZE = params.get("batch_size")
 
-    # Model Parameters
-    # TODO: Do this depending on the parameters instead of generating
-    # all of them List of activation funtions
-    activ = {
-        "relu": ReLU(),
-        "elu": ELU(alpha=1.0),
-        "leakyrelu": LeakyReLU(alpha=0.2)
-    }
-    # List of optimization functions
-    optmz = {
-        "sgd": SGD(lr=0.0075),
-        "adam": Adam(1e-4),
-        "rms": RMSprop(lr=0.00005),
-        "adadelta": Adadelta(lr=1.0),
-    }
-
     # Train on Input/True pdf
-    xgan_pdfs = GanTrain(xpdf, pdf, params, activ, optmz)
+    xgan_pdfs = GanTrain(xpdf, pdf, params)
 
     # In case one needs to pretrain the Discriminator
     # xgan_pdfs.pretrain_disc(BATCH_SIZE, epochs=4)

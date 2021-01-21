@@ -36,7 +36,7 @@ class GanTrain:
         list of optimizers
     """
 
-    def __init__(self, xgrid, pdfs, params, activ, optmz):
+    def __init__(self, xgrid, pdfs, params):
         pdf, self.lhaPDFs = pdfs
         self.xgrid, self.params = xgrid, params
         self.hyperopt = params.get("scan")
@@ -46,11 +46,11 @@ class GanTrain:
         # Choose architecture
         if params.get("architecture") == "cnn":
             self.pdf = pdf
-            self.gan = WGanModel(self.pdf, params, activ, optmz)
+            self.gan = WGanModel(self.pdf, params)
         else:
             raise NotImplementedError("Not implemented yet!")
             # self.pdf = pdf.reshape(pdf.shape + (1,)))
-            # self.gan = DWGanModel(self.pdf, params, activ, optmz)
+            # self.gan = DWGanModel(self.pdf, params, activ)
 
         # Initialize Models
         self.critic = self.gan.critic_model()

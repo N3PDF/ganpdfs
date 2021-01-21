@@ -25,8 +25,8 @@ def do_nothing(tensor):
 
 def gan_summary(critic, generator, adversarial):
     console.print("\n• GanPDFs Architecture:\n", style="bold blue")
-    critic.summary()
     generator.summary()
+    critic.summary()
     adversarial.summary()
 
 

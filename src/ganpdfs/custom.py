@@ -3,6 +3,8 @@ import numpy as np
 
 import tensorflow as tf
 from scipy import stats
+from tensorflow.keras import optimizers
+from tensorflow.keras import constraints
 from tensorflow.keras import initializers
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer
@@ -31,24 +33,63 @@ def wasserstein_loss(y_true, y_pred):
     return K.mean(y_true * y_pred)
 
 
-class ClipConstraint(Constraint):
-    """Put constraints on the weights of a given
-    Layer.
+def get_optimizer(optimizer):
+    """Overwrite keras default parameters for optimizer.
+
+    Parameters
+    ----------
+    optimizer : dict
+        Dictionary containing information on the optimizer.
+
+    Returns
+    -------
+    tf.keras.optimizers:
+        Optimizer.
     """
 
-    def __init__(self, value):
-        self.value = value
+    learning_rate = optimizer.get("learning_rate")
+    optimizer_name = optimizer.get("optimizer_name")
+    optimizer_class = optimizers.get(optimizer_name)
+    optimizer_class.learning_rate = learning_rate
+    return optimizer_class
 
-    def __call__(self, weights):
-        return K.clip(weights, -self.value, self.value)
 
-    def get_config(self):
-        return {"value": self.value}
+def get_activation(model_params):
+    """Extract activation functions from the input parameters.
+    This is necessary for advanced activation functions.
+
+    Parameters
+    ----------
+    model_params : dict
+        Dictionary containing information on the Discriminator
+        architecture.
+
+
+    Returns
+    -------
+    tf.keras.activations:
+        Activation function.
+    """
+
+    if model_params.get("activation" == "elu"):
+        from tensorflow.keras.layers import ELU
+        return ELU(alpha=1.0)
+    elif model_params.get("activation") == "relu":
+        from tensorflow.keras.layers import ReLU
+        return ReLU()
+    elif model_params.get("activation") == "leakyrelu":
+        from tensorflow.keras.layers import LeakyReLU
+        return LeakyReLU(alpha=0.2)
+    else: raise ValueError("Activation not available.")
 
 
 class WeightsClipConstraint(Constraint):
-    """Put constraints on the weights of a given
-    Layer.
+    """Put constraints on the weights of a given layer.
+
+    Parameters
+    ----------
+    value : float
+        Value to which the weights will be bounded on.
     """
 
     def __init__(self, value):
@@ -64,8 +105,8 @@ class WeightsClipConstraint(Constraint):
 class GenDense(Layer):
 
     def __init__(self, output_dim, use_bias, **kwargs):
-        self.units = output_dim
         self.use_bias = use_bias
+        self.units = output_dim
         self.binitializer = Zeros()
         self.kinitializer = Identity()
         super(GenDense, self).__init__(**kwargs)
@@ -95,11 +136,15 @@ class GenDense(Layer):
 
 class DiscDense(Layer):
 
-    def __init__(self, output_dim, use_bias, **kwargs):
+    def __init__(self, output_dim, dicparams, **kwargs):
+        wc = WeightsClipConstraint(dicparams.get("weights_constraints")) \
+                if output_dim is not 1 else None
         self.units = output_dim
-        self.use_bias = use_bias
-        self.binitializer = Zeros()
-        self.kinitializer = Identity()
+        self.kconstraint = constraints.get(wc)
+        self.binitializer = initializers.get(dicparams["bias_initializer"])
+        self.kinitializer = initializers.get(dicparams["kernel_initializer"])
+        self.use_bias = dicparams.get("use_bias")
+        self.activation = dicparams.get("activation")
         super(DiscDense, self).__init__(**kwargs)
 
     def build(self, input_shape):
@@ -107,7 +152,8 @@ class DiscDense(Layer):
             name='kernel',
             shape=(input_shape[-1], self.units),
             initializer=self.kinitializer,
-            trainable=True
+            trainable=True,
+            constraint=self.kconstraint
         )
         if self.use_bias:
             self.bias = self.add_weight(
