@@ -1,18 +1,18 @@
 #############################################################################################
-# Input PDF                                                                                 #       
+# Input PDF                                                                                 #
 #############################################################################################
 pdf: NNPDF40_nnlo_as_0118_500_fit1
 
 #############################################################################################
 # PDF Grids:                                                                                #
 # ---------                                                                                 #
-# * Inittial scale q (TODO: change to q^2)                                                  #
+# * Inittial scale q (in GeV)                                                               #
 # * Options for x-grid:                                                                     #
 #   - custom: Custom GANs xgrid as defined in the Module                                    #
 #   - lhapdf: Use the same xgrid as in the input PDF                                        #
 #############################################################################################
-q        : 1.65
-x_grid   : standard
+q        : 1.65                                      # Initial q0 value (in GeV)
+x_grid   : standard                                  # x-grid format. Options: standard, custom, lhapdf
 
 #############################################################################################
 # GAN setup:                                                                                #
@@ -21,7 +21,10 @@ x_grid   : standard
 #   - dnn : Deep Neural Network                                                             #
 #   - dcnn: Deep Convolutional Neural Network                                               #
 #############################################################################################
-architecture          : cnn
+use_saved_model       : False                        # Skip training and use pre-trained generator model
+                                                     # All the parameters below will be skipped is set to TRUE
+
+architecture          : cnn                          # Architecture model. Options: cnn, dnn
 
 gan_parameters:
   optimizer:
@@ -62,7 +65,7 @@ ConvoluteOutput       : False
 # * {i}_steps: number of steps to train a {i}={generator, discriminator/critic} at each     #
 #   iteration.                                                                              #
 #############################################################################################
-nd_steps   : 4
-ng_steps   : 3
-batch_size : 600
-epochs     : 650
+nd_steps   : 4                                       # Number of steps to train the Discriminator for one training run
+ng_steps   : 3                                       # Number of steps to train the Generator for one training run
+batch_size : 100                                     # Batch size per epoch TODO: Modify this in terms of percentage
+epochs     : 600                                     # Number of epochs

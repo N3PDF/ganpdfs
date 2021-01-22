@@ -9,15 +9,20 @@ import numpy as np
 # Set tensorflow log level to error only
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
 
-import tensorflow as tf
 from rich.table import Table
 from rich.style import Style
 from rich.console import Console
+
+import tensorflow as tf
+import tensorflow.python.util.deprecation as deprecation
+
+from ganpdfs.hyperscan import run_hyperparameter_scan
+from ganpdfs.hyperscan import hyper_train
 from ganpdfs.pdformat import XNodes
 from ganpdfs.pdformat import InputPDFs
 from ganpdfs.hyperscan import load_yaml
-from ganpdfs.hyperscan import hyper_train
-from ganpdfs.hyperscan import run_hyperparameter_scan
+
+deprecation._PRINT_DEPRECATION_WARNINGS = False
 
 console = Console()
 logging.basicConfig(

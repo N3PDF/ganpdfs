@@ -1,16 +1,13 @@
-import os
 import numpy as np
-
 import tensorflow as tf
-from scipy import stats
+from tensorflow.keras import models
+from tensorflow.train import Checkpoint
 from tensorflow.keras import optimizers
 from tensorflow.keras import constraints
 from tensorflow.keras import initializers
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.constraints import Constraint
-from tensorflow.keras.losses import BinaryCrossentropy
-from tensorflow.keras.initializers import GlorotUniform
 from tensorflow.keras.initializers import Zeros, Identity
 
 
@@ -24,11 +21,15 @@ def wasserstein_loss(y_true, y_pred):
     Parameters
     ----------
     y_true : tf.tensor(float)
-        list of estimated probabilities for the true
-        samples
+        list of estimated probabilities for the true samples
     y_pred : tf.tensor(float)
-        list of estimated probabilities for the fake
-        samples
+        list of estimated probabilities for the fake samples
+
+    Returns
+    -------
+    tf.tensor
+        Tensor containing the mean of the predictions and the
+        true values.
     """
     return K.mean(y_true * y_pred)
 
@@ -43,7 +44,7 @@ def get_optimizer(optimizer):
 
     Returns
     -------
-    tf.keras.optimizers:
+    tf.keras.optimizers
         Optimizer.
     """
 
@@ -67,7 +68,7 @@ def get_activation(model_params):
 
     Returns
     -------
-    tf.keras.activations:
+    tf.keras.activations
         Activation function.
     """
 
@@ -83,6 +84,57 @@ def get_activation(model_params):
     else: raise ValueError("Activation not available.")
 
 
+def save_ckpt(generator, critic, adversarial):
+    """Save the training information into a file. This includes but
+    not limited to the information on the wieghts and the biases of
+    the given network. The GANs model is a combination of three
+    different neural networks (generator, critic/discriminator,
+    adversarial) and the information on each one of them are saved.
+
+    For more information on the constructor `Checkpoint` from
+    the module `tensorflow.train`, refer to
+    https://www.tensorflow.org/api_docs/python/tf/train/Checkpoint
+
+    Parameters
+    ----------
+    generator : ganpdfs.model.WassersteinGanModel.generator
+        generator neural network
+    critic : ganpdfs.model.WassersteinGanModel.critic
+        critic/discriminator neural network
+    adversarial : ganpdfs.model.WassersteinGanModel.adversarial
+        adversarial neural network
+
+    Returns
+    -------
+    A load status object, which can be used to make assertions about
+    the status of a checkpoint restoration
+    """
+
+    checkpoint = Checkpoint(
+            critic=critic,
+            generator=generator,
+            adversarial=adversarial
+    )
+    return checkpoint
+
+
+def load_generator_model(model_name):
+    """Load a saved/trained keras model from a folder.
+
+    Parameters
+    ----------
+    model_name : tf.keras.Model
+        Name of the saved folder.
+
+    Returns
+    -------
+    tf.keras.Model
+        Saved generator model.
+    """
+
+    return models.load_model(model_name)
+
+
 class WeightsClipConstraint(Constraint):
     """Put constraints on the weights of a given layer.
 
@@ -90,6 +142,11 @@ class WeightsClipConstraint(Constraint):
     ----------
     value : float
         Value to which the weights will be bounded on.
+
+    Returns
+    -------
+    tf.keras.constraints
+        Constraint class.
     """
 
     def __init__(self, value):
@@ -102,14 +159,24 @@ class WeightsClipConstraint(Constraint):
         return {"value": self.value}
 
 
-class GenDense(Layer):
+class ExpLatent(Layer):
+    """Keras layer that inherates from the keras `Layer` class. This layer
+    class basically expands the input latent space tensors to the generator.
+
+    Parameters
+    ----------
+    output_dim : int
+        Size of the output dimension.
+    use_bias : bool
+        Add or not biases to the output layer.
+    """
 
     def __init__(self, output_dim, use_bias, **kwargs):
         self.use_bias = use_bias
         self.units = output_dim
         self.binitializer = Zeros()
         self.kinitializer = Identity()
-        super(GenDense, self).__init__(**kwargs)
+        super(ExpLatent, self).__init__(**kwargs)
 
     def build(self, input_shape):
         self.kernel = self.add_weight(
@@ -126,7 +193,7 @@ class GenDense(Layer):
                 trainable=True
             )
         else: self.bias = None
-        super(GenDense, self).build(input_shape)
+        super(ExpLatent, self).build(input_shape)
 
     def call(self, inputs):
         output = K.dot(inputs, self.kernel)
@@ -134,7 +201,18 @@ class GenDense(Layer):
         return output
 
 
-class DiscDense(Layer):
+class ExtraDense(Layer):
+    """Keras layer that inherates from the keras `Layer` class. This layer
+    class takes the input parameters from the input runcard which contains
+    all the parameters for the layer.
+
+    Parameters
+    ----------
+    output_dim : int
+        Size of the output dimension.
+    dicparams : dict
+        Dictionary containing the layer parameters.
+    """
 
     def __init__(self, output_dim, dicparams, **kwargs):
         wc = WeightsClipConstraint(dicparams.get("weights_constraints")) \
@@ -145,7 +223,7 @@ class DiscDense(Layer):
         self.kinitializer = initializers.get(dicparams["kernel_initializer"])
         self.use_bias = dicparams.get("use_bias")
         self.activation = dicparams.get("activation")
-        super(DiscDense, self).__init__(**kwargs)
+        super(ExtraDense, self).__init__(**kwargs)
 
     def build(self, input_shape):
         self.kernel = self.add_weight(
@@ -163,7 +241,7 @@ class DiscDense(Layer):
                 trainable=True
             )
         else: self.bias = None
-        super(DiscDense, self).build(input_shape)
+        super(ExtraDense, self).build(input_shape)
 
     def call(self, inputs):
         output = K.dot(inputs, self.kernel)

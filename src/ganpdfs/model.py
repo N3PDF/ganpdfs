@@ -1,7 +1,5 @@
 from tensorflow.keras import Model
-from tensorflow.keras.layers import Add
 from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Lambda
 from tensorflow.keras.layers import Conv2D
 from tensorflow.keras.layers import Flatten
@@ -11,11 +9,8 @@ from tensorflow.keras.layers import Conv2DTranspose
 from tensorflow.keras.layers import BatchNormalization
 
 from ganpdfs.utils import do_nothing
-from ganpdfs.utils import construct_cnn
-from ganpdfs.custom import ConvPDF
-from ganpdfs.custom import GenDense
-from ganpdfs.custom import DiscDense
-from ganpdfs.custom import ConvXgrid
+from ganpdfs.custom import ExpLatent
+from ganpdfs.custom import ExtraDense
 from ganpdfs.custom import get_optimizer
 from ganpdfs.custom import get_activation
 from ganpdfs.custom import wasserstein_loss
@@ -36,25 +31,30 @@ class WGanModel:
     def generator_model(self):
         """generator_model.
         """
-        # Generator Input
-        g_shape = (self.fl_size, self.xg_size)
+
+        # Parameter calls
+        g_shape = (self.fl_size, self.xg_size,)
         g_input = Input(shape=g_shape)
+        gnn_dim = self.genparams.get("number_nodes")
+        gnn_size = self.genparams.get("size_networks")
+        gs_activ = get_activation(self.discparams)
         # Output of Lambda layer has a shape
         # (None, nb_flavors, xgrid_size)
         g_lambd = Lambda(do_nothing)(g_input)
-        g_dense = GenDense(self.xg_size, use_bias=False)(g_lambd)
-        # g_dense = Dense(
-        #     self.xg_size,
-        #     use_bias=False,
-        #     trainable=True,
-        #     kernel_initializer=initializer
-        # )(g_lambd)
+        g_dense = ExpLatent(self.xg_size, use_bias=False)(g_lambd)
+        # for it in range(1, gnn_size + 1):
+        #     g_dense = ExtraDense(
+        #         gnn_dim // (2 ** it),
+        #         self.discparams
+        #     )(g_dense)
+        #     g_dense = gs_activ(g_dense)
         return Model(g_input, g_dense, name="Generator")
 
     def critic_model(self):
         """critic_model.
         """
-        # Call parameters
+
+        # Parameter calls
         if self.discparams.get("loss") != "wasserstein":
             dloss = self.discparams.get("loss")
         else: dloss = wasserstein_loss
@@ -65,19 +65,20 @@ class WGanModel:
         critic_opt = get_optimizer(opt_name)
 
         # Discriminator Architecture
-        d_input = Input(shape=(self.fl_size, self.xg_size))
-        d_hidden = DiscDense(dnn_dim, self.discparams)(d_input)
+        d_shape = (self.fl_size, self.xg_size,)
+        d_input = Input(shape=d_shape)
+        d_hidden = ExtraDense(dnn_dim, self.discparams)(d_input)
         d_hidden = BatchNormalization()(d_hidden)
         d_hidden = ds_activ(d_hidden)
         for it in range(1, dnn_size + 1):
-            d_hidden = DiscDense(
+            d_hidden = ExtraDense(
                 dnn_dim // (2 ** it),
                 self.discparams
             )(d_hidden)
             d_hidden = BatchNormalization()(d_hidden)
             d_hidden = ds_activ(d_hidden)
         d_flatten = Flatten()(d_hidden)
-        d_output = DiscDense(1, self.discparams)(d_flatten)
+        d_output = ExtraDense(1, self.discparams)(d_flatten)
         d_model = Model(d_input, d_output, name="Discriminator")
         d_model.compile(loss=dloss, optimizer=critic_opt)
         return d_model
@@ -92,6 +93,7 @@ class WGanModel:
         critic :
             critic
         """
+
         # Call parameters
         if self.discparams.get("loss") != "wasserstein":
             advloss = self.discparams.get("loss")
@@ -99,8 +101,8 @@ class WGanModel:
         opt_name = self.ganparams.get("optimizer")
         adv_optimizer = get_optimizer(opt_name)
         model = Sequential(name="Adversarial")
-        model.add(generator)  # Add Generator Model
-        model.add(critic)     # Add Discriminator Model
+        model.add(generator)       # Add Generator Model
+        model.add(critic)          # Add Discriminator Model
         model.compile(loss=advloss, optimizer=adv_optimizer)
         return model
 

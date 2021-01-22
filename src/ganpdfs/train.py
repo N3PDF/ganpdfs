@@ -3,22 +3,28 @@ import pathlib
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 
+from tqdm import tqdm
 from tqdm import trange
 from ganpdfs.utils import smm
 from numpy.random import PCG64
 from numpy.random import Generator
+from rich.console import Console
 
 from ganpdfs.model import WGanModel
 from ganpdfs.model import DWGanModel
+from ganpdfs.utils import interpol
 from ganpdfs.utils import axes_width
-from ganpdfs.utils import interpolate
 from ganpdfs.utils import gan_summary
-from ganpdfs.writer import WriterWrapper
 from ganpdfs.utils import latent_sampling
+from ganpdfs.writer import WriterWrapper
+from ganpdfs.custom import save_ckpt
+from ganpdfs.custom import load_generator_model
 
+
+console = Console()
 logger = logging.getLogger(__name__)
+STYLE = "bold blue"
 
 
 class GanTrain:
@@ -65,9 +71,11 @@ class GanTrain:
                 self.rndgen
         )
 
-        # Print Summary when not in Hyperopt
-        if not self.hyperopt:
+        if not self.hyperopt and not params.get("use_saved_model"):
             gan_summary(self.critic, self.generator, self.adversarial)
+
+        # Save Checkpoints
+        self.ckpt = save_ckpt(self.generator, self.critic, self.adversarial)
 
     def real_samples(self, half_batch):
         """Prepare the real samples. This samples a half-batch of real
@@ -178,7 +186,7 @@ class GanTrain:
         y_gen = -np.ones((batch_size, 1))
         return noise, y_gen
 
-    def plot_generated_pdf(self, generator, nb_output, folder, niter):
+    def plot_generated_pdf(self, generator, nb_output, niter, folder):
         """Generate grid-plots at a given iteration throughout the training.
         In each grid is compared the generated dataset against the real one
         for a specific flavor. The plots are then saved into a folder.
@@ -273,62 +281,63 @@ class GanTrain:
         metric = 0
         batch_per_epoch = int(self.pdf.shape[0] / batch_size)
         nb_steps = nb_epochs
-        #nb_steps = batch_per_epoch * nb_epochs
-        if batch_size < 2:
-            half_batch = 1
-        else:
-            half_batch = int(batch_size / 2)
+        # nb_steps = batch_per_epoch * nb_epochs
+        half_batch = 1 if batch_size < 2 else int(batch_size / 2)
 
-        # Initialize Losses storing and checkpoint folder path.
-        logger.info("Training:")
-        rdloss, fdloss, advloss = [], [], []
-        with trange(nb_steps, disable=self.hyperopt) as iter_range:
-            for k in iter_range:
-                iter_range.set_description("Training")
-                # Train the Critic
-                # Make sure the Critic is trainable
-                self.critic.trainable = True
-                for _ in range(self.params.get("nd_steps", 4)):
-                    # Train with the real samples
-                    r_xinput, r_ydisc = self.real_samples(half_batch)
-                    r_dloss = self.critic.train_on_batch(r_xinput, r_ydisc)
-                    # Train with the fake samples
-                    f_xinput, f_ydisc = self.fake_samples(self.generator, half_batch)
-                    f_dloss = self.critic.train_on_batch(f_xinput, f_ydisc)
+        if not self.params.get("use_saved_model"):
+            console.print("\n• Training:", style=STYLE)
+            rdloss, fdloss, advloss = [], [], []
+            with trange(nb_steps, disable=self.hyperopt) as iter_range:
+                for k in iter_range:
+                    iter_range.set_description("Training")
 
-                # Train the Generator
-                # Make sure that the Critic is not trainable
-                self.critic.trainable = False
-                for _ in range(self.params.get("ng_steps", 3)):
-                    noise, y_gen = self.sample_output_noise(batch_size)
-                    gloss = self.adversarial.train_on_batch(noise, y_gen)
+                    # Make sure the Critic is trainable
+                    self.critic.trainable = True
+                    for _ in range(self.params.get("nd_steps", 4)):
+                        # Train with the real samples
+                        r_xinput, r_ydisc = self.real_samples(half_batch)
+                        r_dloss = self.critic.train_on_batch(r_xinput, r_ydisc)
+                        # Train with the fake samples
+                        f_xinput, f_ydisc = self.fake_samples(self.generator, half_batch)
+                        f_dloss = self.critic.train_on_batch(f_xinput, f_ydisc)
 
-                # Update progression bar
-                iter_range.set_postfix(Disc=r_dloss+f_dloss, Adv=gloss)
+                    # Make sure that the Critic is not trainable
+                    self.critic.trainable = False
+                    for _ in range(self.params.get("ng_steps", 3)):
+                        noise, y_gen = self.sample_output_noise(batch_size)
+                        gloss = self.adversarial.train_on_batch(noise, y_gen)
 
-                if not self.hyperopt:
-                    # Print log output
-                    if k % 100 == 0:
+                    # Update progression bar
+                    iter_range.set_postfix(Disc=r_dloss+f_dloss, Adv=gloss)
+
+                    if not self.hyperopt and k % 100 == 0:
                         advloss.append(gloss)
                         rdloss.append(r_dloss)
                         fdloss.append(f_dloss)
+                        if self.params.get("generate_plots"):
+                            self.plot_generated_pdf(
+                                self.generator,
+                                self.params.get("out_replicas"),
+                                k,
+                                self.folder)
 
-                    if k % 100 == 0:
-                        self.plot_generated_pdf(
-                            self.generator,
-                            self.params.get("out_replicas"),
-                            self.folder,
-                            k
-                        )
+            # Save generator model into a folder
+            self.generator.save("generator_model")
 
-        if not self.hyperopt:
-            loss_info = [{"rdloss": rdloss, "fdloss": fdloss, "advloss": advloss}]
-            output_losses = self.params.get("save_output")
-            with open(f"{output_losses}/losses_info.json", "w") as outfile:
-                json.dump(loss_info, outfile, indent=2)
+            if not self.hyperopt:
+                loss_info = [{"rdloss": rdloss, "fdloss": fdloss, "advloss": advloss}]
+                output_losses = self.params.get("save_output")
+                with open(f"{output_losses}/losses_info.json", "w") as outfile:
+                    json.dump(loss_info, outfile, indent=2)
+        else:
+            console.print(
+                "\n• Making predictions using a pre-trained Generator model.",
+                style="bold magenta"
+            )
+            self.generator = load_generator_model("generator_model")
 
         # Generate fake replicas with the trained model
-        logger.info("Generating fake replicas with the trained model.")
+        console.print("\n• Generating fake replicas with (pre)-trained model.", style=STYLE)
         fake_pdf, _ = self.fake_samples(self.generator, self.params.get("out_replicas"))
 
         if not self.hyperopt:
@@ -342,8 +351,8 @@ class GanTrain:
                 fake_pdf = np.squeeze(fake_pdf, axis=3)
             if self.xgrid.shape != self.params.get("pdfgrid").shape:
                 xgrid = self.params.get("pdfgrid")
-                logger.info("Interpolate and/or Extrapolate GANs grid to PDF grid.")
-                fake_pdf = interpolate(fake_pdf, self.xgrid, xgrid, mthd="Intperp1D")
+                console.print("\n• Interpolate GANs grid to LHAPDF grid:", style=STYLE)
+                fake_pdf = interpol(fake_pdf, self.xgrid, xgrid, mthd="Intperp1D")
             # Combine the PDFs
             comb_pdf = np.concatenate([self.lhaPDFs, fake_pdf])
 
@@ -351,17 +360,20 @@ class GanTrain:
             # Construct the output grids in the same structure as the   #
             # N3FIT outputs. This allows for easy evolution.            #
             #############################################################
-            logger.info("Write grids to file.")
-            for rpid, replica  in enumerate(comb_pdf, start=1):
-                grid_path = f"{self.folder}/nnfit/replica_{rpid}"
-                write_grid = WriterWrapper(
-                        self.folder,
-                        replica,
-                        xgrid,
-                        rpid,
-                        self.params.get("q")
-                    )
-                write_grid.write_data(grid_path)
+            console.print("\n• Write grids to file:", style=STYLE)
+            with tqdm(total=comb_pdf.shape[0]) as evolbar:
+                for rpid, replica in enumerate(comb_pdf, start=1):
+                    grid_path = f"{self.folder}/nnfit/replica_{rpid}"
+                    write_grid = WriterWrapper(
+                            self.folder,
+                            replica,
+                            xgrid,
+                            rpid,
+                            self.params.get("q")
+                        )
+                    write_grid.write_data(grid_path)
+                    evolbar.update(1)
+                    evolbar.set_description("Progress")
         else:
             # Compute FID inception score
             metric, _ = smm(self.pdf, fake_pdf)

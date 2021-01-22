@@ -3,10 +3,10 @@
 import logging
 import numpy as np
 from math import gcd
+from tqdm import trange
 from scipy import interpolate
 from scipy.linalg import sqrtm
 from rich.console import Console
-from tensorflow.train import Checkpoint
 
 console = Console()
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ def do_nothing(tensor):
 
 
 def gan_summary(critic, generator, adversarial):
-    console.print("\n• GanPDFs Architecture:\n", style="bold blue")
+    console.print("\n• GanPDFs Architecture:", style="bold blue")
     generator.summary()
     critic.summary()
     adversarial.summary()
@@ -90,40 +90,6 @@ def latent_sampling(pdf, nb_output, rndgen):
         extra_latent.append(rslt)
     freslt = np.array(extra_latent)
     return freslt
-
-
-def save_checkpoint(generator, critic, adversarial):
-    """Save the training information into a file. This includes but
-    not limited to the information on the wieghts and the biases of
-    the given network. The GANs model is a combination of three
-    different neural networks (generator, critic/discriminator,
-    adversarial) and the information on each one of them are saved.
-
-    For more information on the constructor `Checkpoint` from
-    the module `tensorflow.train`, refer to
-    https://www.tensorflow.org/api_docs/python/tf/train/Checkpoint
-
-    Parameters
-    ----------
-    generator : ganpdfs.model.WassersteinGanModel.generator
-        generator neural network
-    critic : ganpdfs.model.WassersteinGanModel.critic
-        critic/discriminator neural network
-    adversarial : ganpdfs.model.WassersteinGanModel.adversarial
-        adversarial neural network
-
-    Returns
-    -------
-    A load status object, which can be used to make assertions about
-    the status of a checkpoint restoration
-    """
-
-    checkpoint = Checkpoint(
-            critic=critic,
-            generator=generator,
-            adversarial=adversarial
-    )
-    return checkpoint
 
 
 def factorize_number(number):
@@ -222,7 +188,7 @@ def construct_cnn(number, nb_layer):
     return cnn_dim
 
 
-def interpolate(fake_pdf, gan_grid, lhapdf_grid, mthd="Intperp1D"):
+def interpol(fake_pdf, gan_grid, lhapdf_grid, mthd="Intperp1D"):
     """Interpolate the generated output according to the x-grid in
     order to match with the LHAPDF grid-format. It uses the `interpolate`
     module from `scipy`. For more details, refere to
@@ -243,40 +209,44 @@ def interpolate(fake_pdf, gan_grid, lhapdf_grid, mthd="Intperp1D"):
         fake PDF replica of shape (nb_repl, nb_flv, gan_grid)
     """
     final_grid = []
-    for replica in fake_pdf:
-        fl_space = []
-        for fl in replica:
-            if mthd == "Intperp1D":
-                f_interpol = interpolate.interp1d(
-                        gan_grid,
-                        fl,
-                        kind="cubic",
-                        fill_value="extrapolate"
+    with trange(fake_pdf.shape[0]) as iter_range:
+        for k in iter_range:
+            fl_space = []
+            for fl in fake_pdf[k]:
+                if mthd == "Intperp1D":
+                    f_interpol = interpolate.interp1d(
+                            gan_grid,
+                            fl,
+                            kind="cubic",
+                            fill_value="extrapolate"
+                    )
+                    new_grid = f_interpol(lhapdf_grid)
+                elif mthd == "SplineEv":
+                    f_interpol = interpolate.splrep(gan_grid, fl, s=0)
+                    new_grid = interpolate.splev(lhapdf_grid, f_interpol, der=0)
+                elif mthd == "CubicSpline":
+                    f_interpol = interpolate.CubicSpline(gan_grid, fl)
+                    new_grid = f_interpol(lhapdf_grid)
+                elif mthd == "InterpSpline":
+                    f_interpol = interpolate.make_interp_spline(gan_grid, fl)
+                    new_grid = f_interpol(lhapdf_grid)
+                elif mthd == "UnivariateSpline":
+                    weights = np.isnan(fl)
+                    fl[weights] = 0.
+                    f_interpol = interpolate.UnivariateSpline(
+                            gan_grid,
+                            fl,
+                            w=~weights
+                    )
+                    f_interpol.set_smoothing_factor(0.01)
+                    new_grid = f_interpol(lhapdf_grid)
+                else:
+                    raise ValueError(f"{mthd} is not an interpolation.")
+                fl_space.append(new_grid)
+                iter_range.set_description(
+                        f"{k+1} synthetic replicas out of {fake_pdf.shape[0]}"
                 )
-                new_grid = f_interpol(lhapdf_grid)
-            elif mthd == "SplineEv":
-                f_interpol = interpolate.splrep(gan_grid, fl, s=0)
-                new_grid = interpolate.splev(lhapdf_grid, f_interpol, der=0)
-            elif mthd == "CubicSpline":
-                f_interpol = interpolate.CubicSpline(gan_grid, fl)
-                new_grid = f_interpol(lhapdf_grid)
-            elif mthd == "InterpSpline":
-                f_interpol = interpolate.make_interp_spline(gan_grid, fl)
-                new_grid = f_interpol(lhapdf_grid)
-            elif mthd == "UnivariateSpline":
-                weights = np.isnan(fl)
-                fl[weights] = 0.
-                f_interpol = interpolate.UnivariateSpline(
-                        gan_grid,
-                        fl,
-                        w=~weights
-                )
-                f_interpol.set_smoothing_factor(0.01)
-                new_grid = f_interpol(lhapdf_grid)
-            else:
-                raise ValueError(f"{mthd} is not an interpolation.")
-            fl_space.append(new_grid)
-        final_grid.append(fl_space)
+            final_grid.append(fl_space)
     return np.array(final_grid)
 
 
