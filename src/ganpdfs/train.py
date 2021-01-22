@@ -277,17 +277,17 @@ class GanTrain:
         float:
             similarity metric value
         """
-        # Initialize the value of metric
-        metric = 0
+
+        metric = 0  # Initialize the value of metric
+        batch_size = int(self.pdf.shape[0] * batch_size / 100)
         batch_per_epoch = int(self.pdf.shape[0] / batch_size)
-        nb_steps = nb_epochs
-        # nb_steps = batch_per_epoch * nb_epochs
+        total_steps = batch_per_epoch * nb_epochs
         half_batch = 1 if batch_size < 2 else int(batch_size / 2)
 
         if not self.params.get("use_saved_model"):
             console.print("\n• Training:", style=STYLE)
             rdloss, fdloss, advloss = [], [], []
-            with trange(nb_steps, disable=self.hyperopt) as iter_range:
+            with trange(total_steps, disable=self.hyperopt) as iter_range:
                 for k in iter_range:
                     iter_range.set_description("Training")
 

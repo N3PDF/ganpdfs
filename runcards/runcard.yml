@@ -67,5 +67,5 @@ ConvoluteOutput       : False
 #############################################################################################
 nd_steps   : 4                                       # Number of steps to train the Discriminator for one training run
 ng_steps   : 3                                       # Number of steps to train the Generator for one training run
-batch_size : 100                                     # Batch size per epoch TODO: Modify this in terms of percentage
+batch_size : 70                                      # Batch size per epoch in terms of percentage
 epochs     : 600                                     # Number of epochs
