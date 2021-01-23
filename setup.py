@@ -81,12 +81,14 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=PACKAGE_REQUIEREMENTS,
     extras_require={"docs": DOCS_REQUIEREMENTS, "tests": TESTS_REQUIEREMENTS},
-    entry_points={"console_scripts": ["ganpdfs = ganpdfs.run:main", ]},
+    entry_points={"console_scripts":
+        [
+            "ganpdfs = ganpdfs.scripts.main:main",
+            "postgans = ganpdfs.scripts.postgans:main",
+        ]
+    },
     package_dir={"": "src"},
     packages=find_packages("src"),
-    scripts=[
-        'scripts/postgans.py'
-    ],
     classifiers=[
         "Operating System :: Unix",
         "Programming Language :: Python",
