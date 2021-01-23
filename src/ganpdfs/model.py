@@ -35,9 +35,9 @@ class WGanModel:
         # Parameter calls
         g_shape = (self.fl_size, self.xg_size,)
         g_input = Input(shape=g_shape)
-        gnn_dim = self.genparams.get("number_nodes")
-        gnn_size = self.genparams.get("size_networks")
-        gs_activ = get_activation(self.discparams)
+        # gnn_dim = self.genparams.get("number_nodes")
+        # gnn_size = self.genparams.get("size_networks")
+        # gs_activ = get_activation(self.discparams)
         # Output of Lambda layer has a shape
         # (None, nb_flavors, xgrid_size)
         g_lambd = Lambda(do_nothing)(g_input)

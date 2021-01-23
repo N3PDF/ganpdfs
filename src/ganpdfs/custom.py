@@ -216,7 +216,7 @@ class ExtraDense(Layer):
 
     def __init__(self, output_dim, dicparams, **kwargs):
         wc = WeightsClipConstraint(dicparams.get("weights_constraints")) \
-                if output_dim is not 1 else None
+                if output_dim != 1 else None
         self.units = output_dim
         self.kconstraint = constraints.get(wc)
         self.binitializer = initializers.get(dicparams["bias_initializer"])
