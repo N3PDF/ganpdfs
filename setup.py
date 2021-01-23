@@ -84,6 +84,9 @@ setup(
     entry_points={"console_scripts": ["ganpdfs = ganpdfs.run:main", ]},
     package_dir={"": "src"},
     packages=find_packages("src"),
+    scripts=[
+        'scripts/postgans.py'
+    ],
     classifiers=[
         "Operating System :: Unix",
         "Programming Language :: Python",
