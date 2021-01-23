@@ -322,7 +322,7 @@ class GanTrain:
                                 self.folder)
 
             # Save generator model into a folder
-            self.generator.save("generator_model")
+            self.generator.save("pre-trained-model")
 
             if not self.hyperopt:
                 loss_info = [{"rdloss": rdloss, "fdloss": fdloss, "advloss": advloss}]
@@ -334,7 +334,7 @@ class GanTrain:
                 "\n• Making predictions using a pre-trained Generator model.",
                 style="bold magenta"
             )
-            self.generator = load_generator_model("generator_model")
+            self.generator = load_generator_model("pre-trained-model")
 
         # Generate fake replicas with the trained model
         console.print("\n• Generating fake replicas with (pre)-trained model.", style=STYLE)
