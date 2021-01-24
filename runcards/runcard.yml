@@ -37,6 +37,7 @@ gen_parameters:
   use_bias            : False                        # if True add biases to the Layers
   bias_initializer    : zeros                        # list of initializer classes: https://keras.io/api/layers/initializers/
   kernel_initializer  : glorot_uniform               # list of initializer classes: https://keras.io/api/layers/initializers/
+  weights_constraints : 1                            # Constrain weights values
   optimizer:
     optimizer_name    : RMSprop                      # options: SGD, Adam, RMSprop, Adadelta
     learning_rate     : 0.00005                      # learning rate for the optimizer class
