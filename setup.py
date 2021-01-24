@@ -20,11 +20,32 @@ from setuptools import find_packages
 PACKAGE = "ganpdfs"
 
 # Used for pytest and code coverage
-TESTS_REQUIEREMENTS = ["pytest", "pytest-cov"]
-# Depending on the documents more dependencies can be added
-DOCS_REQUIEREMENTS = ["recommonmark", "sphinx_rtd_theme", "sphinxcontrib-bibtex"]
+TESTS_REQUIEREMENTS = [
+        "pylint",
+        "pytest",
+        "pytest-cov",
+        "pytest-env",
+        "pygit2",
+        "semver"
+    ]
+
 # Dependencies for the packages
-PACKAGE_REQUIEREMENTS = ["tensorflow", "numpy", "scipy", "tqdm", "hyperopt", "matplotlib"]
+PACKAGE_REQUIEREMENTS = [
+        "tqdm",
+        "numpy",
+        "scipy",
+        "hyperopt",
+        "rich",
+        "tensorflow",
+        "keras"
+    ]
+
+# Depending on the documents more dependencies can be added
+DOCS_REQUIEREMENTS = [
+        "recommonmark",
+        "sphinx_rtd_theme",
+        "sphinxcontrib-bibtex"
+    ]
 
 # Check if LHAPDF is installed
 try:
@@ -64,7 +85,12 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=PACKAGE_REQUIEREMENTS,
     extras_require={"docs": DOCS_REQUIEREMENTS, "tests": TESTS_REQUIEREMENTS},
-    entry_points={"console_scripts": ["ganpdfs = ganpdfs.run:main", ]},
+    entry_points={"console_scripts":
+        [
+            "ganpdfs = ganpdfs.scripts.main:main",
+            "postgans = ganpdfs.scripts.postgans:main",
+        ]
+    },
     package_dir={"": "src"},
     packages=find_packages("src"),
     classifiers=[

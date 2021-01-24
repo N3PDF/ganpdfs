@@ -7,30 +7,38 @@ on: [push]
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 2
       matrix:
         python-version: [3.7]
+
     steps:
     - name: Checkout
       uses: actions/checkout@v1
     - name: Setup Conda
-      uses: goanpeca/setup-miniconda@v1
+      uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: ${{ matrix.python-version }}
-        auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+          auto-update-conda: true
     - name: Install package with the dependencies
       shell: bash --login {0}
       run: |
         conda info
-        # Install LHAPDF
         conda install -y lhapdf -c https://packages.nnpdf.science/conda
-        # Install package
         python -m pip install --upgrade pip
         pip install .
     - name: Test code coverage
       shell: bash --login {0}
       run: |
         pip install .[tests]
-        pytest -v --cov=./src/ganpdfs
+        pytest -v tests/ --cov=./src/ganpdfs --cov-report=xml
+    - name: Upload coverage report
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.GANS_COV }}
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
