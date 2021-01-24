@@ -21,36 +21,43 @@ pip install ganpdfs --upgrade
 
 #### How to run
 
-The code requires as an input a `runcard.yml` file in which the name of the PDF set and the characteristics 
-of the Neural Networks Model are defined. Examples of runcards can be found in the `runcard` folder.
+The code requires as an input a `runcard.yml` file in which the name of the PDF set and the
+characteristics of the Neural Network Models are defined. Examples of runcards can be found
+in the `runcard` folder.
 ```bash
-ganpdfs <runcard> -o <output> [--force] [--hyperopt n] [--nreplicas n] [--cluster url]
+ganpdfs <runcard> -o <output_name> [--fake TOT_FAKE_SIZE]
 ```
-This will generate a folder named `<output>` that has the following structure:
+This will generate the following folders:
 ```bash
-output_folder/
-├── checkpoint
-├── iterations
+pre-trained-model/
+├── assets
+├── saved_model.pb
+└── variables
+    ├── variables.data-00000-of-00001
+    └── variables.index
+output_name/
 └── nnfit
 ```
-where `checkpoint` contains the saved models throughout the training, which can be helpful in case a long 
-running training task is interrupted; `iterations` contains the information on the performance of the
-models at each iteration, and `nnfit` contains the output grids from the generated replicas (this has
-the exact same structure as the output from N3FIT). 
+where the `pre-trained-model` folder contains the just trained model. Hence in case you do not
+want to train the GANs and directly resort to a pre-trained one, a pre-trained
+[model](https://github.com/N3PDF/ganpdfs/tree/DynamicArchitecture/pre-trained-model)
+can be used out of the box by setting the entry `use_saved_model` to `True` in the runcard. The 
+`nnfit` subfolder contains the output grids from the generated replicas (this has the exact same
+structure as the output from N3FIT). 
 
 Hence, in order to evolve the generated output grids, just run:
 ```bash
-evolven3fit <output>
+evolven3fit <output_name>
 ```
 
-#### Parameter Hyper-Optimization
+Then, to link the generated PDF set to the LHAPDF data directory, use the `postgans` script by
+running:
+```bash
+postgans --pdf PRIOR_PDF_NAME --nenhanced TOT_FAKE_SIZE
+```
 
-The framework of parameter optimizations is currently being developed in a separete branch 
-([DynamicArchitecture](https://github.com/N3PDF/ganpdfs/tree/DynamicArchitecture)).
+#### Hyper-parameter opitmization
 
-
-#### Bottlenecks
-
-Currently, in order to evolve the output grids from the GANs, the `filter.yml` file that contains
-the information on theory ID used to generate the prior replicas has to be manually put in the
-`<output>` folder. A systematic way to deal with this has to be implemented.
+For more details on how to define specific parameters when running the code and on how to perform
+a hyper-parameter scan, please head to the section [how to](https://n3pdf.github.io/ganpdfs/howto/howto.html)
+of the documentation.
