@@ -1,8 +1,10 @@
+import logging
 import json
 import pathlib
-import logging
+import shutil
 import numpy as np
 import matplotlib.pyplot as plt
+import NNPDF as nnpath
 
 from tqdm import tqdm
 from tqdm import trange
@@ -25,6 +27,12 @@ from ganpdfs.custom import load_generator_model
 console = Console()
 logger = logging.getLogger(__name__)
 STYLE = "bold blue"
+
+
+class FitRuncardException(Exception):
+    """Handle exception when copying the fit runcard"""
+
+    pass
 
 
 class GanTrain:
@@ -309,7 +317,7 @@ class GanTrain:
                     # Update progression bar
                     iter_range.set_postfix(Disc=r_dloss+f_dloss, Adv=gloss)
 
-                    if not self.hyperopt and k % 100 == 0:
+                    if not self.hyperopt and (k + 1) % 100 == 0:
                         advloss.append(gloss)
                         rdloss.append(r_dloss)
                         fdloss.append(f_dloss)
@@ -373,6 +381,20 @@ class GanTrain:
                     write_grid.write_data(grid_path)
                     evolbar.update(1)
                     evolbar.set_description("Progress")
+
+            #############################################################
+            # Copy fit runcard to the enhanced folder                   #
+            #############################################################
+            try:
+                fitpath = nnpath.get_results_path()
+                fitpath = fitpath + f"{self.params['pdf']}/filter.yml" 
+                shutil.copy(fitpath, f"{self.folder}/filter.yml")
+            except IOError as excp:
+                console.print(
+                        f"[bold red]WARNING: Fit run card for {self.params['pdf']}"
+                        f" not found. Put it manually into {self.folder} in order to run"
+                        " evolven3fit."
+                )
         else:
             # Compute FID inception score
             metric, _ = smm(self.pdf, fake_pdf)

@@ -109,7 +109,10 @@ def main():
     qvalue = hps.get("q", Q0)
 
     # Generate PDF grids (one time generation)
-    console.print("\n• Computing PDF grids with the following parameters:", style="bold blue")
+    console.print(
+            "\n• Computing PDF grids with the following parameters:",
+            style="bold blue"
+    )
     init_pdf = InputPDFs(hps["pdf"], qvalue, nf)
     # Load the x-Grid
     # Choose the LHAPDF x-grid by default

@@ -182,8 +182,8 @@ class ExpLatent(Layer):
         self.kernel = self.add_weight(
             name='kernel',
             shape=(input_shape[-1], self.units),
-            initializer=self.kinitializer,
-            trainable=True
+            initializer=initializers.get(self.kinitializer),
+            trainable=False
         )
         if self.use_bias:
             self.bias = self.add_weight(
