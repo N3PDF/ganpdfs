@@ -1,0 +1,29 @@
+ganpdfs.scripts package
+=======================
+
+Submodules
+----------
+
+ganpdfs.scripts.main module
+---------------------------
+
+.. automodule:: ganpdfs.scripts.main
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ganpdfs.scripts.postgans module
+-------------------------------
+
+.. automodule:: ganpdfs.scripts.postgans
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ganpdfs.scripts
+   :members:
+   :undoc-members:
+   :show-inheritance:
