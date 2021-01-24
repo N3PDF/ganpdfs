@@ -185,7 +185,7 @@ def construct_cnn(number, nb_layer):
         cnn_dim.append(new_elem)
     else:
         pass
-    return cnn_dim
+    return list(map(int, cnn_dim))
 
 
 def interpol(fake_pdf, gan_grid, lhapdf_grid, mthd="Intperp1D"):
