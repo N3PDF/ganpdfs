@@ -54,9 +54,8 @@ class GanTrain:
             self.pdf = pdf
             self.gan = WGanModel(self.pdf, params)
         else:
-            raise NotImplementedError("Not implemented yet!")
-            # self.pdf = pdf.reshape(pdf.shape + (1,)))
-            # self.gan = DWGanModel(self.pdf, params, activ)
+            self.pdf = pdf.reshape(pdf.shape + (1,))
+            self.gan = DWGanModel(self.pdf, params)
 
         # Initialize Models
         self.critic = self.gan.critic_model()
