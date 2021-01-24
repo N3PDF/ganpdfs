@@ -168,9 +168,13 @@ def arg_parser():
     return argument
 
 
-if __name__ == "__main__":
+def main():
     args = arg_parser()
     pdf_name = args.pdf
     enhanced_size = args.nenhanced
 
     postgans(pdf_name, enhanced_size, check=True)
+
+
+if __name__ == "__main__":
+    main()
