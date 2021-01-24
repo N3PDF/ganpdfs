@@ -32,8 +32,12 @@ TESTS_REQUIEREMENTS = [
 # Dependencies for the packages
 PACKAGE_REQUIEREMENTS = [
         "tqdm",
+        "numpy",
+        "scipy",
         "hyperopt",
-        "rich"
+        "rich",
+        "tensorflow",
+        "keras"
     ]
 
 # Depending on the documents more dependencies can be added
