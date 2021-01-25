@@ -4,8 +4,8 @@
 
 import numpy as np
 
-from ganpdfs.model import WassersteinGanModel
-from ganpdfs.model import DCNNWassersteinGanModel
+from ganpdfs.model import WGanModel
+from ganpdfs.model import DWGanModel
 from tensorflow.keras.layers import LeakyReLU
 from tensorflow.keras.optimizers import RMSprop
 
@@ -13,44 +13,56 @@ from tensorflow.keras.optimizers import RMSprop
 NB_REPLICAS = 100
 NB_FLAVORS = 14
 XGRID_SIZE = 125
-XGRID_TOY = np.linspace(1e-3, 1, XGRID_SIZE)
 DNN_TOY_PDF = np.random.random((NB_REPLICAS, NB_FLAVORS, XGRID_SIZE))
 CNN_TOY_PDF = np.random.random((NB_REPLICAS, NB_FLAVORS, XGRID_SIZE, 1))
 
 # Dictionary containing the information
 # on the Neural Architercture.
 PARAMS = {
-        "d_opt": "rms",
-        "g_nodes": 256,
-        "d_nodes": 128,
-        "gan_opt": "rms",
-        "g_act": "leakyrelu",
-        "d_act": "leakyrelu"
-    }
+    "use_saved_model": False,
+    "architecture": "cnn",
+    "gan_parameters": {
+        "optimizer": {"optimizer_name": "RMSprop", "learning_rate": 5e-05}
+    },
+    "gen_parameters": {
+        "size_networks": 1,
+        "number_nodes": 128,
+        "use_bias": False,
+        "bias_initializer": "zeros",
+        "kernel_initializer": "glorot_uniform",
+        "weights_constraints": 1,
+        "optimizer": {"optimizer_name": "RMSprop", "learning_rate": 5e-05},
+        "loss": "binary_crossentropy",
+        "activation": "leakyrelu",
+    },
+    "disc_parameters": {
+        "size_networks": 1,
+        "number_nodes": 450,
+        "use_bias": False,
+        "bias_initializer": "zeros",
+        "kernel_initializer": "glorot_uniform",
+        "weights_constraints": 1,
+        "optimizer": {"optimizer_name": "RMSprop", "learning_rate": 5e-05},
+        "loss": "binary_crossentropy",
+        "activation": "leakyrelu",
+    },
+    "ConvoluteOutput": False,
+    "nd_steps": 4,
+    "ng_steps": 3,
+    "batch_size": 70,
+    "epochs": 600,
+}
+
 OPTMZ = {"rms": RMSprop(lr=0.00005)}
 ACTIV = {"leakyrelu": LeakyReLU(alpha=0.2)}
 
 NOISE_DIM = 100
 
 # Init DNN Model
-DNNWGAN_MODEL = WassersteinGanModel(
-        XGRID_TOY,
-        DNN_TOY_PDF,
-        PARAMS,
-        NOISE_DIM,
-        ACTIV,
-        OPTMZ
-    )
+DNNWGAN_MODEL = WGanModel(DNN_TOY_PDF, PARAMS)
 
 # Init DCNN Model
-DCNNWGAN_MODEL = DCNNWassersteinGanModel(
-        XGRID_TOY,
-        CNN_TOY_PDF,
-        PARAMS,
-        NOISE_DIM,
-        ACTIV,
-        OPTMZ
-    )
+DCNNWGAN_MODEL = DWGanModel(CNN_TOY_PDF, PARAMS)
 
 
 def test_dnn_model():

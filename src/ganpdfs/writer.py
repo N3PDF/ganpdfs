@@ -1,6 +1,6 @@
 """
-Module conataning functions that write down the grid from the outputs of the
-GANs. This generates the same output file as n3fit.
+Module conataning functions that write down the grid from the outputs of
+the GANs. This generates the same output file as n3fit.
 
 For futher details, refer to https://github.com/NNPDF/nnpdf/blob/
 8eb094f04c73b994502c1cf0f2592f5541e9c284/n3fit/src/n3fit/io/writer.py
@@ -12,9 +12,9 @@ from reportengine.compat import yaml
 
 
 class WriterWrapper:
-    """Class that writes the generated grid into a file. This has exactly the same
-    format as the N3FIT output ins such a way that the results can be evolved using 
-    evolven3fit.
+    """Class that writes the generated grid into a file. This has exactly
+    the same format as the N3FIT output ins such a way that the results can
+    be evolved using evolven3fit.
 
     Parameters
     ----------
@@ -39,7 +39,8 @@ class WriterWrapper:
         self.replica_index = replica_ind
 
     def write_data(self, replica_path):
-        """Write the data into an `.exportgrid` file using the `storegrid` method.
+        """Write the data into an `.exportgrid` file using the `storegrid`
+        method.
 
         Parameters
         ----------
@@ -83,7 +84,6 @@ def storegrid(fake_replica, xgrid, qscale, outputname, replica_ind, replica_path
 
     # TODO: Check why q^2
     lha = fake_replica.T
-
     data = {
         "replica": replica_ind,
         "q20": qscale,
