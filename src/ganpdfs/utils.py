@@ -44,7 +44,7 @@ def axes_width(ax, lw=1):
         ax.spines[axis].set_linewidth(lw)
 
 
-def latent_noise(pdf, rndgen, s=0.4):
+def latent_noise(pdf, rndgen, s=0.0):
     """Apply gaussian noise to the latent input.
 
     Parameters
@@ -63,7 +63,7 @@ def latent_noise(pdf, rndgen, s=0.4):
     return reslt
 
 
-def latent_sampling(pdf, nb_output, rndgen):
+def latent_sampling(pdf, nb_output, rndgen, nsx):
     """latent_sampling.
 
     Parameters
@@ -89,6 +89,7 @@ def latent_sampling(pdf, nb_output, rndgen):
         rslt = np.sum(rslt, axis=0) / rslt.shape[0]
         extra_latent.append(rslt)
     freslt = np.array(extra_latent)
+    freslt = latent_noise(freslt, rndgen, s=nsx)
     return freslt
 
 
