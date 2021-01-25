@@ -75,7 +75,8 @@ class GanTrain:
         self.latent_pdf = latent_sampling(
                 pdf,
                 params.get("tot_replicas"),
-                self.rndgen
+                self.rndgen,
+                self.params.get("noisiness", 0)
         )
 
         if not self.hyperopt and not params.get("use_saved_model"):
@@ -325,7 +326,7 @@ class GanTrain:
                             self.plot_generated_pdf(
                                 self.generator,
                                 self.params.get("out_replicas"),
-                                k,
+                                k + 1,
                                 self.folder)
 
             # Save generator model into a folder
