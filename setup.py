@@ -5,10 +5,13 @@ user'point-of-view.
 
 Documentation:
 https://the-hitchhikers-guide-to-packaging.readthedocs.io/en/latest/introduction.html
+
+Authors: - Stefano Carrazza
+         - Juan Cruz-Martinez
+         - Tanjona R. Rabemananjara
 """
 
 
-import sys
 import os
 import re
 from setuptools import setup
@@ -17,17 +20,32 @@ from setuptools import find_packages
 PACKAGE = "ganpdfs"
 
 # Used for pytest and code coverage
-TESTS_REQUIEREMENTS = ["pytest", "pytest-cov"]
-# Depending on the documents more dependencies can be added
-DOCS_REQUIEREMENTS = ["recommonmark", "sphinx_rtd_theme", "sphinxcontrib-bibtex"]
+TESTS_REQUIEREMENTS = [
+        "pylint",
+        "pytest",
+        "pytest-cov",
+        "pytest-env",
+        "pygit2",
+        "semver"
+    ]
+
 # Dependencies for the packages
-PACKAGE_REQUIEREMENTS = ["tensorflow", "numpy", "scipy", "tqdm", "hyperopt", "matplotlib"]
+PACKAGE_REQUIEREMENTS = [
+        "tqdm",
+        "numpy",
+        "scipy",
+        "hyperopt",
+        "rich",
+        "tensorflow",
+        "keras"
+    ]
 
-
-# Check python version
-if sys.version_info < (3, 6):
-    print(f"{PACKAGE} requires Python 3.6 or later")
-    sys.exit(1)
+# Depending on the documents more dependencies can be added
+DOCS_REQUIEREMENTS = [
+        "recommonmark",
+        "sphinx_rtd_theme",
+        "sphinxcontrib-bibtex"
+    ]
 
 # Check if LHAPDF is installed
 try:
@@ -59,17 +77,22 @@ def get_version():
 setup(
     name=PACKAGE,
     version=get_version(),
-    description="WGAN models for PDFs",
-    author="",
-    author_email="",
+    description="GANs for PDF replicas",
+    author="Stefano Carrazza, Juan Cruz-Martinez, Tanjona R. Rabemananjara",
+    author_email="tanjona.rabemananjara@mi.infn.it",
     url="https://github.com/N3PDF/ganpdfs",
     long_description=long_description,
-    install_requires=DOCS_REQUIEREMENTS,
+    long_description_content_type="text/markdown",
+    install_requires=PACKAGE_REQUIEREMENTS,
     extras_require={"docs": DOCS_REQUIEREMENTS, "tests": TESTS_REQUIEREMENTS},
-    entry_points={"console_scripts": ["ganpdfs = ganpdfs.run:main",]},
+    entry_points={"console_scripts":
+        [
+            "ganpdfs = ganpdfs.scripts.main:main",
+            "postgans = ganpdfs.scripts.postgans:main",
+        ]
+    },
     package_dir={"": "src"},
     packages=find_packages("src"),
-    zip_safe=False,
     classifiers=[
         "Operating System :: Unix",
         "Programming Language :: Python",
@@ -77,4 +100,6 @@ setup(
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Physics",
     ],
+    setup_requires=["wheel"],
+    python_requires='>=3.6'
 )

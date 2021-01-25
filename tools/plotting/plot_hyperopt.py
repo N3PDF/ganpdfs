@@ -15,7 +15,7 @@ def build_dataframe(trials, bestid):
     """
     data = {}
     data['iteration'] = [t['tid'] for t in trials]
-    data['loss'] = [t['result']['loss'] for t in trials]
+    data['fid'] = [t['result']['fid'] for t in trials]
 
     for p, k in enumerate(trials[0]['misc']['vals'].keys()):
         data[k] = []
@@ -34,29 +34,29 @@ def plot_scans(df, bestdf, trials, bestid, filename):
     Plot the hyperscan result.
     """
     print('plotting scan results...')
-    # plot loss
+    # plot fid
     nplots = len(trials[0]['misc']['vals'].keys())+1
     f, axs = plt.subplots(1, nplots, sharey=True, figsize=(50,10))
 
-    axs[0].scatter(df.get('iteration'), df.get('loss'))
+    axs[0].scatter(df.get('iteration'), df.get('fid'))
     axs[0].set_xlabel('Iteration')
-    axs[0].set_ylabel('Loss')
+    axs[0].set_ylabel('FID')
     #axs[0].set_yscale('log')
-    axs[0].scatter(bestdf.get('iteration'), bestdf.get('loss'))
+    axs[0].scatter(bestdf.get('iteration'), bestdf.get('fid'))
 
     # plot features
     for p, k in enumerate(trials[0]['misc']['vals'].keys()):
 
         if k in ('learning_rate'):
-            axs[p+1].scatter(df.get(k), df.get('loss'))
+            axs[p+1].scatter(df.get(k), df.get('fid'))
             if k in ('learning_rate'):
                 axs[p+1].set_xscale('log')
                 axs[p+1].set_xlim([1e-5, 1])
         else:
-            sns.violinplot(df.get(k), df.get('loss'), ax=axs[p+1], palette="Set2",cut=0.0)
-            sns.stripplot(df.get(k), df.get('loss'), ax=axs[p+1], color='gray', alpha=0.4)
+            sns.violinplot(df.get(k), df.get('fid'), ax=axs[p+1], palette="Set2",cut=0.0)
+            sns.stripplot(df.get(k), df.get('fid'), ax=axs[p+1], color='gray', alpha=0.4)
         axs[p+1].set_xlabel(k)
-        axs[p+1].scatter(bestdf.get(k), bestdf.get('loss'), color='orange')
+        axs[p+1].scatter(bestdf.get(k), bestdf.get('fid'), color='orange')
 
     plt.savefig("{0}".format(filename), bbox_inches='tight')
 
@@ -73,12 +73,12 @@ def plot_pairs(df, filename):
     sns.pairplot(df)
     plt.savefig("{0}".format(filename), bbox_inches='tight')
 
-def get_model_with_loss(trials, loss):
+def get_model_with_fid(trials, fid):
     count = 0
     folder = "losses_model"
     os.mkdir(folder)
     for ls in trials:
-        if ls['result']['loss'] <= loss:
+        if ls['result']['fid'] <= fid:
             # Remove undesired keys
             ls['misc']['space_vals'].pop('scan', None)
             ls['misc']['space_vals'].pop('fl', None)
@@ -110,8 +110,8 @@ def main(args):
     for t in input_trials:
         if t['state'] == 2:
             trials.append(t)
-            if t['result']['loss'] < best:
-                best = t['result']['loss']
+            if t['result']['fid'] < best:
+                best = t['result']['fid']
                 bestid = t
     print(f'Number of good trials {len(trials)}')
     pprint.pprint(bestid)
@@ -120,8 +120,8 @@ def main(args):
     df, bestdf = build_dataframe(trials, bestid)
 
 
-    # Get models with particular loss values
-    get_model_with_loss(trials, 0.0)
+    # Get models with particular fid values
+    get_model_with_fid(trials, 0.0)
 
     # plot scans
     plot_scans(df, bestdf, trials, bestid, f'{args.trials}_scan.png')
