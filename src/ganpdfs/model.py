@@ -48,7 +48,7 @@ class WGanModel:
         if self.genparams.get("set_hidden", False):
             for it in range(1, gnn_size + 1):
                 g_dense = ExtraDense(
-                    gnn_dim // (2 ** it),
+                    gnn_dim * (2 ** it),
                     self.discparams
                 )(g_dense)
                 g_dense = BatchNormalization()(g_dense)
