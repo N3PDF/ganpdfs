@@ -29,12 +29,6 @@ logger = logging.getLogger(__name__)
 STYLE = "bold blue"
 
 
-class FitRuncardException(Exception):
-    """Handle exception when copying the fit runcard"""
-
-    pass
-
-
 class GanTrain:
     """Training class that controls the training of the GANs. It sets
     the interplay between the two different networks (Discriminator &
@@ -226,8 +220,8 @@ class GanTrain:
             # Plot true replicas
             for true_rep in self.pdf:
                 axis.plot(
-                        self.xgrid[650:],
-                        true_rep[i + 2][650:],
+                        self.xgrid,
+                        true_rep[i + 2],
                         color="r",
                         label="true",
                         alpha=0.25
@@ -235,8 +229,8 @@ class GanTrain:
             # Plot fake replicas
             for fake_rep in generated_pdf:
                 axis.plot(
-                        self.xgrid[650:],
-                        fake_rep[i + 2][650:],
+                        self.xgrid,
+                        fake_rep[i + 2],
                         color="b",
                         label="fake",
                         alpha=0.35
@@ -245,9 +239,8 @@ class GanTrain:
             axis.grid(alpha=0.1, linewidth=1.5)
             axis.tick_params(length=7, width=1.5)
             axis.tick_params(which="minor", length=4, width=1)
-            axis.set_xlim(1e-1, self.xgrid[-1])
-            # axis.set_xlim(self.xgrid[50], self.xgrid[-1])
-            #axis.set_xscale('log')
+            axis.set_xlim(self.xgrid[0], self.xgrid[-1])
+            axis.set_xscale('log')
 
         fig.suptitle("Samples at Iteration %d" % niter)
         fig.savefig(
@@ -388,7 +381,7 @@ class GanTrain:
             #############################################################
             try:
                 fitpath = nnpath.get_results_path()
-                fitpath = fitpath + f"{self.params['pdf']}/filter.yml" 
+                fitpath = fitpath + f"{self.params['pdf']}/filter.yml"
                 shutil.copy(fitpath, f"{self.folder}/filter.yml")
             except IOError as excp:
                 console.print(
