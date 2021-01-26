@@ -30,17 +30,15 @@ gan_parameters:
   optimizer:
     optimizer_name    : RMSprop                      # options: SGD, Adam, RMSprop, Adadelta
     learning_rate     : 0.00005                      # Learning rate for the optimizer class
+  loss                : wasserstein                  # options: all tf.keras losses + wasserstein
 
 gen_parameters:
   size_networks       : 1                            # number of hidden layers
-  number_nodes        : 128                          # number of nodes in the first layer
+  number_nodes        : 500                          # number of nodes in the first layer
   use_bias            : False                        # if True add biases to the Layers
   bias_initializer    : zeros                        # list of initializer classes: https://keras.io/api/layers/initializers/
   kernel_initializer  : glorot_uniform               # list of initializer classes: https://keras.io/api/layers/initializers/
   weights_constraints : 1                            # Constrain weights values
-  optimizer:
-    optimizer_name    : RMSprop                      # options: SGD, Adam, RMSprop, Adadelta
-    learning_rate     : 0.00005                      # learning rate for the optimizer class
   loss                : binary_crossentropy          # options: all tf.keras losses + wasserstein
   activation          : leakyrelu                    # options: relu, leakyrelu, elu
 
@@ -54,7 +52,7 @@ disc_parameters:
   optimizer:
     optimizer_name    : RMSprop                      # options: SGD, Adam, RMSprop, Adadelta
     learning_rate     : 0.00005                      # learning rate for the optimizer class
-  loss                : binary_crossentropy          # options: all tf.keras losses + wasserstein
+  loss                : wasserstein                  # options: all tf.keras losses + wasserstein
   activation          : leakyrelu                    # options: relu, leakyrelu, elu
 
 ConvoluteOutput       : False
