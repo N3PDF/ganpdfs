@@ -14,6 +14,7 @@ from ganpdfs.utils import construct_cnn
 from ganpdfs.utils import do_nothing
 from ganpdfs.custom import ConvPDF
 from ganpdfs.custom import ExpLatent
+from ganpdfs.custom import GenDense
 from ganpdfs.custom import ExtraDense
 from ganpdfs.custom import get_optimizer
 from ganpdfs.custom import get_activation
@@ -36,27 +37,27 @@ class WGanModel:
         """
 
         # Parameter calls
-        g_shape = (self.fl_size, self.xg_size,)
-        g_input = Input(shape=g_shape)
         gnn_dim = self.genparams.get("number_nodes")
         gnn_size = self.genparams.get("size_networks")
         gs_activ = get_activation(self.genparams)
-        # Output of Lambda layer has a shape
-        # (None, nb_flavors, xgrid_size)
+
+        # Generator Architecture
+        g_shape = (self.fl_size, self.xg_size,)
+        g_input = Input(shape=g_shape)
         g_lambd = Lambda(do_nothing)(g_input)
         g_dense = ExpLatent(self.xg_size, use_bias=False)(g_lambd)
-        if self.genparams.get("set_hidden", False):
+        if self.genparams.get("custom_hidden", False):
             for it in range(1, gnn_size + 1):
-                g_dense = ExtraDense(
+                g_dense = GenDense(
                     gnn_dim * (2 ** it),
                     self.discparams
                 )(g_dense)
                 g_dense = BatchNormalization()(g_dense)
                 g_dense = gs_activ(g_dense)
-            g_dense = ExtraDense(
-                    self.xg_size,
-                    self.genparams
-            )(g_dense)
+            g_dense = ExtraDense(self.xg_size, self.genparams)(g_dense)
+        else:
+            for it in range(1, gnn_size + 1):
+                g_dense = GenDense(self.xg_size, self.discparams)(g_dense)
         g_model = Model(g_input, g_dense, name="Generator")
         assert g_model.output_shape == (None, self.fl_size, self.xg_size)
         return g_model

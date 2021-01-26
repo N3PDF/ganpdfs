@@ -9,6 +9,10 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.constraints import Constraint
 from tensorflow.keras.initializers import Zeros, Identity
+from tensorflow.keras.constraints import NonNeg, MinMaxNorm
+
+
+MAXVAL = 1e-5
 
 
 def wasserstein_loss(y_true, y_pred):
@@ -82,6 +86,12 @@ def get_activation(model_params):
         from tensorflow.keras.layers import LeakyReLU
         return LeakyReLU(alpha=0.2)
     else: raise ValueError("Activation not available.")
+
+
+def get_init(kinit_name):
+    """Get keras kernel initializers from runcadr."""
+
+    return getattr(initializers, kinit_name)
 
 
 def save_ckpt(generator, critic, adversarial):
@@ -159,6 +169,30 @@ class WeightsClipConstraint(Constraint):
         return {"value": self.value}
 
 
+class GenKinit(initializers.Initializer):
+    """Custom kernel initialization."""
+
+    def __init__(self, valmin=0, valmax=MAXVAL):
+        self.valmin = valmin
+        self.valmax = valmax
+
+    def __call__(self, shape, dtype=None):
+        initk = tf.random.uniform(
+                shape,
+                minval=self.valmin,
+                maxval=self.valmax,
+                dtype=dtype
+        )
+        return initk
+
+    def get_config(self):
+        config = {
+                'minval': self.valmin,
+                'maxval': self.valmax
+        }
+        return config
+
+
 class ExpLatent(Layer):
     """Keras layer that inherates from the keras `Layer` class. This layer
     class basically expands the input latent space tensors to the generator.
@@ -201,6 +235,60 @@ class ExpLatent(Layer):
         return output
 
 
+class GenDense(Layer):
+    """Keras layer that inherates from the keras `Layer` class. This layer
+    class  is proper to the `Generator` and takes the input parameters from
+    the input runcard which contains all the parameters for the layer.
+
+    Parameters
+    ----------
+    output_dim : int
+        Size of the output dimension.
+    dicparams : dict
+        Dictionary containing the layer parameters.
+    """
+
+    def __init__(self, output_dim, dicparams, **kwargs):
+        const = MinMaxNorm(min_value=0.0, max_value=MAXVAL, rate=1.0, axis=0)
+        self.units = output_dim
+        self.kconstraint = constraints.get(const)
+        self.kinitializer1 = Identity()
+        self.kinitializer2 = initializers.get(GenKinit())
+        self.binitializer = get_init(dicparams.get("bias_initializer"))
+        self.use_bias = dicparams.get("use_bias")
+        self.activation = dicparams.get("activation")
+        super(GenDense, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        self.kernel1 = self.add_weight(
+            name='kernel',
+            shape=(input_shape[-1], self.units),
+            initializer=self.kinitializer1,
+            trainable=False
+        )
+        self.kernel2 = self.add_weight(
+            name='kernel',
+            shape=(input_shape[-1], self.units),
+            initializer=self.kinitializer2,
+            trainable=True,
+            constraint=self.kconstraint
+        )
+        if self.use_bias:
+            self.bias = self.add_weight(
+                name='bias',
+                shape=(self.units),
+                initializer=self.binitializer,
+                trainable=True
+            )
+        else: self.bias = None
+        super(GenDense, self).build(input_shape)
+
+    def call(self, inputs):
+        output = K.dot(inputs, self.kernel1 + self.kernel2)
+        if self.use_bias: output = output + self.bias
+        return output
+
+
 class ExtraDense(Layer):
     """Keras layer that inherates from the keras `Layer` class. This layer
     class takes the input parameters from the input runcard which contains
@@ -219,8 +307,8 @@ class ExtraDense(Layer):
                 if output_dim != 1 else None
         self.units = output_dim
         self.kconstraint = constraints.get(wc)
-        self.binitializer = initializers.get(dicparams["bias_initializer"])
-        self.kinitializer = initializers.get(dicparams["kernel_initializer"])
+        self.binitializer = get_init(dicparams.get("bias_initializer"))
+        self.kinitializer = get_init(dicparams.get("kernel_initializer"))
         self.use_bias = dicparams.get("use_bias")
         self.activation = dicparams.get("activation")
         super(ExtraDense, self).__init__(**kwargs)
