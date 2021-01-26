@@ -228,8 +228,8 @@ class DWGanModel:
         """
 
         # Call parameters
-        if self.discparams.get("loss") != "wasserstein":
-            advloss = self.discparams.get("loss")
+        if self.ganparams.get("loss") != "wasserstein":
+            advloss = self.ganparams.get("loss")
         else: advloss = wasserstein_loss
         opt_name = self.ganparams.get("optimizer")
         adv_optimizer = get_optimizer(opt_name)
