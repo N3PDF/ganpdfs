@@ -114,7 +114,6 @@ def main():
             style="bold blue"
     )
     init_pdf = InputPDFs(hps["pdf"], qvalue, nf)
-    # Load the x-Grid
     # Choose the LHAPDF x-grid by default
     hps["pdfgrid"] = init_pdf.extract_xgrid()
     if hps["x_grid"] == "lhapdf":
@@ -122,9 +121,9 @@ def main():
     elif hps["x_grid"] == "custom":
         xgrid = XNodes().build_xgrid()
     elif hps["x_grid"] == "standard":
-        xgrid = init_pdf.custom_xgrid()
+        xgrid = init_pdf.custom_xgrid(nbpoints=200)
     else:
-        raise ValueError("{} is not a valid grid".format(hps["x_grid"]))
+        raise ValueError("{hps['x_grid']} is not a valid grid.")
 
     # Print summary table of PDF grids
     summary = Table(show_header=True, header_style="bold blue")
