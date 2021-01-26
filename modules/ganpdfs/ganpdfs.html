@@ -274,6 +274,12 @@ architecture.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt id="ganpdfs.custom.get_init">
+<code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">get_init</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kinit_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.get_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get keras kernel initializers from runcadr.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt id="ganpdfs.custom.save_ckpt">
 <code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">save_ckpt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">generator</span></em>, <em class="sig-param"><span class="n">critic</span></em>, <em class="sig-param"><span class="n">adversarial</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.save_ckpt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the training information into a file. This includes but
@@ -343,6 +349,24 @@ the module <cite>tensorflow.train</cite>, refer to
 </dd></dl>
 
 <dl class="py class">
+<dt id="ganpdfs.custom.GenKinit">
+<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">GenKinit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">valmin</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">valmax</span><span class="o">=</span><span class="default_value">1e-05</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenKinit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.initializers.initializers_v2.Initializer</span></code></p>
+<p>Custom kernel initialization.</p>
+<dl class="py method">
+<dt id="ganpdfs.custom.GenKinit.get_config">
+<code class="sig-name descname">get_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenKinit.get_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the configuration of the initializer as a JSON-serializable dict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A JSON-serializable Python dict.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt id="ganpdfs.custom.ExpLatent">
 <em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">ExpLatent</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ExpLatent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
@@ -376,6 +400,61 @@ layer instantiation and layer call.</p>
 <dl class="py method">
 <dt id="ganpdfs.custom.ExpLatent.call">
 <code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inputs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ExpLatent.call" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is where the layer’s logic lives.</p>
+<p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
+from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
+layers as additional arguments. Whereas <cite>tf.keras</cite> has <cite>compute_mask()</cite>
+method to support masking.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> – Input tensor, or list/tuple of input tensors.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments. Currently unused.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tensor or list/tuple of tensors.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ganpdfs.custom.GenDense">
+<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">GenDense</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenDense" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
+<p>Keras layer that inherates from the keras <cite>Layer</cite> class. This layer
+class  is proper to the <cite>Generator</cite> and takes the input parameters from
+the input runcard which contains all the parameters for the layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Size of the output dimension.</p></li>
+<li><p><strong>dicparams</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – Dictionary containing the layer parameters.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="ganpdfs.custom.GenDense.build">
+<code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenDense.build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the variables of the layer (optional, for subclass implementers).</p>
+<p>This is a method that implementers of subclasses of <cite>Layer</cite> or <cite>Model</cite>
+can override if they need a state-creation step in-between
+layer instantiation and layer call.</p>
+<p>This is typically used to create the weights of <cite>Layer</cite> subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>input_shape</strong> – Instance of <cite>TensorShape</cite>, or list of instances of
+<cite>TensorShape</cite> if the layer expects a list of inputs
+(one instance per input).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ganpdfs.custom.GenDense.call">
+<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inputs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenDense.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is where the layer’s logic lives.</p>
 <p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
 from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
