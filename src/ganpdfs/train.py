@@ -286,7 +286,6 @@ class GanTrain:
         half_batch = 1 if batch_size < 2 else int(batch_size / 2)
 
         if not self.params.get("use_saved_model"):
-            console.print("\n• Training:", style=STYLE)
             rdloss, fdloss, advloss = [], [], []
             with trange(total_steps, disable=self.hyperopt) as iter_range:
                 for k in iter_range:

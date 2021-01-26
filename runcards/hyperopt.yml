@@ -1,0 +1,72 @@
+#############################################################################################
+# Input PDF                                                                                 #
+#############################################################################################
+pdf: NNPDF40_nnlo_as_0118_1000
+
+#############################################################################################
+# PDF Grids:                                                                                #
+# ---------                                                                                 #
+# * Inittial scale q (in GeV)                                                               #
+# * Options for x-grid:                                                                     #
+#   - custom: Custom GANs xgrid as defined in the Module                                    #
+#   - lhapdf: Use the same xgrid as in the input PDF                                        #
+#############################################################################################
+q        : 1.65                                                                                 # Initial q0 value (in GeV)
+x_grid   : standard                                                                             # x-grid format. Options: standard, custom, lhapdf
+
+use_saved_model : False                                                                         # Skip training and use pre-trained generator model
+                                                                                                # All the parameters below will be skipped is set to TRUE
+ConvoluteOutput : False
+
+hyperopt:
+  #############################################################################################
+  # GAN setup:                                                                                #
+  # ---------                                                                                 #
+  # * Options for architecture:                                                               #
+  #   - dnn : Deep Neural Network                                                             #
+  #   - dcnn: Deep Convolutional Neural Network                                               #
+  #############################################################################################
+  architecture          : hp.choice('architecture', ['cnn', 'dnn'])                             # Architecture model. Options: cnn, dnn
+
+  gan_parameters:
+    optimizer:
+      optimizer_name    : hp.choice('optimizer_name', ['RMSprop', 'Adadelta'])                  # options: SGD, Adam, RMSprop, Adadelta
+      learning_rate     : hp.choice('learning_rate', [1.0, 0.00005])                            # Learning rate for the optimizer class
+    loss                : hp.choice('loss', ['wasserstein', 'binary_crossentropy'])             # options: all tf.keras losses + wasserstein
+
+  gen_parameters:
+    size_networks       : hp.choice('size_networks', [1, 2])                                    # number of hidden layers
+    number_nodes        : hp.choice('number_nodes', [500, 1000])                                # number of nodes in the first layer
+    use_bias            : hp.choice{'use_bias', [True, False])                                  # if True add biases to the Layers
+    bias_initializer    : hp.choice{'bias_initializer', ['zeros '])                             # list of initializer classes: https://keras.io/api/layers/initializers/
+    kernel_initializer  : hp.choice('kernel_initializer', ['GlorotUniform', 'RandomUniform'])   # list of initializer classes: https://keras.io/api/layers/initializers/
+    weights_constraints : hp.choice('weights_constraints', [0.1, 10.0])                         # Constrain weights values
+    loss                : hp.choice('loss', ['wasserstein', 'binary_crossentropy'])             # options: all tf.keras losses + wasserstein
+    activation          : hp.choice('activation', ['relu', 'elu', 'leakyrelu']                  # options: relu, leakyrelu, elu
+    custom_hidden       : hp.choice{'use_bias', [True, False])                                  # hidden layer configuration
+
+  disc_parameters:
+    size_networks       : hp.choice('size_networks', [1, 2])                                    # number of hidden layers
+    number_nodes        : hp.choice('number_nodes', [500, 1000])                                # number of nodes in the first layer
+    use_bias            : hp.choice{'use_bias', [True, False])                                  # if True add biases to the Layers
+    bias_initializer    : hp.choice{'bias_initializer', ['zeros '])                             # list of initializer classes: https://keras.io/api/layers/initializers/
+    kernel_initializer  : hp.choice('kernel_initializer', ['GlorotUniform', 'RandomUniform'])   # list of initializer classes: https://keras.io/api/layers/initializers/
+    weights_constraints : hp.choice('weights_constraints', [0.1, 10.0])                         # Constrain weights values
+    optimizer:
+      optimizer_name    : hp.choice('optimizer_name', ['RMSprop', 'Adadelta'])                  # options: SGD, Adam, RMSprop, Adadelta
+      learning_rate     : hp.choice('learning_rate', [1.0, 0.00005])                            # Learning rate for the optimizer class
+    loss                : hp.choice('loss', ['wasserstein', 'binary_crossentropy'])             # options: all tf.keras losses + wasserstein
+    activation          : hp.choice('activation', ['relu', 'elu', 'leakyrelu']                  # options: relu, leakyrelu, elu
+
+
+  #############################################################################################
+  # Training Setup:                                                                           #
+  # --------------                                                                            #
+  # * batch size                                                                              #
+  # * {i}_steps: number of steps to train a {i}={generator, discriminator/critic} at each     #
+  #   iteration.                                                                              #
+  #############################################################################################
+  nd_steps   : hp.choice('nd_steps', [3, 4, 5])                                                 # Number of steps to train the Discriminator for one training run
+  ng_steps   : hp.choice('ng_steps', [2, 3, 4])                                                 # Number of steps to train the Discriminator for one training run
+  batch_size : hp.choice('ng_steps', [40, 70])                                                  # Batch size per epoch in terms of percentage
+  epochs     : hp.choice('ng_steps', [1000, 2000])                                              # Number of epochs

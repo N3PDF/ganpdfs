@@ -26,7 +26,7 @@ deprecation._PRINT_DEPRECATION_WARNINGS = False
 
 console = Console()
 logging.basicConfig(
-        level=logging.INFO,
+        level=logging.WARNING,
         format="\033[0;32m[%(levelname)s]\033[97m %(message)s",
     )
 logger = logging.getLogger(__name__)
@@ -146,6 +146,7 @@ def main():
     hps["out_replicas"] = hps["input_replicas"] if args.fake is None else \
             args.fake - hps["input_replicas"]
 
+    console.print("\n• Training:", style="bold blue")
     # If hyperscan is True
     if args.hyperopt:
         hps["scan"] = True  # Enable hyperscan
