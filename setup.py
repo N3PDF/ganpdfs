@@ -1,102 +1,65 @@
 """
-This file contains the current state of packaging in Python using
-Distribution Utilities (Distutils) and its extension from the end
-user'point-of-view.
+Generating synthetic Monte Carlo (MC) Parton distribution Function (PDF) replicas
+using Generative Adversarial Networks (GANs).
+
+
+This program has been developed within the N3PDF group. (n3pdf.mi.infn.it/)
 
 Documentation:
 https://the-hitchhikers-guide-to-packaging.readthedocs.io/en/latest/introduction.html
 
 Authors: - Stefano Carrazza
-         - Juan Cruz-Martinez
+         - Juan E. Cruz-Martinez
          - Tanjona R. Rabemananjara
+
+License: GPL-3.0, 2020
 """
 
 
-import os
-import re
+import pathlib
 from setuptools import setup
 from setuptools import find_packages
 
 PACKAGE = "ganpdfs"
+THIS_DIR = pathlib.Path(__file__).parent
+LONG_DESCRIPTION = (THIS_DIR / "README.md").read_text()
+REQUIREMENTS = (THIS_DIR / "requirements.txt").read_text()
 
-# Used for pytest and code coverage
-TESTS_REQUIEREMENTS = [
-        "pylint",
-        "pytest",
-        "pytest-cov",
-        "pytest-env",
-        "pygit2",
-        "semver"
-    ]
-
-# Dependencies for the packages
-PACKAGE_REQUIEREMENTS = [
-        "tqdm",
-        "numpy",
-        "scipy",
-        "hyperopt",
-        "rich",
-        "tensorflow",
-        "keras"
-    ]
-
-# Depending on the documents more dependencies can be added
-DOCS_REQUIEREMENTS = [
-        "recommonmark",
-        "sphinx_rtd_theme",
-        "sphinxcontrib-bibtex"
-    ]
-
-# Check if LHAPDF is installed
 try:
     import lhapdf
 except ImportError:
     print(f"Note: {PACKAGE} requires the installation of LHAPDF")
 
-# Read through Readme
-try:
-    this_directory = os.path.abspath(os.path.dirname(__file__))
-    with open(os.path.join(this_directory, "README.md"), encoding="utf-8") as f:
-        long_description = f.read()
-except IOError:
-    print("Read me file not found.")
-
-
-def get_version():
-    """ Gets the version from the package's __init__ file
-    if there is some problem, let it happily fail """
-    VERSIONFILE = os.path.join("src", PACKAGE, "__init__.py")
-    initfile_lines = open(VERSIONFILE, "rt").readlines()
-    VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
-    for line in initfile_lines:
-        mo = re.search(VSRE, line, re.M)
-        if mo:
-            return mo.group(1)
-
 
 setup(
     name=PACKAGE,
-    version=get_version(),
+    version='0.0.0',
     description="GANs for PDF replicas",
-    author="Stefano Carrazza, Juan Cruz-Martinez, Tanjona R. Rabemananjara",
-    author_email="tanjona.rabemananjara@mi.infn.it",
-    url="https://github.com/N3PDF/ganpdfs",
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
-    install_requires=PACKAGE_REQUIEREMENTS,
-    extras_require={"docs": DOCS_REQUIEREMENTS, "tests": TESTS_REQUIEREMENTS},
-    entry_points={"console_scripts":
-        [
-            "ganpdfs = ganpdfs.scripts.main:main",
+    author="N3PDF",
+    author_email="tanjona.rabemananjara@mi.infn.it",
+    license="GPL 3.0",
+    url="https://github.com/N3PDF/ganpdfs",
+    zip_safe=False,
+    project_urls={
+        "Documentation": "https://n3pdf.github.io/ganpdfs/",
+        "Source": "https://github.com/N3PDF/ganpdfs"
+    },
+    entry_points={
+        "console_scripts": [
+            "ganpdfs = ganpdfs.scripts.main:main"
             "postgans = ganpdfs.scripts.postgans:main",
         ]
     },
     package_dir={"": "src"},
     packages=find_packages("src"),
+    install_requires=REQUIREMENTS,
     classifiers=[
         "Operating System :: Unix",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3 :: Only",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Physics",
     ],
