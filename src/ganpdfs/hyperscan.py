@@ -20,6 +20,37 @@ RE_FUNCTION = re.compile("(?<=hp\.)\w*(?=\()")
 RE_ARGS = re.compile("\(.*\)$")
 
 
+def recursive_dic(hyperdict):
+    """Parse netsed dictionary for hyperopt.
+
+    Parameters
+    ----------
+    hyperdict: dict
+        Dictionary containing information on the hyper-parameter tune
+
+    Returns
+    -------
+    dict:
+        Dictionary where the values of the keys are hp.functions
+    """
+    newhyperdict = {}
+    for key, value in hyperdict.items():
+        if isinstance(value, dict):
+            newhyperdict[key] = recursive_dic(value)
+        else:
+            fname = RE_FUNCTION.search(value)
+            if fname is None:
+                raise ValueError(f"No hp.function found in ${key}:{value}")
+            fname = fname[0]
+            args = RE_ARGS.search(value)
+            if args is None:
+                raise ValueError(f"No arguments found in ${key}:{value}")
+            vals = ast.literal_eval(args[0])
+            newhyperdict[key] = getattr(hp, fname)(*vals)
+    return newhyperdict
+
+
+
 def load_yaml(runcard_file):
     """Load YAML file.
 
@@ -31,16 +62,8 @@ def load_yaml(runcard_file):
     with open(runcard_file, "r") as stream:
         runcard = yaml.load(stream, Loader=yaml.FullLoader)
     hyperdict = runcard.get("hyperopt", {})
-    for key, value in hyperdict.items():
-        fname = RE_FUNCTION.search(value)
-        if fname is None:
-            raise ValueError(f"No hp.function found in ${key}:{value}")
-        fname = fname[0]
-        args = RE_ARGS.search(value)
-        if args is None:
-            raise ValueError(f"No arguments found in ${key}:{value}")
-        vals = ast.literal_eval(args[0])
-        runcard[key] = getattr(hp, fname)(*vals)
+    newhyperdict = recursive_dic(hyperdict)
+    runcard.update(newhyperdict)
     return runcard
 
 
@@ -119,4 +142,4 @@ def hyper_train(params, xpdf, pdf):
         nb_epochs=params.get("epochs"),
         batch_size=BATCH_SIZE
     )
-    return {"fid": smm_result, "status": STATUS_OK}
+    return {"loss": smm_result, "status": STATUS_OK}
