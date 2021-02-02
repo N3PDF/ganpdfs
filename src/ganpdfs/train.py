@@ -302,7 +302,7 @@ class GanTrain:
                         f_dloss = self.critic.train_on_batch(f_xinput, f_ydisc)
 
                     # Make sure that the Critic is not trainable
-                    self.critic.trainable = False
+                    self.critic.trainable = self.params["disc_parameters"].get("trainable", False)
                     for _ in range(self.params.get("ng_steps", 3)):
                         noise, y_gen = self.sample_output_noise(batch_size)
                         gloss = self.adversarial.train_on_batch(noise, y_gen)
@@ -330,14 +330,13 @@ class GanTrain:
                 with open(f"{output_losses}/losses_info.json", "w") as outfile:
                     json.dump(loss_info, outfile, indent=2)
         else:
+            # Generate fake replicas with the trained model
             console.print(
                 "\n• Making predictions using a pre-trained Generator model.",
                 style="bold magenta"
             )
             self.generator = load_generator_model("pre-trained-model")
 
-        # Generate fake replicas with the trained model
-        console.print("\n• Generating fake replicas with (pre)-trained model.", style=STYLE)
         fake_pdf, _ = self.fake_samples(self.generator, self.params.get("out_replicas"))
 
         if not self.hyperopt:
