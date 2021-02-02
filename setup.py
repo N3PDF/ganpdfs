@@ -48,7 +48,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "ganpdfs = ganpdfs.scripts.main:main"
+            "ganpdfs = ganpdfs.scripts.main:main",
             "postgans = ganpdfs.scripts.postgans:main",
         ]
     },
