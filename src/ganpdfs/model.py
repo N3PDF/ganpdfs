@@ -37,9 +37,7 @@ class WGanModel:
         """
 
         # Parameter calls
-        gnn_dim = self.genparams.get("number_nodes")
         gnn_size = self.genparams.get("size_networks")
-        gs_activ = get_activation(self.genparams)
 
         # Generator Architecture
         g_shape = (self.fl_size, self.xg_size,)
@@ -47,6 +45,8 @@ class WGanModel:
         g_lambd = Lambda(do_nothing)(g_input)
         g_dense = ExpLatent(self.xg_size, use_bias=False)(g_lambd)
         if self.genparams.get("custom_hidden", False):
+            gnn_dim = self.genparams.get("number_nodes")
+            gs_activ = get_activation(self.genparams)
             for it in range(1, gnn_size + 1):
                 g_dense = GenDense(
                     gnn_dim * (2 ** it),
@@ -67,7 +67,8 @@ class WGanModel:
         """
 
         # Parameter calls
-        if self.discparams.get("loss") != "wasserstein":
+        inputloss = self.discparams.get("loss", "wasserstein")
+        if inputloss != "wasserstein":
             dloss = self.discparams.get("loss")
         else: dloss = wasserstein_loss
         dnn_dim = self.discparams.get("number_nodes")
@@ -107,8 +108,9 @@ class WGanModel:
         """
 
         # Call parameters
-        if self.discparams.get("loss") != "wasserstein":
-            advloss = self.discparams.get("loss")
+        inputloss = self.ganparams.get("loss", "wasserstein")
+        if inputloss != "wasserstein":
+            advloss = self.ganparams.get("loss")
         else: advloss = wasserstein_loss
         opt_name = self.ganparams.get("optimizer")
         adv_optimizer = get_optimizer(opt_name)
