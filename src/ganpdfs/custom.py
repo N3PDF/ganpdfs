@@ -76,7 +76,7 @@ def get_activation(model_params):
         Activation function.
     """
 
-    if model_params.get("activation" == "elu"):
+    if model_params.get("activation") == "elu":
         from tensorflow.keras.layers import ELU
         return ELU(alpha=1.0)
     elif model_params.get("activation") == "relu":
@@ -254,8 +254,8 @@ class GenDense(Layer):
         self.kconstraint = constraints.get(const)
         self.kinitializer1 = Identity()
         self.kinitializer2 = initializers.get(GenKinit())
-        self.binitializer = get_init(dicparams.get("bias_initializer"))
-        self.use_bias = dicparams.get("use_bias")
+        self.binitializer = get_init(dicparams.get("bias_initializer", "zeros"))
+        self.use_bias = dicparams.get("use_bias", False)
         self.activation = dicparams.get("activation")
         super(GenDense, self).__init__(**kwargs)
 
@@ -307,9 +307,9 @@ class ExtraDense(Layer):
                 if output_dim != 1 else None
         self.units = output_dim
         self.kconstraint = constraints.get(wc)
-        self.binitializer = get_init(dicparams.get("bias_initializer"))
+        self.binitializer = get_init(dicparams.get("bias_initializer", "zeros"))
         self.kinitializer = get_init(dicparams.get("kernel_initializer"))
-        self.use_bias = dicparams.get("use_bias")
+        self.use_bias = dicparams.get("use_bias", False)
         self.activation = dicparams.get("activation")
         super(ExtraDense, self).__init__(**kwargs)
 
