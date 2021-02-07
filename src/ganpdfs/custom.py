@@ -12,9 +12,6 @@ from tensorflow.keras.initializers import Zeros, Identity
 from tensorflow.keras.constraints import NonNeg, MinMaxNorm
 
 
-MAXVAL = 1e-5
-
-
 def wasserstein_loss(y_true, y_pred):
     """Compute the wasserstein loss from the true and predictions.
     The loss function is implemented by multiplying the expected
@@ -172,7 +169,7 @@ class WeightsClipConstraint(Constraint):
 class GenKinit(initializers.Initializer):
     """Custom kernel initialization."""
 
-    def __init__(self, valmin=0, valmax=MAXVAL):
+    def __init__(self, valmin=0, valmax=1e-5):
         self.valmin = valmin
         self.valmax = valmax
 

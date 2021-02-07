@@ -1,7 +1,7 @@
 #############################################################################################
 # Input PDF                                                                                 #
 #############################################################################################
-pdf: 210127-n3fit-001
+pdf: NNPDF40_nnlo_as_0118_1000rep
 
 #############################################################################################
 # PDF Grids:                                                                                #
@@ -30,7 +30,7 @@ hyperopt:
   #############################################################################################
   gan_parameters:
     optimizer:
-      optimizer_name    : hp.choice('gan_opt', ['RMSprop'])                                     # options: SGD, Adam, RMSprop, Adadelta
+      optimizer_name    : hp.choice('gan_opt', ['RMSprop', 'Adadelta'])                         # options: SGD, Adam, RMSprop, Adadelta
       learning_rate     : hp.choice('gan_lr', [0.00005, 0.0005])                                # Learning rate for the optimizer class
 
   gen_parameters:
@@ -39,13 +39,13 @@ hyperopt:
 
   disc_parameters:
     size_networks       : hp.choice('d_nn', [1, 2])                                             # number of hidden layers
-    number_nodes        : hp.choice('d_nodes', [200, 400, 600, 1000])                           # number of nodes in the first layer
+    number_nodes        : hp.choice('d_nodes', [250, 450, 650, 1000])                           # number of nodes in the first layer
     kernel_initializer  : hp.choice('d_kini', ['GlorotUniform', 'RandomUniform'])               # list of initializer classes: https://keras.io/api/layers/initializers/
-    weights_constraints : hp.choice('d_wc', [0.01, 0.1])                                        # Constrain weights values
+    weights_constraints : hp.choice('d_wc', [0.01, 0.1, 1])                                     # Constrain weights values
     optimizer:
-      optimizer_name    : hp.choice('d_opt', ['RMSprop'])                                       # options: SGD, Adam, RMSprop, Adadelta
+      optimizer_name    : hp.choice('d_opt', ['RMSprop', 'Adadelta'])                           # options: SGD, Adam, RMSprop, Adadelta
       learning_rate     : hp.choice('d_lr', [0.00005, 0.0005])                                  # Learning rate for the optimizer class
-    activation          : hp.choice('d_act', ['relu', 'elu', 'leakyrelu'])                      # options: relu, leakyrelu, elu
+    activation          : hp.choice('d_act', ['relu', 'leakyrelu'])                             # options: relu, leakyrelu, elu
     trainable           : hp.choice('d_train', [True, False])
 
 
@@ -58,5 +58,5 @@ hyperopt:
   #############################################################################################
   nd_steps   : hp.choice('nd_steps', [2, 3, 4])                                                 # Number of steps to train the Discriminator for one training run
   ng_steps   : hp.choice('ng_steps', [1, 2, 3])                                                 # Number of steps to train the Discriminator for one training run
-  batch_size : hp.choice('batch_size', [40, 70])                                                # Batch size per epoch in terms of percentage
+  batch_size : hp.choice('batch_size', [30, 50, 70])                                            # Batch size per epoch in terms of percentage
   epochs     : hp.choice('epochs', [1000, 1500, 2000])                                          # Number of epochs

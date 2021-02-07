@@ -8,11 +8,7 @@ will be available in https://n3pdf.github.io/ganpdfs/.
 
 To install the `ganpdfs` package, just type
 ```bash
-python setup.py install
-```
-or if you are a developer
-```bash
-python setup.py develop
+python setup.py install or python setup.py develop (if you are a developper)
 ```
 The package can be installed via the Python Package Index (PyPI) by running:
 ```bash
@@ -25,7 +21,7 @@ The code requires as an input a `runcard.yml` file in which the name of the PDF 
 characteristics of the Neural Network Models are defined. Examples of runcards can be found
 in the `runcard` folder.
 ```bash
-ganpdfs <runcard> -o <output_name> [--fake TOT_FAKE_SIZE]
+ganpdfs runcard/default.yml [--fake TOT_FAKE_SIZE]
 ```
 This will generate the following folders:
 ```bash
@@ -35,7 +31,7 @@ pre-trained-model/
 └── variables
     ├── variables.data-00000-of-00001
     └── variables.index
-output_name/
+<PRIOR_PDF_NAME>_enhanced/
 └── nnfit
 ```
 where the `pre-trained-model` folder contains the just trained model. Hence in case you do not
@@ -47,13 +43,13 @@ structure as the output from N3FIT).
 
 Hence, in order to evolve the generated output grids, just run:
 ```bash
-evolven3fit <output_name>
+evolven3fit <PRIOR_PDF_NAME>_enhanced
 ```
 
 Then, to link the generated PDF set to the LHAPDF data directory, use the `postgans` script by
 running:
 ```bash
-postgans --pdf PRIOR_PDF_NAME --nenhanced TOT_FAKE_SIZE
+postgans --pdf <PRIOR_PDF_NAME> --nenhanced TOT_FAKE_SIZE
 ```
 
 #### Hyper-parameter opitmization
