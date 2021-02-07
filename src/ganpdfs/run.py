@@ -3,6 +3,7 @@
 import os
 import shutil
 import logging
+import pathlib
 import argparse
 import numpy as np
 
@@ -69,7 +70,6 @@ def argument_parser():
     parser.add_argument("-f", "--force", action="store_true")
     parser.add_argument("runcard", help="A json file with the setup.")
     parser.add_argument("-c", "--cluster", help="Enable cluster scan.")
-    parser.add_argument("-o", "--output", help="The output folder.", required=True)
     parser.add_argument("-s", "--hyperopt", type=int, help="Enable hyperopt scan.")
     parser.add_argument("-k", "--fake", type=posint, help="Number of output replicas.")
     parser.add_argument("-n", "--nreplicas", type=posint, help="Number of input replicas.")
@@ -81,14 +81,6 @@ def argument_parser():
     if args.force:
         logger.warning("Running with --force will overwrite existing results.")
 
-    # prepare the output folder
-    if not os.path.exists(args.output):
-        os.mkdir(args.output)
-    elif args.force:
-        shutil.rmtree(args.output)
-        os.mkdir(args.output)
-    else:
-        raise Exception(f'{args.output} exists, use "--force" to overwrite.')
     return args
 
 
@@ -97,18 +89,16 @@ def main():
     """
     splash()
     args = argument_parser()
-    out = args.output.strip("/")
-
-    # Copy runcard to output folder
-    shutil.copyfile(args.runcard, f"{out}/input-runcard.json")
 
     hps = load_yaml(args.runcard)
-    hps["save_output"] = out
     hps["tot_replicas"] = args.fake
     nf = hps.get("nf", NF)
     qvalue = hps.get("q", Q0)
+    hps["save_output"] = str(hps["pdf"]) + "_enhanced"
+    out_folder = pathlib.Path(hps["save_output"]).absolute()
+    out_folder.mkdir(exist_ok=True)
+    shutil.copyfile(args.runcard, f"{out_folder}/input-runcard.json")
 
-    # Generate PDF grids (one time generation)
     console.print(
             "\n• Computing PDF grids with the following parameters:",
             style="bold blue"
@@ -156,7 +146,7 @@ def main():
 
         # Run hyper scan
         hps = run_hyperparameter_scan(
-            fn_hyper_train, hps, args.hyperopt, args.cluster, out
+            fn_hyper_train, hps, args.hyperopt, args.cluster, out_folder
         )
 
     # Run the best Model and output logs
