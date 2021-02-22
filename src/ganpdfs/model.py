@@ -57,7 +57,7 @@ class WGanModel:
             g_dense = ExtraDense(self.xg_size, self.genparams)(g_dense)
         else:
             for it in range(1, gnn_size + 1):
-                g_dense = GenDense(self.xg_size, self.discparams)(g_dense)
+                g_dense = GenDense(self.xg_size, self.genparams)(g_dense)
         g_model = Model(g_input, g_dense, name="Generator")
         assert g_model.output_shape == (None, self.fl_size, self.xg_size)
         return g_model

@@ -246,7 +246,7 @@ class GenDense(Layer):
     """
 
     def __init__(self, output_dim, dicparams, **kwargs):
-        const = MinMaxNorm(min_value=0.0, max_value=MAXVAL, rate=1.0, axis=0)
+        const = MinMaxNorm(min_value=0.0, max_value=1e-5, rate=1.0, axis=0)
         self.units = output_dim
         self.kconstraint = constraints.get(const)
         self.kinitializer1 = Identity()
