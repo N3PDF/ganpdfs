@@ -32,7 +32,6 @@
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -214,7 +213,7 @@
 <span id="ganpdfs-custom-module"></span><h2>ganpdfs.custom module<a class="headerlink" href="#module-ganpdfs.custom" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="ganpdfs.custom.wasserstein_loss">
-<code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">wasserstein_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y_true</span></em>, <em class="sig-param"><span class="n">y_pred</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.wasserstein_loss" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">wasserstein_loss</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.wasserstein_loss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the wasserstein loss from the true and predictions.
 The loss function is implemented by multiplying the expected
 label for each sample by the predicted score (element wise),
@@ -239,7 +238,7 @@ true values.</p>
 
 <dl class="py function">
 <dt id="ganpdfs.custom.get_optimizer">
-<code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">get_optimizer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">optimizer</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.get_optimizer" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">get_optimizer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.get_optimizer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overwrite keras default parameters for optimizer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -256,7 +255,7 @@ true values.</p>
 
 <dl class="py function">
 <dt id="ganpdfs.custom.get_activation">
-<code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">get_activation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model_params</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.get_activation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">get_activation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.get_activation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract activation functions from the input parameters.
 This is necessary for advanced activation functions.</p>
 <dl class="field-list simple">
@@ -275,13 +274,13 @@ architecture.</p>
 
 <dl class="py function">
 <dt id="ganpdfs.custom.get_init">
-<code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">get_init</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kinit_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.get_init" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">get_init</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kinit_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.get_init" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get keras kernel initializers from runcadr.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ganpdfs.custom.save_ckpt">
-<code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">save_ckpt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">generator</span></em>, <em class="sig-param"><span class="n">critic</span></em>, <em class="sig-param"><span class="n">adversarial</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.save_ckpt" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">save_ckpt</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adversarial</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.save_ckpt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the training information into a file. This includes but
 not limited to the information on the wieghts and the biases of
 the given network. The GANs model is a combination of three
@@ -310,7 +309,7 @@ the module <cite>tensorflow.train</cite>, refer to
 
 <dl class="py function">
 <dt id="ganpdfs.custom.load_generator_model">
-<code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">load_generator_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.load_generator_model" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">load_generator_model</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.load_generator_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a saved/trained keras model from a folder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -327,7 +326,7 @@ the module <cite>tensorflow.train</cite>, refer to
 
 <dl class="py class">
 <dt id="ganpdfs.custom.WeightsClipConstraint">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">WeightsClipConstraint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.WeightsClipConstraint" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">WeightsClipConstraint</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.WeightsClipConstraint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.constraints.Constraint</span></code></p>
 <p>Put constraints on the weights of a given layer.</p>
 <dl class="field-list simple">
@@ -343,19 +342,19 @@ the module <cite>tensorflow.train</cite>, refer to
 </dl>
 <dl class="py method">
 <dt id="ganpdfs.custom.WeightsClipConstraint.get_config">
-<code class="sig-name descname">get_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.WeightsClipConstraint.get_config" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.WeightsClipConstraint.get_config" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt id="ganpdfs.custom.GenKinit">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">GenKinit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">valmin</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">valmax</span><span class="o">=</span><span class="default_value">1e-05</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenKinit" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">GenKinit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">valmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenKinit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.initializers.initializers_v2.Initializer</span></code></p>
 <p>Custom kernel initialization.</p>
 <dl class="py method">
 <dt id="ganpdfs.custom.GenKinit.get_config">
-<code class="sig-name descname">get_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenKinit.get_config" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenKinit.get_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the configuration of the initializer as a JSON-serializable dict.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -368,7 +367,7 @@ the module <cite>tensorflow.train</cite>, refer to
 
 <dl class="py class">
 <dt id="ganpdfs.custom.ExpLatent">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">ExpLatent</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ExpLatent" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">ExpLatent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ExpLatent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
 <p>Keras layer that inherates from the keras <cite>Layer</cite> class. This layer
 class basically expands the input latent space tensors to the generator.</p>
@@ -382,7 +381,7 @@ class basically expands the input latent space tensors to the generator.</p>
 </dl>
 <dl class="py method">
 <dt id="ganpdfs.custom.ExpLatent.build">
-<code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ExpLatent.build" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">build</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ExpLatent.build" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates the variables of the layer (optional, for subclass implementers).</p>
 <p>This is a method that implementers of subclasses of <cite>Layer</cite> or <cite>Model</cite>
 can override if they need a state-creation step in-between
@@ -399,7 +398,7 @@ layer instantiation and layer call.</p>
 
 <dl class="py method">
 <dt id="ganpdfs.custom.ExpLatent.call">
-<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inputs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ExpLatent.call" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ExpLatent.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is where the layer’s logic lives.</p>
 <p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
 from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
@@ -422,7 +421,7 @@ method to support masking.</p>
 
 <dl class="py class">
 <dt id="ganpdfs.custom.GenDense">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">GenDense</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenDense" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">GenDense</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenDense" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
 <p>Keras layer that inherates from the keras <cite>Layer</cite> class. This layer
 class  is proper to the <cite>Generator</cite> and takes the input parameters from
@@ -437,7 +436,7 @@ the input runcard which contains all the parameters for the layer.</p>
 </dl>
 <dl class="py method">
 <dt id="ganpdfs.custom.GenDense.build">
-<code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenDense.build" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">build</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenDense.build" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates the variables of the layer (optional, for subclass implementers).</p>
 <p>This is a method that implementers of subclasses of <cite>Layer</cite> or <cite>Model</cite>
 can override if they need a state-creation step in-between
@@ -454,7 +453,7 @@ layer instantiation and layer call.</p>
 
 <dl class="py method">
 <dt id="ganpdfs.custom.GenDense.call">
-<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inputs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenDense.call" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenDense.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is where the layer’s logic lives.</p>
 <p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
 from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
@@ -477,7 +476,7 @@ method to support masking.</p>
 
 <dl class="py class">
 <dt id="ganpdfs.custom.ExtraDense">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">ExtraDense</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ExtraDense" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">ExtraDense</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ExtraDense" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
 <p>Keras layer that inherates from the keras <cite>Layer</cite> class. This layer
 class takes the input parameters from the input runcard which contains
@@ -492,7 +491,7 @@ all the parameters for the layer.</p>
 </dl>
 <dl class="py method">
 <dt id="ganpdfs.custom.ExtraDense.build">
-<code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ExtraDense.build" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">build</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ExtraDense.build" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates the variables of the layer (optional, for subclass implementers).</p>
 <p>This is a method that implementers of subclasses of <cite>Layer</cite> or <cite>Model</cite>
 can override if they need a state-creation step in-between
@@ -509,7 +508,7 @@ layer instantiation and layer call.</p>
 
 <dl class="py method">
 <dt id="ganpdfs.custom.ExtraDense.call">
-<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inputs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ExtraDense.call" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ExtraDense.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is where the layer’s logic lives.</p>
 <p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
 from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
@@ -532,7 +531,7 @@ method to support masking.</p>
 
 <dl class="py class">
 <dt id="ganpdfs.custom.ConvPDF">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">ConvPDF</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">ConvPDF</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
 <p>Convolute the output of the previous layer with
 a subsample of the input/prior replica.</p>
@@ -543,7 +542,7 @@ a subsample of the input/prior replica.</p>
 </dl>
 <dl class="py method">
 <dt id="ganpdfs.custom.ConvPDF.compute_output_shape">
-<code class="sig-name descname">compute_output_shape</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF.compute_output_shape" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">compute_output_shape</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF.compute_output_shape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the output shape of the layer.</p>
 <p>If the layer has not been built, this method will call <cite>build</cite> on the
 layer. This assumes that the layer will later be used with inputs that
@@ -563,7 +562,7 @@ instead of an integer.</p>
 
 <dl class="py method">
 <dt id="ganpdfs.custom.ConvPDF.call">
-<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">previous_layer</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF.call" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">previous_layer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is where the layer’s logic lives.</p>
 <p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
 from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
@@ -586,12 +585,12 @@ method to support masking.</p>
 
 <dl class="py class">
 <dt id="ganpdfs.custom.ConvXgrid">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">ConvXgrid</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvXgrid" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">ConvXgrid</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvXgrid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
 <p>Convolute the output of the previous layer with the input x-grid.</p>
 <dl class="py method">
 <dt id="ganpdfs.custom.ConvXgrid.build">
-<code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvXgrid.build" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">build</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvXgrid.build" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates the variables of the layer (optional, for subclass implementers).</p>
 <p>This is a method that implementers of subclasses of <cite>Layer</cite> or <cite>Model</cite>
 can override if they need a state-creation step in-between
@@ -608,7 +607,7 @@ layer instantiation and layer call.</p>
 
 <dl class="py method">
 <dt id="ganpdfs.custom.ConvXgrid.call">
-<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvXgrid.call" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvXgrid.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is where the layer’s logic lives.</p>
 <p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
 from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
@@ -629,7 +628,7 @@ method to support masking.</p>
 
 <dl class="py method">
 <dt id="ganpdfs.custom.ConvXgrid.compute_output_shape">
-<code class="sig-name descname">compute_output_shape</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvXgrid.compute_output_shape" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">compute_output_shape</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvXgrid.compute_output_shape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the output shape of the layer.</p>
 <p>If the layer has not been built, this method will call <cite>build</cite> on the
 layer. This assumes that the layer will later be used with inputs that
@@ -651,7 +650,7 @@ instead of an integer.</p>
 
 <dl class="py class">
 <dt id="ganpdfs.custom.PreprocessFit">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.custom.</code><code class="sig-name descname">PreprocessFit</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.PreprocessFit" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">PreprocessFit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.PreprocessFit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
 <p>Add preprocessing to the output of the previous layer. This is
 expected to assure the PDF-like behavior of the generated samples.</p>
@@ -662,7 +661,7 @@ expected to assure the PDF-like behavior of the generated samples.</p>
 </dl>
 <dl class="py method">
 <dt id="ganpdfs.custom.PreprocessFit.build">
-<code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.PreprocessFit.build" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">build</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.PreprocessFit.build" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates the variables of the layer (optional, for subclass implementers).</p>
 <p>This is a method that implementers of subclasses of <cite>Layer</cite> or <cite>Model</cite>
 can override if they need a state-creation step in-between
@@ -679,7 +678,7 @@ layer instantiation and layer call.</p>
 
 <dl class="py method">
 <dt id="ganpdfs.custom.PreprocessFit.compute_output_shape">
-<code class="sig-name descname">compute_output_shape</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.PreprocessFit.compute_output_shape" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">compute_output_shape</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.PreprocessFit.compute_output_shape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the output shape of the layer.</p>
 <p>If the layer has not been built, this method will call <cite>build</cite> on the
 layer. This assumes that the layer will later be used with inputs that
@@ -699,7 +698,7 @@ instead of an integer.</p>
 
 <dl class="py method">
 <dt id="ganpdfs.custom.PreprocessFit.call">
-<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.PreprocessFit.call" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.PreprocessFit.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is where the layer’s logic lives.</p>
 <p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
 from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
@@ -725,7 +724,7 @@ method to support masking.</p>
 <span id="ganpdfs-filetrials-module"></span><h2>ganpdfs.filetrials module<a class="headerlink" href="#module-ganpdfs.filetrials" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="ganpdfs.filetrials.space_eval_trial">
-<code class="sig-prename descclassname">ganpdfs.filetrials.</code><code class="sig-name descname">space_eval_trial</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">space</span></em>, <em class="sig-param"><span class="n">trial</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.filetrials.space_eval_trial" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.filetrials.</span></code><code class="sig-name descname"><span class="pre">space_eval_trial</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.filetrials.space_eval_trial" title="Permalink to this definition">¶</a></dt>
 <dd><p>space_eval_trial.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -739,18 +738,18 @@ method to support masking.</p>
 
 <dl class="py class">
 <dt id="ganpdfs.filetrials.FileTrials">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.filetrials.</code><code class="sig-name descname">FileTrials</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">replica_path</span></em>, <em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parameters</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">exp_key</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">refresh</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.filetrials.FileTrials" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.filetrials.</span></code><code class="sig-name descname"><span class="pre">FileTrials</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">replica_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.filetrials.FileTrials" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">hyperopt.base.Trials</span></code></p>
 <p>FileTrials.</p>
 <dl class="py method">
 <dt id="ganpdfs.filetrials.FileTrials.refresh">
-<code class="sig-name descname">refresh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.filetrials.FileTrials.refresh" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">refresh</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.filetrials.FileTrials.refresh" title="Permalink to this definition">¶</a></dt>
 <dd><p>refresh.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ganpdfs.filetrials.FileTrials.new_trial_ids">
-<code class="sig-name descname">new_trial_ids</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">N</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.filetrials.FileTrials.new_trial_ids" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">new_trial_ids</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.filetrials.FileTrials.new_trial_ids" title="Permalink to this definition">¶</a></dt>
 <dd><p>new_trial_ids.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -761,7 +760,7 @@ method to support masking.</p>
 
 <dl class="py method">
 <dt id="ganpdfs.filetrials.FileTrials.new_trial_docs">
-<code class="sig-name descname">new_trial_docs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tids</span></em>, <em class="sig-param"><span class="n">specs</span></em>, <em class="sig-param"><span class="n">results</span></em>, <em class="sig-param"><span class="n">miscs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.filetrials.FileTrials.new_trial_docs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">new_trial_docs</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">miscs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.filetrials.FileTrials.new_trial_docs" title="Permalink to this definition">¶</a></dt>
 <dd><p>new_trial_docs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -785,24 +784,24 @@ method to support masking.</p>
 <span id="ganpdfs-model-module"></span><h2>ganpdfs.model module<a class="headerlink" href="#module-ganpdfs.model" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="ganpdfs.model.WGanModel">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.model.</code><code class="sig-name descname">WGanModel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf</span></em>, <em class="sig-param"><span class="n">params</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WGanModel" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.model.</span></code><code class="sig-name descname"><span class="pre">WGanModel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WGanModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>WassersteinGanModel.</p>
 <dl class="py method">
 <dt id="ganpdfs.model.WGanModel.generator_model">
-<code class="sig-name descname">generator_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WGanModel.generator_model" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generator_model</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WGanModel.generator_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>generator_model.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ganpdfs.model.WGanModel.critic_model">
-<code class="sig-name descname">critic_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WGanModel.critic_model" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">critic_model</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WGanModel.critic_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>critic_model.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ganpdfs.model.WGanModel.adversarial_model">
-<code class="sig-name descname">adversarial_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">generator</span></em>, <em class="sig-param"><span class="n">critic</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WGanModel.adversarial_model" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">adversarial_model</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WGanModel.adversarial_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>adversarial_model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -818,23 +817,23 @@ method to support masking.</p>
 
 <dl class="py class">
 <dt id="ganpdfs.model.DWGanModel">
-<em class="property">class </em><code class="sig-prename descclassname">ganpdfs.model.</code><code class="sig-name descname">DWGanModel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf</span></em>, <em class="sig-param"><span class="n">params</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DWGanModel" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.model.</span></code><code class="sig-name descname"><span class="pre">DWGanModel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DWGanModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
 <dt id="ganpdfs.model.DWGanModel.generator_model">
-<code class="sig-name descname">generator_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DWGanModel.generator_model" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generator_model</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DWGanModel.generator_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>generator_model.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ganpdfs.model.DWGanModel.critic_model">
-<code class="sig-name descname">critic_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DWGanModel.critic_model" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">critic_model</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DWGanModel.critic_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>critic_model.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ganpdfs.model.DWGanModel.adversarial_model">
-<code class="sig-name descname">adversarial_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">generator</span></em>, <em class="sig-param"><span class="n">critic</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DWGanModel.adversarial_model" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">adversarial_model</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DWGanModel.adversarial_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>adversarial_model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -862,7 +861,7 @@ method to support masking.</p>
 <span id="ganpdfs-utils-module"></span><h2>ganpdfs.utils module<a class="headerlink" href="#module-ganpdfs.utils" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="ganpdfs.utils.do_nothing">
-<code class="sig-prename descclassname">ganpdfs.utils.</code><code class="sig-name descname">do_nothing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tensor</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.do_nothing" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.utils.</span></code><code class="sig-name descname"><span class="pre">do_nothing</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.do_nothing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function that does nothing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -873,12 +872,12 @@ method to support masking.</p>
 
 <dl class="py function">
 <dt id="ganpdfs.utils.gan_summary">
-<code class="sig-prename descclassname">ganpdfs.utils.</code><code class="sig-name descname">gan_summary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">critic</span></em>, <em class="sig-param"><span class="n">generator</span></em>, <em class="sig-param"><span class="n">adversarial</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.gan_summary" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.utils.</span></code><code class="sig-name descname"><span class="pre">gan_summary</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">critic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adversarial</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.gan_summary" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="ganpdfs.utils.axes_width">
-<code class="sig-prename descclassname">ganpdfs.utils.</code><code class="sig-name descname">axes_width</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ax</span></em>, <em class="sig-param"><span class="n">lw</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.axes_width" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.utils.</span></code><code class="sig-name descname"><span class="pre">axes_width</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.axes_width" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change width of axes.
 :param ax:
 :type ax: matplotlib.axes.Axes
@@ -890,7 +889,7 @@ method to support masking.</p>
 
 <dl class="py function">
 <dt id="ganpdfs.utils.latent_noise">
-<code class="sig-prename descclassname">ganpdfs.utils.</code><code class="sig-name descname">latent_noise</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf</span></em>, <em class="sig-param"><span class="n">rndgen</span></em>, <em class="sig-param"><span class="n">s</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.latent_noise" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.utils.</span></code><code class="sig-name descname"><span class="pre">latent_noise</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rndgen</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.latent_noise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply gaussian noise to the latent input.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -905,7 +904,7 @@ method to support masking.</p>
 
 <dl class="py function">
 <dt id="ganpdfs.utils.latent_sampling">
-<code class="sig-prename descclassname">ganpdfs.utils.</code><code class="sig-name descname">latent_sampling</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pdf</span></em>, <em class="sig-param"><span class="n">nb_output</span></em>, <em class="sig-param"><span class="n">rndgen</span></em>, <em class="sig-param"><span class="n">nsx</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.latent_sampling" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.utils.</span></code><code class="sig-name descname"><span class="pre">latent_sampling</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rndgen</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.latent_sampling" title="Permalink to this definition">¶</a></dt>
 <dd><p>latent_sampling.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -920,7 +919,7 @@ method to support masking.</p>
 
 <dl class="py function">
 <dt id="ganpdfs.utils.factorize_number">
-<code class="sig-prename descclassname">ganpdfs.utils.</code><code class="sig-name descname">factorize_number</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">number</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.factorize_number" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.utils.</span></code><code class="sig-name descname"><span class="pre">factorize_number</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.factorize_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>Factorize_number using Pollard’s rho algorithm. This takes
 a number a return a list of the factors.</p>
 <p class="rubric">Example</p>
@@ -942,7 +941,7 @@ following integers [7,5,2].</p>
 
 <dl class="py function">
 <dt id="ganpdfs.utils.construct_cnn">
-<code class="sig-prename descclassname">ganpdfs.utils.</code><code class="sig-name descname">construct_cnn</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">nb_layer</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.construct_cnn" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.utils.</span></code><code class="sig-name descname"><span class="pre">construct_cnn</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_layer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.construct_cnn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Factorize_number using Pollard’s rho algorithm that is defined
 by the <cite>factorize_number</cite> method. This is used in order to define
 the dimension of the <cite>strides</cite> for performing the convolution in
@@ -974,7 +973,7 @@ naturally set to 1.</p>
 
 <dl class="py function">
 <dt id="ganpdfs.utils.interpol">
-<code class="sig-prename descclassname">ganpdfs.utils.</code><code class="sig-name descname">interpol</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fake_pdf</span></em>, <em class="sig-param"><span class="n">gan_grid</span></em>, <em class="sig-param"><span class="n">lhapdf_grid</span></em>, <em class="sig-param"><span class="n">mthd</span><span class="o">=</span><span class="default_value">'Intperp1D'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.interpol" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.utils.</span></code><code class="sig-name descname"><span class="pre">interpol</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fake_pdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gan_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lhapdf_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mthd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Intperp1D'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.interpol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Interpolate the generated output according to the x-grid in
 order to match with the LHAPDF grid-format. It uses the <cite>interpolate</cite>
 module from <cite>scipy</cite>. For more details, refere to
@@ -998,7 +997,7 @@ module from <cite>scipy</cite>. For more details, refere to
 
 <dl class="py function">
 <dt id="ganpdfs.utils.smm">
-<code class="sig-prename descclassname">ganpdfs.utils.</code><code class="sig-name descname">smm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prior</span></em>, <em class="sig-param"><span class="n">generated</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.smm" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.utils.</span></code><code class="sig-name descname"><span class="pre">smm</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generated</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.smm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Similarity Metric Measure that measures the quality of the
 generated PDF replicas using the <cite>Fréchet Inception Distance</cite>
 (FID).</p>
