@@ -21,7 +21,7 @@ The code requires as an input a `runcard.yml` file in which the name of the PDF 
 characteristics of the Neural Network Models are defined. Examples of runcards can be found
 in the `runcard` folder.
 ```bash
-ganpdfs runcard/default.yml [--fake TOT_FAKE_SIZE]
+ganpdfs runcard/reference.yml [-t TOT_REPLICAS_SIZE]
 ```
 This will generate the following folders:
 ```bash
@@ -43,13 +43,13 @@ structure as the output from N3FIT).
 
 Hence, in order to evolve the generated output grids, just run:
 ```bash
-evolven3fit <PRIOR_PDF_NAME>_enhanced
+evolven3fit <PRIOR_PDF_NAME>_enhanced <TOT_REPLICAS_SIZE>
 ```
 
 Then, to link the generated PDF set to the LHAPDF data directory, use the `postgans` script by
 running:
 ```bash
-postgans --pdf <PRIOR_PDF_NAME> --nenhanced TOT_FAKE_SIZE
+postgans --pdf <PRIOR_PDF_NAME> --nenhanced <TOT_REPLICAS_SIZE>
 ```
 
 #### Hyper-parameter opitmization

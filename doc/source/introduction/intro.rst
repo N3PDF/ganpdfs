@@ -22,8 +22,8 @@ classified as real (from the input) or fake (from the generated). The training g
 
 
 
-Why the need of GANs for PDF
-============================
+Why the need of GANs for PDFs?
+==============================
 
 .. note::
    Add motivations (issues & solutions) here.
