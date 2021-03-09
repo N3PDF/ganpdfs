@@ -188,67 +188,6 @@ class GanTrain:
         y_gen = -np.ones((batch_size, 1))
         return noise, y_gen
 
-    def plot_generated_pdf(self, generator, nb_output, niter, folder):
-        """Generate grid-plots at a given iteration throughout the training.
-        In each grid is compared the generated dataset against the real one
-        for a specific flavor. The plots are then saved into a folder.
-
-        Parameters
-        ----------
-        generator : ganpdfs.model.WassersteinGanModel.generator
-            generator neural networks
-        nb_output : int
-            number of fake PDFs to be generated in the plot
-        folder : str
-            name of the folder in which the plots will be saved
-        niter : int
-            iteration at which the plots should be generated
-        """
-
-        # Check the targed folder
-        output_path = f"{folder}/iterations"
-        output_folder = pathlib.Path().absolute() / output_path
-        output_folder.mkdir(exist_ok=True)
-
-        # Generate Fake Samples
-        generated_pdf, _ = self.fake_samples(generator, nb_output)
-
-        # Initialize Grid Plots
-        fig, axes = plt.subplots(ncols=2, nrows=3, figsize=[20, 26])
-
-        for i, axis in enumerate(axes.reshape(-1)):
-            # Plot true replicas
-            for true_rep in self.pdf:
-                axis.plot(
-                        self.xgrid,
-                        true_rep[i + 2],
-                        color="r",
-                        label="true",
-                        alpha=0.25
-                )
-            # Plot fake replicas
-            for fake_rep in generated_pdf:
-                axis.plot(
-                        self.xgrid,
-                        fake_rep[i + 2],
-                        color="b",
-                        label="fake",
-                        alpha=0.35
-                )
-            axes_width(axis, lw=1.5)
-            axis.grid(alpha=0.1, linewidth=1.5)
-            axis.tick_params(length=7, width=1.5)
-            axis.tick_params(which="minor", length=4, width=1)
-            axis.set_xlim(self.xgrid[0], self.xgrid[-1])
-            axis.set_xscale('log')
-
-        fig.suptitle("Samples at Iteration %d" % niter)
-        fig.savefig(
-            f"{folder}/iterations/pdf_generated_at_{niter}.png",
-            dpi=100
-        )
-        plt.close("all")
-
     def train(self, nb_epochs=5000, batch_size=64):
         """Train the GANs networks for a given batch size. The training
         is done in such a way that the training of the generator and the
@@ -314,12 +253,6 @@ class GanTrain:
                         advloss.append(gloss)
                         rdloss.append(r_dloss)
                         fdloss.append(f_dloss)
-                        if self.params.get("generate_plots"):
-                            self.plot_generated_pdf(
-                                self.generator,
-                                self.params.get("out_replicas"),
-                                k + 1,
-                                self.folder)
 
             # Save generator model into a folder
             self.generator.save("pre-trained-model")
@@ -384,8 +317,8 @@ class GanTrain:
             except IOError as excp:
                 console.print(
                         f"[bold red]WARNING: Fit run card for {self.params['pdf']}"
-                        f" not found. Put it manually into {self.folder} in order to run"
-                        " evolven3fit."
+                        f" not found. Put it manually into {self.folder} in order"
+                        f" to run evolven3fit. {excp}"
                 )
         else:
             # Compute FID inception score
