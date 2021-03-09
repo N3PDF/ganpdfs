@@ -7,7 +7,6 @@ For futher details, refer to https://github.com/NNPDF/nnpdf/blob/
 """
 
 import os
-import numpy as np
 from reportengine.compat import yaml
 
 
@@ -82,7 +81,6 @@ def storegrid(fake_replica, xgrid, qscale, outputname, replica_ind, replica_path
         path where the replicas are stored
     """
 
-    # TODO: Check why q^2
     lha = fake_replica.T
     data = {
         "replica": replica_ind,

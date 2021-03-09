@@ -33,6 +33,7 @@ def recursive_dic(hyperdict):
     dict:
         Dictionary where the values of the keys are hp.functions
     """
+
     newhyperdict = {}
     for key, value in hyperdict.items():
         if isinstance(value, dict):
@@ -50,7 +51,6 @@ def recursive_dic(hyperdict):
     return newhyperdict
 
 
-
 def load_yaml(runcard_file):
     """Load YAML file.
 
@@ -59,6 +59,7 @@ def load_yaml(runcard_file):
     runcard_file : str
         input runcard file
     """
+
     with open(runcard_file, "r") as stream:
         runcard = yaml.load(stream, Loader=yaml.FullLoader)
     hyperdict = runcard.get("hyperopt", {})
@@ -84,6 +85,7 @@ def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder
     folder : str
         folder to store the results
     """
+
     logger.info("Performing hyperparameter scan.")
     if cluster:
         trials = MongoTrials(cluster, exp_key="exp1")
@@ -126,9 +128,7 @@ def hyper_train(params, xpdf, pdf):
     pdf : np.array(float)
         input/prior pdf
     """
-    # Define the number of input replicas
-    NB_INPUT_REP = params.get("input_replicas")
-    # TODO: CHANGE BELOW
+
     # Define the number of batches
     BATCH_SIZE = params.get("batch_size")
 
@@ -142,4 +142,5 @@ def hyper_train(params, xpdf, pdf):
         nb_epochs=params.get("epochs"),
         batch_size=BATCH_SIZE
     )
+    # TODO: rename "loss" throughout hyperopt
     return {"loss": smm_result, "status": STATUS_OK}

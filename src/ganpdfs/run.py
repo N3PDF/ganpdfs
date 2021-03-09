@@ -66,13 +66,12 @@ def argument_parser():
     """Parse the input arguments for wganpdfs.
     """
     # read command line arguments
-    parser = argparse.ArgumentParser(description="Train a PDF GAN.")
+    parser = argparse.ArgumentParser(description="Generate synthetic replicas with GANs.")
     parser.add_argument("-f", "--force", action="store_true")
     parser.add_argument("runcard", help="A json file with the setup.")
     parser.add_argument("-c", "--cluster", help="Enable cluster scan.")
-    parser.add_argument("-s", "--hyperopt", type=int, help="Enable hyperopt scan.")
-    parser.add_argument("-k", "--fake", type=posint, help="Number of output replicas.")
-    parser.add_argument("-n", "--nreplicas", type=posint, help="Number of input replicas.")
+    parser.add_argument("-y", "--hyperopt", type=int, help="Enable hyperopt scan.")
+    parser.add_argument("-s", "--totrep", type=posint, help="Number of output replicas.")
     args = parser.parse_args()
 
     # check the runcard
@@ -91,7 +90,7 @@ def main():
     args = argument_parser()
 
     hps = load_yaml(args.runcard)
-    hps["tot_replicas"] = args.fake
+    hps["tot_replicas"] = args.totrep
     nf = hps.get("nf", NF)
     qvalue = hps.get("q", Q0)
     hps["save_output"] = str(hps["pdf"]) + "_enhanced"
@@ -104,6 +103,7 @@ def main():
             style="bold blue"
     )
     init_pdf = InputPDFs(hps["pdf"], qvalue, nf)
+
     # Choose the LHAPDF x-grid by default
     hps["pdfgrid"] = init_pdf.extract_xgrid()
     if hps["x_grid"] == "lhapdf":
@@ -131,10 +131,10 @@ def main():
     pdf_lhapdf = init_pdf.lhaPDF_grids()
     pdfs = (pdf, pdf_lhapdf)
 
-    # Define the number of input replicas
-    hps["input_replicas"] = pdf.shape[0] if args.nreplicas is None else args.nreplicas
-    hps["out_replicas"] = hps["input_replicas"] if args.fake is None else \
-            args.fake - hps["input_replicas"]
+    # Number of Output replicas (Prior+Synthetics)
+    hps["input_replicas"] = pdf.shape[0]
+    hps["out_replicas"] = hps["input_replicas"] if args.totrep is None else \
+            args.totrep - hps["input_replicas"]
 
     console.print("\n• Training:", style="bold blue")
     # If hyperscan is True

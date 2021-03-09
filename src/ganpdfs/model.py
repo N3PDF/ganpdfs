@@ -143,7 +143,6 @@ class DWGanModel:
 
         gnn_dim = self.genparams.get("number_nodes")
         n_nodes = self.cnnf[0] * self.cnnx[0] * gnn_dim
-        print(n_nodes)
         gs_activ = get_activation(self.genparams)
 
         g_shape = (self.fl_size, self.xg_size,)
@@ -174,7 +173,6 @@ class DWGanModel:
         # Convolute input PDF
         if self.params.get("ConvoluteOutput", False):
             g_hidden = ConvPDF(self.pdf)(g_hidden)
-        print(g_hidden.shape)
         return Model(g_input, g_hidden, name="Generator")
 
     def critic_model(self):
