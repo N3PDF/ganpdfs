@@ -85,10 +85,10 @@
               
             
             
-              <p class="caption"><span class="caption-text">Introduction to GANs</span></p>
+              <p class="caption"><span class="caption-text">GANs for PDFs</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">What are GANs?</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#why-the-need-of-gans-for-pdf">Why the need of GANs for PDF</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#why-the-need-of-gans-for-pdfs">Why the need of GANs for PDFs?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#discriminator-training">Discriminator Training</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#generator-training">Generator Training</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#hyperoptimization">Hyperoptimization</a><ul>
@@ -101,7 +101,7 @@
 <p class="caption"><span class="caption-text">How To</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../howto/howto.html">How to use the code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../howto/howto.html#post-analysis">Post-Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../howto/howto.html#how-to-generate-pdf-grid">How to generate PDF grid</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Modules</span></p>
 <ul>
@@ -191,8 +191,8 @@ classified as real (from the input) or fake (from the generated). The training g
 <img alt="../_images/gans.png" src="../_images/gans.png" />
 </div>
 </div>
-<div class="section" id="why-the-need-of-gans-for-pdf">
-<h1>Why the need of GANs for PDF<a class="headerlink" href="#why-the-need-of-gans-for-pdf" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="why-the-need-of-gans-for-pdfs">
+<h1>Why the need of GANs for PDFs?<a class="headerlink" href="#why-the-need-of-gans-for-pdfs" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Add motivations (issues &amp; solutions) here.</p>
@@ -231,7 +231,7 @@ through an <em>hyper-parameter space</em>.</p>
 <h2>Fréchet Inception Distance (FID)<a class="headerlink" href="#frechet-inception-distance-fid" title="Permalink to this headline">¶</a></h2>
 <p>An important part of the hyper-parameter tuning is the definition of a metric that assesses the goodness
 of the model. In context of GANs (for PDFs), such a quantity must measure the quality of the generated PDF
-replicas. To evaluate the performance of the GAN model, we use the <strong>Fréchet Inception Distance (FID)</strong> <span id="id1">[<a class="reference internal" href="../ref-bibs.html#id4"><span>1</span></a>]</span>.</p>
+replicas. To evaluate the performance of the GAN model, we use the <strong>Fréchet Inception Distance (FID)</strong> <span id="id1">[<a class="reference internal" href="../ref-bibs.html#id4">1</a>]</span>.</p>
 <p>The Fréchet Inception Distance between a multivariate Gaussian with mean <span class="math notranslate nohighlight">\(\mu_{r}\)</span> and covariance
 <span class="math notranslate nohighlight">\(\Sigma_{r}\)</span> and a multivariate Gaussian wit mean <span class="math notranslate nohighlight">\(\mu_{g}\)</span> and covariance <span class="math notranslate nohighlight">\(\Sigma_{g}\)</span>
 (where <span class="math notranslate nohighlight">\(r\)</span> and <span class="math notranslate nohighlight">\(g\)</span> resp. denotes samples from real and generated) is given by:</p>
@@ -243,7 +243,7 @@ PDFs are exactly the same as the input MC PDFreplicas, then the value of the FID
 <div class="section" id="optimization-algorithm-tpe">
 <h2>Optimization Algorithm: TPE<a class="headerlink" href="#optimization-algorithm-tpe" title="Permalink to this headline">¶</a></h2>
 <p>For the tunning of the hyper-parameters, we rely on a python library called <a class="reference external" href="https://github.com/hyperopt/hyperopt">hyperopt</a> with
-the <em>Tree-structured Parzen Estimator (TPE)</em> <span id="id2">[<a class="reference internal" href="../ref-bibs.html#id2"><span>2</span></a>]</span> as the optimization algorithm. Given a set of hyper-parameters <span class="math notranslate nohighlight">\(x\)</span> with an
+the <em>Tree-structured Parzen Estimator (TPE)</em> <span id="id2">[<a class="reference internal" href="../ref-bibs.html#id2">2</a>]</span> as the optimization algorithm. Given a set of hyper-parameters <span class="math notranslate nohighlight">\(x\)</span> with an
 associated quality score <span class="math notranslate nohighlight">\(y\)</span>, the idea of TPE is to compute a tree of Parzen estimators <span class="math notranslate nohighlight">\(P (x | y)\)</span> and <span class="math notranslate nohighlight">\(P(y)\)</span>.
 To initialize the algorithm, the TPE starts from a random search. Then, it splits the results into two groups: the best performing ones
 and the reset by defining a splitting value <span class="math notranslate nohighlight">\(\tilde{y}\)</span>. The likelihood probability for being in each of the groups is modeled as:</p>
@@ -254,7 +254,7 @@ and the reset by defining a splitting value <span class="math notranslate nohigh
 <p>where the two densities <span class="math notranslate nohighlight">\(\mathcal{L}\)</span> and <span class="math notranslate nohighlight">\(\mathcal{G}\)</span> are modeled using kernel density estimators
 which are a simple average of the kernels centered on existing data points. <span class="math notranslate nohighlight">\(P(y)\)</span> is modeled using the fact
 that <span class="math notranslate nohighlight">\(P(y &lt; \tilde{y}) = 0.75\)</span> if <span class="math notranslate nohighlight">\(\mathcal{G}\)</span> models the upper quartile. Finally, the next set of hyper-parameters
-are taken as the maximizer of <span class="math notranslate nohighlight">\(\mathcal{L}(x) / \mathcal{G}(x)\)</span> <span id="id3">[<a class="reference internal" href="../ref-bibs.html#id3"><span>3</span></a>]</span> as shown below:</p>
+are taken as the maximizer of <span class="math notranslate nohighlight">\(\mathcal{L}(x) / \mathcal{G}(x)\)</span> <span id="id3">[<a class="reference internal" href="../ref-bibs.html#id3">3</a>]</span> as shown below:</p>
 <div class="figure align-center">
 <img alt="../_images/hyperscan.gif" src="../_images/hyperscan.gif" />
 </div>

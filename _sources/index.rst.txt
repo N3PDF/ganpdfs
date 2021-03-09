@@ -7,7 +7,7 @@ Adversarial Networks (GANs).
 
 .. toctree::
    :maxdepth: 2
-   :caption: Introduction to GANs
+   :caption: GANs for PDFs
 
    introduction/intro.rst
    ref-bibs
