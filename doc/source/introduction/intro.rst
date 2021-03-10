@@ -25,8 +25,13 @@ classified as real (from the input) or fake (from the generated). The training g
 Why the need of GANs for PDFs?
 ==============================
 
-.. note::
-   Add motivations (issues & solutions) here.
+
+Techniques from generative models can be used to improve the efficiency of the PDF compression
+methodology. IN the standard approach, the task fo the compressor is to extract samples tha
+present small fluctuations and which reproduce best the statistical properties of the original
+distribution. It should be therefore possible to use GANs ti generate samples of replucas that
+contain less fluctuations and once combined with samles from the prior lead t a more efficient
+compressed representation of the full result.
 
 
 
