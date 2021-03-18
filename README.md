@@ -1,8 +1,8 @@
 ### GANPDFs
 
 Enhance the statistics of a prior PDF set by generating fake PDF replicas using Generative
-Adversarial Neural Networks ([GANs](https://arxiv.org/abs/1406.2661)). Detailed documentation
-will be available in https://n3pdf.github.io/ganpdfs/.
+Adversarial Neural Networks ([GANs](https://arxiv.org/abs/1406.2661)). Documentation
+is available at https://n3pdf.github.io/ganpdfs/.
 
 #### How to install
 
