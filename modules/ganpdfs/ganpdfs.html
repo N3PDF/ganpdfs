@@ -308,8 +308,13 @@ the module <cite>tensorflow.train</cite>, refer to
 </dd></dl>
 
 <dl class="py function">
-<dt id="ganpdfs.custom.load_generator_model">
-<code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">load_generator_model</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.load_generator_model" title="Permalink to this definition">¶</a></dt>
+<dt id="ganpdfs.custom.turn_on_training">
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">turn_on_training</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">critic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.turn_on_training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="ganpdfs.custom.load_generator">
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">load_generator</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.load_generator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a saved/trained keras model from a folder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -349,7 +354,7 @@ the module <cite>tensorflow.train</cite>, refer to
 
 <dl class="py class">
 <dt id="ganpdfs.custom.GenKinit">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">GenKinit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">valmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenKinit" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">GenKinit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">valmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenKinit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.initializers.initializers_v2.Initializer</span></code></p>
 <p>Custom kernel initialization.</p>
 <dl class="py method">
@@ -359,6 +364,83 @@ the module <cite>tensorflow.train</cite>, refer to
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A JSON-serializable Python dict.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ganpdfs.custom.GradientPenalty">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">GradientPenalty</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GradientPenalty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
+<p>Calculates the gradient penalty loss for a batch of “averaged” samples.
+In Improved WGANs, the 1-Lipschitz constraint is enforced by adding a term
+to the loss function that penalizes the network if the gradient norm moves
+away from 1. However, it is impossible to evaluate this function at all
+points in the input space. The compromise used in the paper is to choose
+random points on the lines between real and generated samples, and check
+the gradients at these points. Note that it is the gradient w.r.t. the input
+averaged samples, not the weights of the discriminator, that we’re penalizing!
+In order to evaluate the gradients, we must first run samples through the
+generator and evaluate the loss. Then we get the gradients of the discri-
+minator w.r.t. the input averaged samples. The l2 norm and penalty can then
+be calculated for this gradient.
+Note that this loss function requires the original averaged samples as input,
+but Keras only supports passing y_true and y_pred to loss functions. To get
+around this, we make a partial() of the function with the average argument,
+and use that for model training.</p>
+<dl class="py method">
+<dt id="ganpdfs.custom.GradientPenalty.call">
+<code class="sig-name descname"><span class="pre">call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GradientPenalty.call" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is where the layer’s logic lives.</p>
+<p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
+from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
+layers as additional arguments. Whereas <cite>tf.keras</cite> has <cite>compute_mask()</cite>
+method to support masking.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> – Input tensor, or list/tuple of input tensors.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments. Currently unused.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tensor or list/tuple of tensors.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="ganpdfs.custom.AddLatent">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">AddLatent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.AddLatent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
+<p>Keras layer that inherates from the keras <cite>Layer</cite> class. This layer
+class basically expands the input latent space tensors to the generator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>latent_vector</strong> (<em>np.array</em>) – Input latent vector.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="ganpdfs.custom.AddLatent.call">
+<code class="sig-name descname"><span class="pre">call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.AddLatent.call" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is where the layer’s logic lives.</p>
+<p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
+from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
+layers as additional arguments. Whereas <cite>tf.keras</cite> has <cite>compute_mask()</cite>
+method to support masking.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> – Input tensor, or list/tuple of input tensors.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments. Currently unused.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tensor or list/tuple of tensors.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -423,7 +505,7 @@ method to support masking.</p>
 <dt id="ganpdfs.custom.GenDense">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">GenDense</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.GenDense" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
-<p>Keras layer that inherates from the keras <cite>Layer</cite> class. This layer
+<p>Custom layer that inherates from the keras <cite>Layer</cite> class. This layer
 class  is proper to the <cite>Generator</cite> and takes the input parameters from
 the input runcard which contains all the parameters for the layer.</p>
 <dl class="field-list simple">
@@ -530,8 +612,8 @@ method to support masking.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="ganpdfs.custom.ConvPDF">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">ConvPDF</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF" title="Permalink to this definition">¶</a></dt>
+<dt id="ganpdfs.custom.ConvolutePDF">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.custom.</span></code><code class="sig-name descname"><span class="pre">ConvolutePDF</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvolutePDF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.keras.engine.base_layer.Layer</span></code></p>
 <p>Convolute the output of the previous layer with
 a subsample of the input/prior replica.</p>
@@ -541,8 +623,8 @@ a subsample of the input/prior replica.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="ganpdfs.custom.ConvPDF.compute_output_shape">
-<code class="sig-name descname"><span class="pre">compute_output_shape</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF.compute_output_shape" title="Permalink to this definition">¶</a></dt>
+<dt id="ganpdfs.custom.ConvolutePDF.compute_output_shape">
+<code class="sig-name descname"><span class="pre">compute_output_shape</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvolutePDF.compute_output_shape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the output shape of the layer.</p>
 <p>If the layer has not been built, this method will call <cite>build</cite> on the
 layer. This assumes that the layer will later be used with inputs that
@@ -561,8 +643,8 @@ instead of an integer.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="ganpdfs.custom.ConvPDF.call">
-<code class="sig-name descname"><span class="pre">call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">previous_layer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvPDF.call" title="Permalink to this definition">¶</a></dt>
+<dt id="ganpdfs.custom.ConvolutePDF.call">
+<code class="sig-name descname"><span class="pre">call</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">previous_layer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.custom.ConvolutePDF.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is where the layer’s logic lives.</p>
 <p>Note here that <cite>call()</cite> method in <cite>tf.keras</cite> is little bit different
 from <cite>keras</cite> API. In <cite>keras</cite> API, you can pass support masking for
@@ -786,28 +868,45 @@ method to support masking.</p>
 <dt id="ganpdfs.model.WGanModel">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.model.</span></code><code class="sig-name descname"><span class="pre">WGanModel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WGanModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>WassersteinGanModel.</p>
+<p>GAN class that represents the models in terms of Deep Neural
+Networks. It includes 3 Models: the Genator, the Discriminator,
+and the Adversarial Model which controls the training of the
+Generator. Apart from the Adversarial Model, the Generator and
+the Discriminator are not compiled directly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pdf</strong> (<em>np.array</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>)</em>) – Input PDF grid</p></li>
+<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – dictionary containing the input parameters</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt id="ganpdfs.model.WGanModel.generator_model">
 <code class="sig-name descname"><span class="pre">generator_model</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WGanModel.generator_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>generator_model.</p>
+<dd><p>Generator Model based on a Deep Neural Network. It takes
+as input a latent space vector and gives as output a PDF grid
+sampled on a discrete x-grid.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ganpdfs.model.WGanModel.critic_model">
 <code class="sig-name descname"><span class="pre">critic_model</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WGanModel.critic_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>critic_model.</p>
+<dd><p>Discriminator/Critic model based on Deep Neural Networks. It
+takes as input a PDF grid (which could be the real or the synthetic).
+It gives as output logit values.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ganpdfs.model.WGanModel.adversarial_model">
 <code class="sig-name descname"><span class="pre">adversarial_model</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.WGanModel.adversarial_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>adversarial_model.</p>
+<dd><p>Adversarial model based on Deep Neural Networks. It controls the
+training of the Generator through the output of the Discriminator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>generator</strong> – generator</p></li>
-<li><p><strong>critic</strong> – critic</p></li>
+<li><p><strong>generator</strong> (<em>tf.Model</em>) – generator model</p></li>
+<li><p><strong>critic</strong> (<em>tf.model</em>) – critic model</p></li>
 </ul>
 </dd>
 </dl>
@@ -817,29 +916,48 @@ method to support masking.</p>
 
 <dl class="py class">
 <dt id="ganpdfs.model.DWGanModel">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.model.</span></code><code class="sig-name descname"><span class="pre">DWGanModel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DWGanModel" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">ganpdfs.model.</span></code><code class="sig-name descname"><span class="pre">DWGanModel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DWGanModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>GAN class that represents the models in terms of Deep Convolu-
+tion Neural Networks. It includes 3 Models: the Generator, the
+Discriminator, and the Adversarial Model which controls the training
+of the Generator. Apart from the Adversarial Model, the Generator
+and the Discriminator are not compiled directly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pdf</strong> (<em>np.array</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>)</em>) – Input PDF grid</p></li>
+<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – dictionary containing the input parameters</p></li>
+<li><p><strong>noise_dim</strong> (<em>np.array</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>)</em>) – vector of random noise</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt id="ganpdfs.model.DWGanModel.generator_model">
 <code class="sig-name descname"><span class="pre">generator_model</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DWGanModel.generator_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>generator_model.</p>
+<dd><p>Generator Model based on Deep Concolutional Neural Networks. It
+takes as input a random noise vector and gives as output a PDF grid
+sampled on a discrete x-grid.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ganpdfs.model.DWGanModel.critic_model">
 <code class="sig-name descname"><span class="pre">critic_model</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DWGanModel.critic_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>critic_model.</p>
+<dd><p>Discriminator/Critic model based on Deep Convolutional Neural Networks.
+It takes as input a PDF grid (which could be the real or the synthetic).
+It gives as output logit values.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ganpdfs.model.DWGanModel.adversarial_model">
 <code class="sig-name descname"><span class="pre">adversarial_model</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.model.DWGanModel.adversarial_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>adversarial_model.</p>
+<dd><p>Adversarial model based on Deep Convolutional Neural Networks. It
+controls the training of the Generator through the Discriminator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>generator</strong> – generator</p></li>
-<li><p><strong>critic</strong> – critic</p></li>
+<li><p><strong>generator</strong> (<em>tf.Model</em>) – generator model</p></li>
+<li><p><strong>critic</strong> (<em>tf.model</em>) – critic model</p></li>
 </ul>
 </dd>
 </dl>
@@ -904,7 +1022,7 @@ method to support masking.</p>
 
 <dl class="py function">
 <dt id="ganpdfs.utils.latent_sampling">
-<code class="sig-prename descclassname"><span class="pre">ganpdfs.utils.</span></code><code class="sig-name descname"><span class="pre">latent_sampling</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rndgen</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.latent_sampling" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">ganpdfs.utils.</span></code><code class="sig-name descname"><span class="pre">latent_sampling</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rndgen</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ganpdfs.utils.latent_sampling" title="Permalink to this definition">¶</a></dt>
 <dd><p>latent_sampling.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
