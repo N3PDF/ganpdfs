@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+
 from tensorflow.keras import models
 from tensorflow.train import Checkpoint
 from tensorflow.keras import optimizers
@@ -8,8 +9,9 @@ from tensorflow.keras import initializers
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.constraints import Constraint
-from tensorflow.keras.initializers import Zeros, Identity
-from tensorflow.keras.constraints import NonNeg, MinMaxNorm
+from tensorflow.keras.initializers import Zeros
+from tensorflow.keras.initializers import Identity
+from tensorflow.keras.constraints import MinMaxNorm
 
 
 def wasserstein_loss(y_true, y_pred):
@@ -125,7 +127,16 @@ def save_ckpt(generator, critic, adversarial):
     return checkpoint
 
 
-def load_generator_model(model_name):
+def turn_on_training(critic, generator):
+    for layer in critic.layers:
+        layer.trainable = True
+    for layer in generator.layers:
+        layer.trainable = True
+    critic.trainable = True
+    generator.trainable = True
+
+
+def load_generator(model_name):
     """Load a saved/trained keras model from a folder.
 
     Parameters
@@ -169,7 +180,7 @@ class WeightsClipConstraint(Constraint):
 class GenKinit(initializers.Initializer):
     """Custom kernel initialization."""
 
-    def __init__(self, valmin=0, valmax=1e-5):
+    def __init__(self, valmin=-1, valmax=1):
         self.valmin = valmin
         self.valmax = valmax
 
@@ -188,6 +199,81 @@ class GenKinit(initializers.Initializer):
                 'maxval': self.valmax
         }
         return config
+
+
+class GradientPenalty(Layer):
+    """Calculates the gradient penalty loss for a batch of "averaged" samples.
+    In Improved WGANs, the 1-Lipschitz constraint is enforced by adding a term
+    to the loss function that penalizes the network if the gradient norm moves
+    away from 1. However, it is impossible to evaluate this function at all
+    points in the input space. The compromise used in the paper is to choose
+    random points on the lines between real and generated samples, and check
+    the gradients at these points. Note that it is the gradient w.r.t. the input
+    averaged samples, not the weights of the discriminator, that we're penalizing!
+    In order to evaluate the gradients, we must first run samples through the
+    generator and evaluate the loss. Then we get the gradients of the discri-
+    minator w.r.t. the input averaged samples. The l2 norm and penalty can then
+    be calculated for this gradient.
+    Note that this loss function requires the original averaged samples as input,
+    but Keras only supports passing y_true and y_pred to loss functions. To get
+    around this, we make a partial() of the function with the average argument,
+    and use that for model training.
+    """
+
+    def __init__(self, critic, batch, architect, gp_weight, **kwargs):
+        self.critic = critic
+        self.batch = batch
+        self.architect = architect
+        self.gp_weight = gp_weight
+        super(GradientPenalty, self).__init__(**kwargs)
+
+    def call(self, inputs):
+        # Compute Random Weighted Average
+        reals, fakes = inputs
+        if self.architect == "dnn":
+            alpha = K.random_uniform((self.batch, 1, 1))
+        elif self.architect == "dcnn":
+            alpha = K.random_uniform((self.batch, 1, 1, 1))
+        rand_avg = (alpha * reals) + ((1 - alpha) * fakes)
+
+        gradients = K.gradients(
+                self.critic(rand_avg),
+                [rand_avg]
+        )[0]
+        gradients_sqr = K.square(gradients)
+        gradients_sqr_sum = K.sum(
+                gradients_sqr,
+                axis=np.arange(1, len(gradients_sqr.shape))
+        )
+        gradient_l2_norm = K.sqrt(gradients_sqr_sum)
+        gradient_penalty = K.square(1 - gradient_l2_norm)
+        gradient_penalty *= self.gp_weight
+        return K.mean(gradient_penalty)
+
+
+class AddLatent(Layer):
+    """Keras layer that inherates from the keras `Layer` class. This layer
+    class basically expands the input latent space tensors to the generator.
+
+    Parameters
+    ----------
+    latent_vector : np.array
+        Input latent vector.
+    """
+
+    def __init__(self, latent_vector, **kwargs):
+        shape = latent_vector.shape[0]
+        index = np.random.choice(shape, shape-1, replace=False)
+        self.latent = latent_vector[index]
+        super(AddLatent, self).__init__(**kwargs)
+
+    def call(self, inputs):
+        result = K.switch(
+                K.cast(inputs.shape[0] is not None, tf.bool),
+                lambda: inputs + self.latent[:inputs.shape[0]],
+                lambda: inputs
+        )
+        return result
 
 
 class ExpLatent(Layer):
@@ -233,7 +319,7 @@ class ExpLatent(Layer):
 
 
 class GenDense(Layer):
-    """Keras layer that inherates from the keras `Layer` class. This layer
+    """Custom layer that inherates from the keras `Layer` class. This layer
     class  is proper to the `Generator` and takes the input parameters from
     the input runcard which contains all the parameters for the layer.
 
@@ -246,12 +332,18 @@ class GenDense(Layer):
     """
 
     def __init__(self, output_dim, dicparams, **kwargs):
-        const = MinMaxNorm(min_value=0.0, max_value=1e-5, rate=1.0, axis=0)
+        const = MinMaxNorm(
+                min_value=-dicparams.get("MinNorm", 1),
+                max_value=dicparams.get("MaxNorm", 1e-5),
+                rate=dicparams.get("NormRate", 1.0),
+                axis=0
+        )
+        bias_init = dicparams.get("bias_initializer", "zeros")
         self.units = output_dim
         self.kconstraint = constraints.get(const)
         self.kinitializer1 = Identity()
         self.kinitializer2 = initializers.get(GenKinit())
-        self.binitializer = get_init(dicparams.get("bias_initializer", "zeros"))
+        self.binitializer = get_init(bias_init)
         self.use_bias = dicparams.get("use_bias", False)
         self.activation = dicparams.get("activation")
         super(GenDense, self).__init__(**kwargs)
@@ -334,7 +426,7 @@ class ExtraDense(Layer):
         return output
 
 
-class ConvPDF(Layer):
+class ConvolutePDF(Layer):
     """Convolute the output of the previous layer with
     a subsample of the input/prior replica.
 
@@ -344,11 +436,9 @@ class ConvPDF(Layer):
         Array of PDF grids
     """
 
-    def __init__(self, pdf, trainable=True, **kwargs):
-        index = np.random.randint(pdf.shape[0])
-        self.pdf = K.constant(pdf[index])
-        self.trainable = trainable
-        super(ConvPDF, self).__init__(**kwargs)
+    def __init__(self, pdf, **kwargs):
+        self.pdf = K.constant(pdf[0])
+        super(ConvolutePDF, self).__init__(**kwargs)
 
     def compute_output_shape(self, input_shape):
         return (None, self.pdf.shape[1], self.pdf.shape[2])
@@ -359,7 +449,8 @@ class ConvPDF(Layer):
 
 
 class ConvXgrid(Layer):
-    """Convolute the output of the previous layer with the input x-grid."""
+    """Convolute the output of the previous layer with the input x-grid.
+    """
 
     def __init__(self, output_dim, xval, kinit="glorot_uniform", **kwargs):
         self.units = output_dim
@@ -377,9 +468,7 @@ class ConvXgrid(Layer):
         super(ConvXgrid, self).build(input_shape)
 
     def call(self, x):
-        # xres outputs (None, input_shape[1], len(x_pdf))
         xres = tf.tensordot(x, self.xval, axes=0)
-        # xfin outputs (None, units)
         xfin = tf.tensordot(xres, self.kernel, axes=([1, 2], [0, 1]))
         return xfin
 

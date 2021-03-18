@@ -79,7 +79,7 @@ def run_hyperparameter_scan(func_train, search_space, max_evals, cluster, folder
     search_space :
         search_space
     max_evals : int
-        otal number of evalutions
+        total number of evalutions
     cluster : str
         cluster adresses
     folder : str
@@ -129,18 +129,9 @@ def hyper_train(params, xpdf, pdf):
         input/prior pdf
     """
 
-    # Define the number of batches
-    BATCH_SIZE = params.get("batch_size")
-
     # Train on Input/True pdf
     xgan_pdfs = GanTrain(xpdf, pdf, params)
 
-    # In case one needs to pretrain the Discriminator
-    # xgan_pdfs.pretrain_disc(BATCH_SIZE, epochs=4)
-
-    smm_result = xgan_pdfs.train(
-        nb_epochs=params.get("epochs"),
-        batch_size=BATCH_SIZE
-    )
+    smm_result = xgan_pdfs.train(nb_epochs=params.get("epochs"))
     # TODO: rename "loss" throughout hyperopt
     return {"loss": smm_result, "status": STATUS_OK}

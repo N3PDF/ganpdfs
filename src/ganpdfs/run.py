@@ -1,5 +1,3 @@
-# This file contains the main driver of the ganpdfs code
-
 import os
 import shutil
 import logging
@@ -8,7 +6,7 @@ import argparse
 import numpy as np
 
 # Set tensorflow log level to error only
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 from rich.table import Table
 from rich.style import Style
@@ -17,11 +15,18 @@ from rich.console import Console
 import tensorflow as tf
 import tensorflow.python.util.deprecation as deprecation
 
-from ganpdfs.hyperscan import run_hyperparameter_scan
 from ganpdfs.hyperscan import hyper_train
 from ganpdfs.pdformat import XNodes
 from ganpdfs.pdformat import InputPDFs
 from ganpdfs.hyperscan import load_yaml
+from ganpdfs.hyperscan import run_hyperparameter_scan
+
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import InteractiveSession
+
+config = ConfigProto()
+config.gpu_options.allow_growth = True
+session = InteractiveSession(config=config)
 
 deprecation._PRINT_DEPRECATION_WARNINGS = False
 
@@ -49,8 +54,15 @@ def splash():
     logo.add_row("[bold blue]Generative Adversarial Neural Networks (GANs) for PDF replicas.")
     logo.add_row("[bold blue]https://n3pdf.github.io/ganpdfs/")
     logo.add_row("[bold blue]© N3PDF 2021")
-    logo.add_row("[bold blue]Authors: Stefano Carrazza, Juan E. Cruz-Martinez, Tanjona R. Rabemananjara")
+    logo.add_row("[bold blue]Authors: Stefano Carrazza, Juan M. Cruz-Martinez, Tanjona R. Rabemananjara")
     console.print(logo)
+
+
+def normalize_inpdf(input_pdf):
+    pdfabsolute = np.absolute(input_pdf)
+    normalization = np.max(pdfabsolute) + 1e-8
+    normalized_pdf = (input_pdf - normalization) / normalization
+    return normalization, normalized_pdf
 
 
 def posint(value):
@@ -70,8 +82,8 @@ def argument_parser():
     parser.add_argument("-f", "--force", action="store_true")
     parser.add_argument("runcard", help="A json file with the setup.")
     parser.add_argument("-c", "--cluster", help="Enable cluster scan.")
-    parser.add_argument("-y", "--hyperopt", type=int, help="Enable hyperopt scan.")
-    parser.add_argument("-s", "--totrep", type=posint, help="Number of output replicas.")
+    parser.add_argument("-s", "--hyperopt", type=int, help="Enable hyperopt scan.")
+    parser.add_argument("-t", "--totrep", type=posint, help="Number of output replicas.")
     args = parser.parse_args()
 
     # check the runcard
@@ -111,7 +123,7 @@ def main():
     elif hps["x_grid"] == "custom":
         xgrid = XNodes().build_xgrid()
     elif hps["x_grid"] == "standard":
-        xgrid = init_pdf.custom_xgrid(nbpoints=200)
+        xgrid = init_pdf.custom_xgrid(nbpoints=hps.get("nb_xpoints", 200))
     else:
         raise ValueError("{hps['x_grid']} is not a valid grid.")
 
@@ -129,7 +141,8 @@ def main():
 
     pdf = init_pdf.build_pdf(xgrid)
     pdf_lhapdf = init_pdf.lhaPDF_grids()
-    pdfs = (pdf, pdf_lhapdf)
+    norm, npdf = normalize_inpdf(pdf)
+    pdfs = (norm, npdf, pdf_lhapdf)
 
     # Number of Output replicas (Prior+Synthetics)
     hps["input_replicas"] = pdf.shape[0]

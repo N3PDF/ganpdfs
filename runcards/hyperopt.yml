@@ -1,7 +1,7 @@
 #############################################################################################
 # Input PDF                                                                                 #
 #############################################################################################
-pdf: NNPDF40_nnlo_as_0118_1000rep
+pdf: 210219-02-rs-nnpdf40-1000
 
 #############################################################################################
 # PDF Grids:                                                                                #
@@ -15,10 +15,7 @@ q        : 1.65                                                                 
 x_grid   : standard                                                                             # x-grid format. Options: standard, custom, lhapdf
 
 use_saved_model : False                                                                         # Skip training and use pre-trained generator model
-                                                                                                # All the parameters below will be skipped is set to TRUE
-ConvoluteOutput : False
-
-architecture    : cnn                                                                           # Architecture model. Options: cnn, dnn
+architecture    : dnn                                                                           # Architecture model. Options: dnn, dcnn
 
 hyperopt:
   #############################################################################################
@@ -28,25 +25,33 @@ hyperopt:
   #   - dnn : Deep Neural Network                                                             #
   #   - dcnn: Deep Convolutional Neural Network                                               #
   #############################################################################################
+  gauss_noise           : hp.choice('noise', [0.1, 0.001, 0.00001])                             # Gaussian noise
+  nb_xpoints            : hp.choice('xgrid', [200, 500, 1000])                                  # Size of the x-grid
+
   gan_parameters:
     optimizer:
-      optimizer_name    : hp.choice('gan_opt', ['RMSprop', 'Adadelta'])                         # options: SGD, Adam, RMSprop, Adadelta
-      learning_rate     : hp.choice('gan_lr', [0.00005, 0.0005])                                # Learning rate for the optimizer class
+      optimizer_name    : hp.choice('gan_opt', ['Adam', 'RMSprop', 'Adadelta'])                 # options: SGD, Adam, RMSprop, Adadelta
+      learning_rate     : hp.choice('gan_lr', [0.00005, 0.0005, 0.0001])                        # Learning rate for the optimizer class
 
   gen_parameters:
-    size_networks       : hp.choice('g_nn', [1, 2])                                             # number of hidden layers
-    kernel_initializer  : hp.choice('g_kini', ['GlorotUniform', 'RandomUniform'])               # list of initializer classes: https://keras.io/api/layers/initializers/
+    structure           : hp.choice('g_st', ['custom'])  
+    size_networks       : hp.choice('g_nn', [1, 2, 3])                                          # number of hidden layers
+    activation          : hp.choice('g_act', ['relu', 'leakyrelu'])                             # options: relu, leakyrelu, elu
+    MinNorm             : hp.choice('minnorm', [1, 0.1, 0.001, 0.00001])                        # Min. value of the weights norm constraints
+    MaxNorm             : hp.choice('maxnorm', [1, 0.1, 0.001, 0.00001])                        # Max. value of the weights norm constraints
+    NormRate            : hp.choice('normrate', [0.5, 1.0])                                     # Rate of applying the norm constraints
 
   disc_parameters:
-    size_networks       : hp.choice('d_nn', [1, 2])                                             # number of hidden layers
-    number_nodes        : hp.choice('d_nodes', [250, 450, 650, 1000])                           # number of nodes in the first layer
-    kernel_initializer  : hp.choice('d_kini', ['GlorotUniform', 'RandomUniform'])               # list of initializer classes: https://keras.io/api/layers/initializers/
+    size_networks       : hp.choice('d_nn', [1, 2, 3])                                          # number of hidden layers
     weights_constraints : hp.choice('d_wc', [0.01, 0.1, 1])                                     # Constrain weights values
+    number_nodes        : hp.choice('d_nodes', [250, 450, 650])                                 # number of nodes in the first layer
+    kernel_initializer  : hp.choice('d_kini', ['GlorotUniform', 'RandomUniform'])               # list of initializer classes: https://keras.io/api/layers/initializers/
     optimizer:
-      optimizer_name    : hp.choice('d_opt', ['RMSprop', 'Adadelta'])                           # options: SGD, Adam, RMSprop, Adadelta
-      learning_rate     : hp.choice('d_lr', [0.00005, 0.0005])                                  # Learning rate for the optimizer class
+      optimizer_name    : hp.choice('d_opt', ['Adam', 'RMSprop', 'Adadelta'])                   # options: SGD, Adam, RMSprop, Adadelta
+      learning_rate     : hp.choice('d_lr', [0.00005, 0.0005, 0.0001])                          # Learning rate for the optimizer class
     activation          : hp.choice('d_act', ['relu', 'leakyrelu'])                             # options: relu, leakyrelu, elu
-    trainable           : hp.choice('d_train', [True, False])
+    gp_loss             : hp.choice('gp_loss', [0.5, 1.0])                                      # Gradient Penalty loss weight
+    gp_weight           : hp.choice('gp_w', [5, 10])                                            # Gradient Penalty Weight
 
 
   #############################################################################################
