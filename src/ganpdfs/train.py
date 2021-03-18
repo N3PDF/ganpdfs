@@ -57,7 +57,8 @@ class GanTrain:
     def __init__(self, xgrid, pdfs, params):
         self.noise = 100
         self.norm, pdf, self.lhaPDFs = pdfs
-        self.xgrid, self.params = xgrid, params
+        self.xgrid = xgrid
+        self.params = params
         dim, flsize, xgssize = pdf.shape
         self.batch = dim * params["batch_size"] // 100
         self.hyperopt = params.get("scan")
