@@ -1,3 +1,6 @@
+![pytest](https://github.com/N3PDF/ganpdfs/workflows/pytest/badge.svg)
+[![documentation](https://github.com/N3PDF/ganpdfs/workflows/docs/badge.svg)](https://n3pdf.github.io/ganpdfs/)
+
 ### GANPDFs
 
 Enhance the statistics of a prior PDF set by generating fake PDF replicas using Generative
