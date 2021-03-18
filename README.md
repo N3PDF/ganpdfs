@@ -1,5 +1,6 @@
 ![pytest](https://github.com/N3PDF/ganpdfs/workflows/pytest/badge.svg)
 [![documentation](https://github.com/N3PDF/ganpdfs/workflows/docs/badge.svg)](https://n3pdf.github.io/ganpdfs/)
+[![DOI](https://zenodo.org/badge/178228962.svg)](https://zenodo.org/badge/latestdoi/178228962)
 
 ### GANPDFs
 
