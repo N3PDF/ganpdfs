@@ -23,25 +23,11 @@ in the `runcard` folder.
 ```bash
 ganpdfs runcard/reference.yml [-t TOT_REPLICAS_SIZE]
 ```
-This will generate the following folders:
-```bash
-pre-trained-model/
-├── assets
-├── saved_model.pb
-└── variables
-    ├── variables.data-00000-of-00001
-    └── variables.index
-<PRIOR_PDF_NAME>_enhanced/
-└── nnfit
-```
-where the `pre-trained-model` folder contains the just trained model. Hence in case you do not
-want to train the GANs and directly resort to a pre-trained one, a pre-trained
+In case one does not want to train the GANs and directly resort to a pre-trained one, a pre-trained
 [model](https://github.com/N3PDF/ganpdfs/tree/DynamicArchitecture/pre-trained-model)
-can be used out of the box by setting the entry `use_saved_model` to `True` in the runcard. The 
-`nnfit` subfolder contains the output grids from the generated replicas (this has the exact same
-structure as the output from N3FIT). 
+can be used out of the box by setting the entry `use_saved_model` to `True` in the runcard. 
 
-Hence, in order to evolve the generated output grids, just run:
+In order to evolve the generated output grids, just run:
 ```bash
 evolven3fit <PRIOR_PDF_NAME>_enhanced <TOT_REPLICAS_SIZE>
 ```
