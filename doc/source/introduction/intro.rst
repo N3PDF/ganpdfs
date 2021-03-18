@@ -3,9 +3,9 @@ What are GANs?
 
 
 Generative Adversarial Networks are classes of generative-based learning models that given an input
-data with some probability distribution P generate new data following the same probability distribution 
-by competing two neural network models: a generative model G (Generator) that tries to capture and 
-generate data distribution, and a discriminative model D (Discriminator or Critic) that estimates the 
+data with some probability distribution `\mathcal{P}` generate new data following the same probability distribution 
+by competing two neural network models: a generative model `\mathcal{G}` (Generator) that tries to capture and 
+generate data distribution, and a discriminative model `\mathcal{D}` (Discriminator or Critic) that estimates the 
 probability that a sample came from the input data rather than from the Generator. This adversarial 
 training allows both models to improve over training to the point that the Generator is becoming very 
 good at faking the input data such that the Discriminator can no longer distinguish between generated 
@@ -22,11 +22,16 @@ classified as real (from the input) or fake (from the generated). The training g
 
 
 
-Why the need of GANs for PDF
-============================
+Why the need of GANs for PDFs?
+==============================
 
-.. note::
-   Add motivations (issues & solutions) here.
+
+Techniques from generative models can be used to improve the efficiency of the PDF compression
+methodology. IN the standard approach, the task fo the compressor is to extract samples tha
+present small fluctuations and which reproduce best the statistical properties of the original
+distribution. It should be therefore possible to use GANs ti generate samples of replucas that
+contain less fluctuations and once combined with samles from the prior lead t a more efficient
+compressed representation of the full result.
 
 
 

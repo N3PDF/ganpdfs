@@ -1,5 +1,6 @@
 import json
-from hyperopt import Trials, space_eval
+from hyperopt import Trials
+from hyperopt import space_eval
 
 
 def space_eval_trial(space, trial):

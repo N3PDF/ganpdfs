@@ -63,7 +63,7 @@ def latent_noise(pdf, rndgen, s=0.0):
     return reslt
 
 
-def latent_sampling(pdf, nb_output, rndgen, nsx):
+def latent_sampling(pdf, nb_output, rndgen, nsx=0.0):
     """latent_sampling.
 
     Parameters

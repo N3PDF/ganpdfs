@@ -163,7 +163,7 @@ def arg_parser():
     """Paree input PDF"""
     parser = argparse.ArgumentParser(description="Create set into LHAPDF")
     parser.add_argument("--pdf", help="PDF name", required=True)
-    parser.add_argument("--nehanced", help="Size of enhanced", required=True)
+    parser.add_argument("--nenhanced", help="Size of enhanced", required=True)
     argument = parser.parse_args()
     return argument
 
@@ -171,7 +171,7 @@ def arg_parser():
 def main():
     args = arg_parser()
     pdf_name = args.pdf
-    enhanced_size = args.nenhanced
+    enhanced_size = int(args.nenhanced)
 
     postgans(pdf_name, enhanced_size, check=True)
 

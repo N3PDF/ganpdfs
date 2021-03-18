@@ -1,5 +1,4 @@
 hyperopt
-keras
 numpy
 rich
 scipy

@@ -11,7 +11,6 @@ lhapdf.setVerbosity(0)
 
 
 class XNodes:
-
     """Custom x-grid. This might be useful in case there are some
     x-grid format that maximizes the training of the GANs and get
     better performances."""
@@ -129,7 +128,6 @@ class XNodes:
 
 
 class InputPDFs:
-
     """Instantiate the computation of the input/prior PDF grid.
 
     Parameters
@@ -152,7 +150,7 @@ class InputPDFs:
 
     def extract_xgrid(self):
         """Extract the x-grid format from the input PDF file. The nice
-        thing about this that there will not be a need for interpolation 
+        thing about this that there will not be a need for interpolation
         later on.
 
         Returns
@@ -168,10 +166,11 @@ class InputPDFs:
         replica_zero = self.pdf_name + "_0000.dat"
         file_path = os.path.join(pdf_pathdir, self.pdf_name, replica_zero)
         w = open(file_path, "r")
-        # Skip the head
+
+        # skip head
         for _ in range(0, 10):
             if "--" in w.readline(): break
-        # Fetch x-grid
+
         lhapdf_info = w.readline()
         lhapdf_grid = lhapdf_info.replace("\n", "")
         lhapdf_grid = [float(i) for i in lhapdf_grid.split()]
