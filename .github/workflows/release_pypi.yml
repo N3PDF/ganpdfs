@@ -3,29 +3,29 @@ name: Deploy PyPI Package
 on:
   release:
     types: [released, created, published, edited]
-
+    
 jobs:
-  release:
+  deploy:
     name: Build and publish Python 🐍 packages 📦 to PyPI
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [3.7]
     steps:
-    - uses: actions/checkout@master
-    - name: Setup Python
-      uses: actions/setup-python@master
+    - uses: actions/checkout@v1
+    - name: Set up Python
+      uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install package
+    - name: Install dependencies
       run: |
-        pip install .
-    - name: Build PyPI package
+        python -m pip install --upgrade pip
+        pip install setuptools wheel twine
+        pip install -r tests-requirements.txt
+    - name: Build and Publish distribution 📦 to PyPI
+      env:
+        TWINE_USERNAME: ${{ secrets.TWINE_USER }}
+        TWINE_PASSWORD: ${{ secrets.TWINE_PASS }}
       run: |
-        pip install wheel
-        python setup.py sdist
-        python setup.py bdist_wheel
-    - name: Publish distribution 📦 to PyPI
-      uses: pypa/gh-action-pypi-publish@master
-      with:
-        password: ${{ secrets.PYPI_TOKEN }}
+        python setup.py sdist bdist_wheel
+        twine upload dist/*
